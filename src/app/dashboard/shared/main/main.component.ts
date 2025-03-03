@@ -3,6 +3,7 @@ import { SplitterModule } from 'primeng/splitter';
 import { TabsModule } from 'primeng/tabs';
 import { ExpensiveCardComponent } from '../../expensive_card/expensive_card.component';
 import { CommonModule } from '@angular/common';
+import { PiechartComponent } from '../../../gastos/piechart/piechart.component';
 
 export interface ExpensiveCard {
   title: string;
@@ -17,6 +18,7 @@ export interface ExpensiveCard {
   imports: [
     CommonModule,
     SplitterModule,
+    PiechartComponent,
     ExpensiveCardComponent,
     TabsModule
   ],
