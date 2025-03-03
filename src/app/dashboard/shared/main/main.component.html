@@ -1,0 +1,52 @@
+<h2>Control de Presupuesto Familiar</h2>
+<p>Gestiona los gastos de tu hogar y visualiza la distribución por miembro</p>
+
+<p-splitter [style]="{ height: '300px' }" styleClass="mb-8">
+    <ng-template #panel >        
+        <div class="card">
+            <div class="card-header">
+              <h3 class="title">{{generalExpensive.title}}</h3>
+              <div class="circle"></div>
+            </div>
+            <div class="card-body">
+              <p class="amount">{{generalExpensive.value | currency:'EUR'}}</p>
+              <p class="subtitle">Suma de todos los gastos registrados</p>           
+             
+            </div>
+          </div>       
+    </ng-template>
+    <ng-template #panel *ngFor="let item of expensiveCard">        
+        <expensive-card 
+        [title]="item.title"
+        [value]="item.value"
+        [percentage]="item.percentage"
+        [color]="item.color" 
+        class="full-size"/>         
+    </ng-template>
+</p-splitter>
+
+<div class="card">
+    <p-tabs value="0">
+        <p-tablist>           
+                <p-tab value="1">Gráficos de gastos</p-tab>
+                <p-tab value="2">Nuevos gastos</p-tab>
+                <p-tab value="3">Transaciones</p-tab>            
+        </p-tablist>
+        <p-tabpanels>
+            <!-- @for (tab of tabs; track tab.value) {
+                <p-tabpanel [value]="tab.value">
+                    <p class="m-0">{{ tab.content }}</p>
+                </p-tabpanel>
+            } -->
+            <p-tabpanel value="1">
+                <p class="m-0">Valor uno</p> 
+            </p-tabpanel>
+            <p-tabpanel value="2">
+                <p class="m-0">Valor dos</p>                 
+            </p-tabpanel>
+            <p-tabpanel value="3">
+                <p class="m-0">Valor tres</p> 
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

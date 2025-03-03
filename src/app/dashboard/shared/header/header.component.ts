@@ -1,19 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-
-import { IconField } from 'primeng/iconfield';
-import { InputIcon} from 'primeng/inputicon';
-import { MenuItem } from 'primeng/api';
+import { PrimeIcons, MenuItem } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
 
-import 'primeng/resources/themes/saga-blue/theme.css';
-import 'primeng/resources/primeng.min.css';
-import 'primeicons/primeicons.css';
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
-    Menubar,    
+    Menubar,
+       
      
     ],
   templateUrl: './header.component.html',
@@ -28,15 +24,15 @@ export class HeaderComponent implements OnInit{
   ngOnInit(): void {
     this.items = [
       {
-          label: 'Home',
+          label: 'Inicio',
           icon: 'pi pi-home'
       },
       {
-          label: 'Features',
+          label: 'Características',
           icon: 'pi pi-star'
       },
       {
-          label: 'Projects',
+          label: 'Planes',
           icon: 'pi pi-search',
           items: [
               {
