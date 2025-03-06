@@ -1,0 +1,128 @@
+<div class="register-container">
+  <div class="register-header">
+    <h2>Crear Cuenta</h2>
+    <p>Regístrate para comenzar</p>
+  </div>
+  
+  <form [formGroup]="registerForm"  (ngSubmit)="onSubmit()" class="register-form">
+    <div class="form-group">
+      <label for="name">Nombre Completo</label>
+      <input 
+        type="text" 
+        id="name" 
+        name="name" 
+        formControlName="name"
+        required
+        placeholder="Ingresa tu nombre completo"
+      >
+      <p-message *ngIf="registerForm.controls['name'].invalid && registerForm.controls['name'].touched" severity="error" text="El nombre es requerido"></p-message>
+    </div>
+    
+    <div class="form-group">
+      <label for="email">Correo Electrónico</label>
+      <input 
+        type="email" 
+        id="email" 
+        name="email" 
+        formControlName="email"
+        required
+        placeholder="Ingresa tu correo electrónico"
+      >
+      <p-message *ngIf="registerForm.controls['email'].invalid && registerForm.controls['email'].touched" severity="error" text="El correo electrónico es requerido y debe ser válido"></p-message>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Contraseña</label>
+      <input 
+        type="password" 
+        id="password" 
+        name="password" 
+        formControlName="password"
+        required
+        placeholder="Crea una contraseña"
+      >
+      <p-message *ngIf="registerForm.controls['password'].invalid && registerForm.controls['password'].touched" severity="error" text="La contraseña es requerida y debe tener al menos 6 caracteres"></p-message>
+    </div>
+    
+    <div class="form-group">
+      <label for="confirmPassword">Confirmar Contraseña</label>
+      <input 
+        type="password" 
+        id="confirmPassword" 
+        name="confirmPassword" 
+        formControlName="confirmPassword"        
+        required
+        placeholder="Confirma tu contraseña"
+      >
+      <p-message *ngIf="registerForm.controls['confirmPassword'].invalid && registerForm.controls['confirmPassword'].touched" severity="error" text="La confirmación de contraseña es requerida y debe coincidir con la contraseña"></p-message>
+    </div>
+    
+    <div class="terms-checkbox">
+      <input 
+        type="checkbox" 
+        id="terms"         
+        formControlName="terms"
+        required
+      >
+      <label for="terms">Estoy de acuerdo con los <a href="#">Términos de Servicio</a> y la <a href="#">Política de Privacidad</a></label>
+    </div>
+    
+    <button type="submit" class="register-button" [disabled]="!registerForm.valid">Crear Cuenta</button>
+    
+    <div class="divider">
+      <span>o</span>
+    </div>
+    
+    <button type="button" class="google-button" (click)="signUpWithGoogle()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+      </svg>
+      Regístrate con Google
+    </button>
+    
+    <div class="register-footer">
+      <p>¿Ya tienes una cuenta? <a href="#">Iniciar Sesión</a></p>
+    </div>
+  </form>
+</div>
+
+
+<!-- <div class="caja">
+    <mat-grid-list cols="1" rowHeight="20vw">
+           
+    <mat-grid-tile>
+<form [formGroup]="registerForm" (ngSubmit)="register()">
+     <mat-form-field appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" />
+      <mat-error *ngIf="registerForm.controls['email'].hasError('required')">El email es requerido</mat-error>
+      <mat-error *ngIf="registerForm.controls['email'].hasError('email')">El email no es válido</mat-error>
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" formControlName="password" />
+      <mat-error *ngIf="registerForm.controls['password'].hasError('required')">La contraseña es requerida</mat-error>
+      <mat-error *ngIf="registerForm.controls['password'].hasError('minlength')">La contraseña debe tener al menos 6 caracteres</mat-error>
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Confirmar contraseña</mat-label>
+      <input matInput type="password" formControlName="confirmPassword" />
+      <mat-error *ngIf="registerForm.controls['confirmPassword'].hasError('required')">La confirmación de contraseña es requerida</mat-error>
+      <mat-error *ngIf="registerForm.controls['confirmPassword'].hasError('mismatch')">Las contraseñas no coinciden</mat-error>
+    </mat-form-field>
+    <br>
+    <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">Registrarse</button>
+  </form>
+    </mat-grid-tile>
+    <mat-grid-tile class="tile">
+      <p>¿Ya tienes una cuenta? <a mat-raised-button color="primary" routerLink="/login">Login</a></p>
+    </mat-grid-tile>
+    </mat-grid-list>
+</div> -->
+
+
