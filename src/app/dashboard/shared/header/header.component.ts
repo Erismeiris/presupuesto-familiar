@@ -25,11 +25,13 @@ export class HeaderComponent implements OnInit{
     this.items = [
       {
           label: 'Inicio',
-          icon: 'pi pi-home'
+          icon: 'pi pi-home',
+          url: 'dashboard'
       },
       {
-          label: 'Características',
-          icon: 'pi pi-star'
+          label: 'Documentación',
+          icon: 'pi pi-info',
+          url: 'documentation'
       },
       {
           label: 'Planes',
@@ -65,8 +67,26 @@ export class HeaderComponent implements OnInit{
       },
       {
           label: 'Contact',
-          icon: 'pi pi-envelope'
-      }
+          icon: 'pi pi-envelope',
+            url: 'contact'
+      },
+        {
+            label: 'Sesión',
+            icon: 'pi pi-user',
+            items: [
+                {
+                    label: 'Cerrar Sesión',
+                    icon: 'pi pi-sign-out',
+                    url: 'login'
+                },
+                {
+                    label: 'Perfil',
+                    icon: 'pi pi-user-edit',
+                    url: 'profile'
+                },
+            ]
+                
+        }
   ]
 }
     

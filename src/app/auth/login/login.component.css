@@ -2,8 +2,8 @@
 
 
 .login-container {
-    margin: 0 auto;
-    background-color: white;
+    background-color: #A9BA9D;
+    margin: 0 auto;    
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     width: 400px;
