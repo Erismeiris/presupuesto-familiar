@@ -24,12 +24,7 @@ export class ExpensiveCardComponent implements OnChanges {
 
   styleObject: { [key: string]: string } = {};
 
-  ngOnInit(): void {
-    console.log('color', this.color);
-    console.log('percent', this.percent);
-    
-
-    
+  ngOnInit(): void {    
   }
 
   ngOnChanges(changes: SimpleChanges): void {

@@ -82,7 +82,7 @@ export class HeaderComponent implements OnInit{
                 {
                     label: 'Perfil',
                     icon: 'pi pi-user-edit',
-                    url: 'profile'
+                    url: 'user-profile'
                 },
             ]
                 

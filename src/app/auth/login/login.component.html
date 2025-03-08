@@ -31,7 +31,9 @@
       </div>
       
       <button type="submit"[disabled]="loginForm.invalid" class="login-button">Entrar</button>
-      
+      <div class="card">
+        <p-message *ngIf="errorMessages !='' " severity="error">{{errorMessages}}</p-message>
+    </div>
       <div class="login-footer">
         <p>¿No tienes una cuenta? <a routerLink="/register">Regístrate</a></p>
       </div>

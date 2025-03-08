@@ -1,0 +1,230 @@
+:host {
+  display: block;
+}
+.profile-config-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative; /* Add this line */
+}
+
+.profile-header:hover{
+  cursor: pointer;
+}
+
+#fu{
+  display: none;
+}
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 0; /* Add this line */
+}
+
+.card {
+  position: absolute; /* Add this line */
+  z-index: 1; /* Add this line */
+  font-size: 8px; /* Reduce font size */
+  width: 60px; /* Reduce width */
+  height: 60px; /* Reduce height */
+}
+
+p-fileupload {
+  font-size: 8px !important; /* Reduce font size */
+  width: 60px; /* Reduce width */
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.color-palettes {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.palette-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.palette-option:hover {
+  transform: scale(1.1);
+}
+
+.palette-option.active {
+  border: 3px solid #3498db;
+}
+
+.custom-color {
+  margin-top: 1rem;
+}
+
+.currency-selector select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.sharing-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2ecc71;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.sharing-details {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.email-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.email-input-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.email-input {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.remove-email {
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  padding: 0;
+  line-height: 1;
+}
+
+.add-email-btn {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+.add-email-btn:hover {
+  background: #27ae60;
+}
+
+.email-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.save-button {
+  width: 100%;
+  padding: 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.save-button:hover {
+  background: #2980b9;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .profile-config-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}

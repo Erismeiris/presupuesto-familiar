@@ -26,8 +26,8 @@ export class AuthService {
             } 
             return null;
           } catch (error) {
-            console.error('Error al registrar usuario:', error);
-            throw error; // Lanza el error para que el componente lo maneje
+            
+            throw error; 
           }
         
     }
@@ -37,7 +37,7 @@ export class AuthService {
           const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
           return userCredential.user;
         } catch (error) {
-          console.error('Error al iniciar sesión:', error);
+          
           throw error;
         }
       }
@@ -47,7 +47,7 @@ export class AuthService {
           await signOut(this.auth);
           this.router.navigate(['/login']);
         } catch (error) {
-          console.error('Error al cerrar sesión:', error);
+          
           throw error;
         }
       }
