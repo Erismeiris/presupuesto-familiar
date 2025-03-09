@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, type OnInit } from '@angular/core';
+import { FileUploadModule } from 'primeng/fileupload';
 import { FileUpload } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
@@ -35,8 +36,8 @@ interface UploadEvent {
     RouterModule,
     ToastModule,
     ButtonModule,
-    FileUpload, 
-    HttpClientModule
+    HttpClientModule,
+    FileUploadModule
   ],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css',
@@ -112,9 +113,20 @@ export class UserProfileComponent implements OnInit {
     }
   }
 
+  
+
   onUpload(event: any) {
-    console.log(event);
-}
+    console.log("Evento change ejecutado:", event);
+    const fileList: FileList = event.target.files;
+    console.log("FileList:", fileList);
+    if (fileList && fileList.length > 0) {
+      const file: File = fileList[0];
+      console.log("Archivo seleccionado:", file);
+      console.log("Nombre del archivo:", file.name);
+    } else {
+      console.log("No se seleccionó ningún archivo");
+    }
+  }
 
   saveSettings(): void {
     const settings = {

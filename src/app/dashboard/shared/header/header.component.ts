@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { PrimeIcons, MenuItem } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
 
@@ -9,7 +11,8 @@ import { Menubar } from 'primeng/menubar';
   standalone: true,
   imports: [
     Menubar,
-       
+    CommonModule,
+    RouterModule     
      
     ],
   templateUrl: './header.component.html',
@@ -21,17 +24,19 @@ export class HeaderComponent implements OnInit{
 
   items: MenuItem[] | undefined;
 
+  public router = inject(Router)
+
   ngOnInit(): void {
     this.items = [
       {
           label: 'Inicio',
           icon: 'pi pi-home',
-          url: 'dashboard'
+          route: 'dashboard'
       },
       {
           label: 'Documentación',
           icon: 'pi pi-info',
-          url: 'documentation'
+          route: 'documentation'
       },
       {
           label: 'Planes',
@@ -68,7 +73,7 @@ export class HeaderComponent implements OnInit{
       {
           label: 'Contact',
           icon: 'pi pi-envelope',
-            url: 'contact'
+         route: 'contact'
       },
         {
             label: 'Sesión',
@@ -77,12 +82,15 @@ export class HeaderComponent implements OnInit{
                 {
                     label: 'Cerrar Sesión',
                     icon: 'pi pi-sign-out',
-                    url: 'login'
+                    route: 'login'
                 },
                 {
                     label: 'Perfil',
                     icon: 'pi pi-user-edit',
-                    url: 'user-profile'
+                    command: () => {
+                        this.router.navigate(['user-profile']);
+                    }
+                    
                 },
             ]
                 

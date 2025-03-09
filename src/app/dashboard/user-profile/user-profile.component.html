@@ -1,10 +1,11 @@
 <div class="profile-config-container">
     <div class="profile-header" (mouseover)="showCard()" (mouseout)="hideCard()">
-      <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7" alt="Profile Image" class="profile-image">
-      <div class="card flex flex-col gap-1 items-center justify-center" [class.hidden]="!isCardVisible" style="position: absolute; z-index: 1;">
-        <p-fileupload #fu mode="basic" chooseIcon="pi pi-upload" name="demo[]"  accept="image/*" maxFileSize="1000000" (onUpload)="onUpload($event)" />
-       
-      </div>
+      <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7" alt="Profile Image" class="profile-image"> 
+      <div *ngIf="isCardVisible" class="upload-image">
+        <input type="file" (change)="onUpload($event)" class="upload-image" accept=".png, .jpg, .jpeg">      
+
+      </div> 
+    
       <h2>Ajuste del perfil</h2>
     </div>
   
