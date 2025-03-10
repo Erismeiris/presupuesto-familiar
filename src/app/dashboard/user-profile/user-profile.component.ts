@@ -44,6 +44,8 @@ interface UploadEvent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserProfileComponent implements OnInit {
+  public userProfile! : UserProfile 
+  
 
   colorFavorite =  "#3498db"
    
@@ -138,17 +140,22 @@ export class UserProfileComponent implements OnInit {
     }
   }
 
-  saveSettings(): void {
-    const settings = {
+  async saveSettings(): Promise<void> {
+     const userProfile:UserProfile = {
       userId: this.userlogged.uid,
-      useName: this.userlogged.name,
-      customColor: this.customColor,
+      name: this.userlogged.name,
+      color: this.customColor,
       currency: this.selectedCurrency,
+      photoURL:'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7',
       sharedExpense: this.isSharedExpenseEnabled,
-      sharedEmails: this.sharedEmails
+      emailShared: this.sharedEmails
     };
-    this.profileSerivice.addProfile(settings);
-    console.log("Settings saved:", settings);
+
+    try {
+      await this.profileSerivice.addProfile(userProfile);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+    }
   }
 
   showCard(): void {

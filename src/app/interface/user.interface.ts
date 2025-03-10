@@ -12,12 +12,14 @@ export interface User {
 
 //Interface for user
 export interface UserProfile {
-   user: User;
-   colorPalette: string;
-   email: string;
-   displayName?: string;
-   photoURL?: string;
-   tipoMoneda?: string;
+   id?: string;
+   userId: User["uid"] | string;
+   name: User["name"] | string;
+   color: string;   
+   photoURL: string;
+   sharedExpense: boolean;
+   emailShared?: string[];
+   currency: string;
    emailVerified?: boolean;
     
 }
