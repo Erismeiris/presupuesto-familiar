@@ -2,20 +2,16 @@
     <div class="profile-header" (mouseover)="showCard()" (mouseout)="hideCard()">
       <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7" alt="Profile Image" class="profile-image"> 
       <div *ngIf="isCardVisible" class="upload-image">
-        <input type="file" (change)="onUpload($event)" class="upload-image" accept=".png, .jpg, .jpeg">      
-
+        <input type="file" (change)="onUpload($event)"  accept="image/png, image/jpeg" > 
       </div> 
-    
-      <h2>Ajuste del perfil</h2>
+      <h2>{{userlogged.name}}</h2>    
+      
     </div>
   
     <div class="settings-section">
       <h3>Color favorito</h3>
       <div class="color-palettes">
-        <div *ngFor="let palette of colorPalettes" 
-             [style.backgroundColor]="palette.primary"
-             (click)="selectTheme(palette)"
-             [class.active]="selectedPalette === palette"
+        <div [style.backgroundColor]="colorFavorite"             
              class="palette-option">
         </div>
       </div>
@@ -49,7 +45,7 @@
         <div class="email-list">
           <div class="email-input-container" *ngFor="let email of sharedEmails; let i = index">
             <input type="email" 
-                   [(ngModel)]="sharedEmails[i]" 
+                   
                    placeholder="Enter email address"
                    class="email-input">
             <button class="remove-email" (click)="removeEmail(i)">×</button>

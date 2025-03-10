@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { Auth, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateCurrentUser } from '@angular/fire/auth';
 import { Firestore, doc, setDoc } from '@angular/fire/firestore';
 import { tap } from 'rxjs';
+import { onAuthStateChanged } from '@angular/fire/auth';
+import { docData } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Injectable({
     providedIn:'root'
@@ -51,7 +54,23 @@ export class AuthService {
           throw error;
         }
       }
-}
 
+    
+      getUserLogged(): Observable<any> {
+        return new Observable((observer) => {
+          onAuthStateChanged(this.auth, (user) => {
+            if (user) {
+              const userDoc = doc(this.firestore, 'usuarios', user.uid);
+              docData(userDoc).subscribe((userData) => {
+                observer.next({ ...user, ...userData });
+              });
+            } else {
+              observer.next(null);
+            }
+          });
+        });
+      }
+      
+    }
 
 

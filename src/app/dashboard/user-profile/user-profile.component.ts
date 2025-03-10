@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, type OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from '@angular/core';
 import { FileUploadModule } from 'primeng/fileupload';
 import { FileUpload } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
@@ -7,14 +7,16 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
+import { User, UserProfile } from '../../interface/user.interface';
+import { ProfileService } from '../../services/profile.service';
 
 
 
 interface ColorPalette {
   name: string;
   primary: string;
-  secondary: string;
-  accent: string;
+  
 }
 
 interface Currency {
@@ -35,9 +37,7 @@ interface UploadEvent {
     FormsModule,
     RouterModule,
     ToastModule,
-    ButtonModule,
-    HttpClientModule,
-    FileUploadModule
+    ButtonModule,    
   ],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css',
@@ -45,12 +45,8 @@ interface UploadEvent {
 })
 export class UserProfileComponent implements OnInit {
 
-  colorPalettes: ColorPalette[] = [
-    { name: "Default", primary: "#3498db", secondary: "#ecf0f1", accent: "#2ecc71" },
-    { name: "Sunset", primary: "#e74c3c", secondary: "#f39c12", accent: "#d35400" },
-    { name: "Ocean", primary: "#16a085", secondary: "#2980b9", accent: "#27ae60" },
-    { name: "Twilight", primary: "#8e44ad", secondary: "#9b59b6", accent: "#2c3e50" }
-  ];
+  colorFavorite =  "#3498db"
+   
   currencies: Currency[] = [
     { code: "USD", name: "US Dollar", symbol: "$" },
     { code: "EUR", name: "Euro", symbol: "€" },
@@ -59,18 +55,32 @@ export class UserProfileComponent implements OnInit {
   ];
 
   selectedPalette: ColorPalette | null = null;
-  customColor: string = "#3498db";
+  customColor!: string;
   selectedCurrency: string = "USD";
   isSharedExpenseEnabled: boolean = false;
   sharedEmails: string[] = [""];
   isCardVisible: boolean = false;
-
+  public userlogged: User = { uid: '', email: '', name: '' };
   public message='';
-
+  public authSerivice = inject(AuthService);
+  public profileSerivice = inject(ProfileService);
 
   ngOnInit(): void {
-    this.loadSavedSettings();
+    this.loadSavedSettings(); 
+    this.customColor = this.colorFavorite;
+    this.selectedCurrency = "USD";   
    }
+
+   constructor() {
+    this.loadUserLogged(); 
+   }
+
+   async loadUserLogged() {
+   await this.authSerivice.getUserLogged().subscribe((user) => {
+      this.userlogged = {uid: user.uid, email: user.email, name: user.name};
+      console.log("Usuario logueado", this.userlogged);
+    });
+  }
 
    loadSavedSettings(): void {
     const savedSettings = localStorage.getItem("profileSettings");
@@ -87,13 +97,13 @@ export class UserProfileComponent implements OnInit {
   selectTheme(palette: ColorPalette): void {
     this.selectedPalette = palette;
     document.documentElement.style.setProperty("--primary-color", palette.primary);
-    document.documentElement.style.setProperty("--secondary-color", palette.secondary);
-    document.documentElement.style.setProperty("--accent-color", palette.accent);
+    console.log("Theme selected:", palette);
+   
   }
 
   updateCustomTheme(): void {
-    this.selectedPalette = null;
-    document.documentElement.style.setProperty("--primary-color", this.customColor);
+    this.colorFavorite = this.customColor;
+    
   }
 
   updateCurrency(): void {
@@ -107,12 +117,12 @@ export class UserProfileComponent implements OnInit {
     this.sharedEmails.push("");
   }
 
-  removeEmail(index: number): void {
+   removeEmail(index: number): void {
     if (this.sharedEmails.length > 1) {
       this.sharedEmails.splice(index, 1);
     }
   }
-
+ 
   
 
   onUpload(event: any) {
@@ -130,13 +140,15 @@ export class UserProfileComponent implements OnInit {
 
   saveSettings(): void {
     const settings = {
-      palette: this.selectedPalette,
+      userId: this.userlogged.uid,
+      useName: this.userlogged.name,
       customColor: this.customColor,
       currency: this.selectedCurrency,
       sharedExpense: this.isSharedExpenseEnabled,
       sharedEmails: this.sharedEmails
     };
-    localStorage.setItem("profileSettings", JSON.stringify(settings));
+    this.profileSerivice.addProfile(settings);
+    console.log("Settings saved:", settings);
   }
 
   showCard(): void {

@@ -3,7 +3,6 @@ import { Component, inject, NgModule, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MessageModule } from 'primeng/message';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   standalone: true,
@@ -12,8 +11,8 @@ import { AuthService } from '../../services/auth.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MessageModule, 
-    RouterModule
+    MessageModule,
+    RouterModule,
   ],
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -23,8 +22,6 @@ export class RegisterComponent implements OnInit {
   
   registerForm!: FormGroup
   fb = inject(FormBuilder)
-
-  messageError = '';
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
@@ -50,9 +47,31 @@ export class RegisterComponent implements OnInit {
   }
  
  
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    /* private snackBar: MatSnackBar, 
+    private auth: AuthService, */
+    private route: Router) {}
 
-  
+  /* register() {
+    if (this.registerForm.valid) {
+      const data = this.registerForm.value;
+      // Envía los datos del formulario a tu servidor
+      const {email, password} = data;
+      this.auth.register({email, password})
+      .then( res => {
+        console.log(res);
+      })
+      .catch( err => {
+        console.log(err);
+      })
+      this.snackBar.open('Registro exitoso', 'Cerrar', { duration: 3000 });
+      this.route.navigate(['/login']);
+      // Realiza alguna otra acción necesaria
+    } else {
+      this.snackBar.open('El formulario es inválido', 'Cerrar', { duration: 3000 });
+    }
+  }
+ */
   matchConfirmPassword(control: FormControl) {
     const password:any = this.registerForm.controls['password'].value  || '';
     const confirmPassword = control.value;
@@ -61,19 +80,21 @@ export class RegisterComponent implements OnInit {
 
   
  
- async onSubmit() {
-  if (this.registerForm.valid) {
-    const { email, password, name } = this.registerForm.value;
-
-    try {
-      await this.authService.register(email, password, name);
-      this.router.navigate(['/login']);
-    } catch (error: any) {
-      this.messageError = error.message;
+  onSubmit() {
+    if (this.registerForm.invalid) {
+      console.log('El formulario es inválido');
+      return;
     }
+   
+    console.log('Registration attempt with:', {
+      name: this.registerForm.value.name,
+      email: this.registerForm.value.email,
+      password: this.registerForm.value.password,
+      confirmPassword: this.registerForm.value.confirmPassword,
+      terms: this.registerForm.value.terms,
+    });
+    // Here you would typically handle user registration
   }
-    }
-  
   
   signUpWithGoogle() {
     console.log('Attempting to sign up with Google');
