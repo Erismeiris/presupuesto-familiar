@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { collectionData, Firestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, where, getDocs, query } from '@angular/fire/firestore';
-import { AuthService } from './auth.service';
-import { map } from 'rxjs';
+import {  Firestore, collection, deleteDoc, doc, updateDoc, getDoc, setDoc, where, getDocs, query } from '@angular/fire/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from '@angular/fire/storage';
+
 import { UserProfile } from '../interface/user.interface';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { UserProfile } from '../interface/user.interface';
 })
 export class ProfileService {
 
-  constructor(private firestore: Firestore, private authServices: AuthService) { }
+  constructor(private firestore: Firestore) { }
   // Método para obtener el perfil del usuario por UID
   async getProfileByUserId(userId: string): Promise<UserProfile | null> {
     const profilesRef = collection(this.firestore, 'user_profile');
@@ -54,5 +54,24 @@ export class ProfileService {
   updateData(documentId: string, newData: any): Promise<void> {
     const profileRef = doc(this.firestore, `user_profile/${documentId}`)
     return updateDoc(profileRef, newData)
+  }
+
+  async uploadImage(file: File, userId: string, userName: string): Promise<string> {
+    const storage = getStorage();
+    const fileName = `${userName}_${userId}`;
+    const storageRef = ref(storage, `profile_images/${fileName}`);
+    
+    // Delete existing image if it exists
+    try {
+      await deleteObject(storageRef);
+    } catch (error:any) {
+      if (error.code !== 'storage/object-not-found') {
+        throw error;
+      }
+    }
+
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
   }
 }

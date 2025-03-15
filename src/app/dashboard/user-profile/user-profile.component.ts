@@ -142,15 +142,17 @@ export class UserProfileComponent implements OnInit {
   }
   //Capturar la imagen y convertirla en base64, enviarla al servicios de firebase
   async onUpload(event: any) {
-    
-    const file = event.target.files[0];
-    
-    if (file) {
-      this.profileSerivice.uploadImage(file, this.userlogged.uid).then(() => {
-        console.log('Imagen cargada con éxito');
-      }).catch(error => {
-        console.error('Error al cargar la imagen:', error);
-      });
+    const file = event.target.files[0];    
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {      
+      if (this.userlogged.uid && this.userlogged.name) {
+        this.profileSerivice.uploadImage(file, this.userlogged.uid, this.userlogged.name).then((url) => {
+          this.photoUrl = url;
+        });
+      } else {
+        console.error("User ID or name is undefined");
+      }
     }
      
   }
@@ -161,7 +163,7 @@ export class UserProfileComponent implements OnInit {
       name: this.userlogged.name,
       color: this.customColor,
       currency: this.selectedCurrency,
-      photoURL: this.userProfile.photoURL || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7',
+      photoURL: this.userProfile?.photoURL?.toString() || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7',
       sharedExpense: this.isSharedExpenseEnabled,
       emailShared: this.sharedEmails
     };
