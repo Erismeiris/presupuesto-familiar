@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject, type OnInit } from '@angular/core';
 import { FileUploadModule } from 'primeng/fileupload';
-import { FileUpload } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { User, UserProfile } from '../../interface/user.interface';
 import { ProfileService } from '../../services/profile.service';
 
+
+import { HttpClientModule } from '@angular/common/http';
 
 
 interface ColorPalette {
@@ -37,7 +37,12 @@ interface UploadEvent {
     FormsModule,
     RouterModule,
     ToastModule,
-    ButtonModule,    
+    ButtonModule,
+    ToastModule, 
+    ButtonModule, 
+    FileUploadModule,
+    HttpClientModule
+        
   ],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css',
@@ -45,7 +50,8 @@ interface UploadEvent {
 })
 export class UserProfileComponent implements OnInit {
   public userProfile! : UserProfile 
-  
+  public photoUrl = 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7';
+  public isLoading!: boolean;
 
   colorFavorite =  "#3498db"
    
@@ -64,23 +70,33 @@ export class UserProfileComponent implements OnInit {
   isCardVisible: boolean = false;
   public userlogged: User = { uid: '', email: '', name: '' };
   public message='';
+
+
   public authSerivice = inject(AuthService);
-  public profileSerivice = inject(ProfileService);
+  
+
+  
+  
 
   ngOnInit(): void {
+    this.loadUserLogged();
     this.loadSavedSettings(); 
     this.customColor = this.colorFavorite;
     this.selectedCurrency = "USD";   
+  }
+  
+  constructor(private profileSerivice: ProfileService ) {
+   
    }
 
-   constructor() {
-    this.loadUserLogged(); 
-   }
-
-   async loadUserLogged() {
-   await this.authSerivice.getUserLogged().subscribe((user) => {
-      this.userlogged = {uid: user.uid, email: user.email, name: user.name};
-      console.log("Usuario logueado", this.userlogged);
+    loadUserLogged() {     
+     this.authSerivice.getUserLogged().subscribe((user) => {      
+      if (user) {
+        this.userlogged = {uid: user.uid, email: user.email, name: user.name};
+        this.isLoading = false; 
+      } else {
+        this.isLoading = true;
+      }
     });
   }
 
@@ -124,20 +140,19 @@ export class UserProfileComponent implements OnInit {
       this.sharedEmails.splice(index, 1);
     }
   }
- 
-  
-
-  onUpload(event: any) {
-    console.log("Evento change ejecutado:", event);
-    const fileList: FileList = event.target.files;
-    console.log("FileList:", fileList);
-    if (fileList && fileList.length > 0) {
-      const file: File = fileList[0];
-      console.log("Archivo seleccionado:", file);
-      console.log("Nombre del archivo:", file.name);
-    } else {
-      console.log("No se seleccionó ningún archivo");
+  //Capturar la imagen y convertirla en base64, enviarla al servicios de firebase
+  async onUpload(event: any) {
+    
+    const file = event.target.files[0];
+    
+    if (file) {
+      this.profileSerivice.uploadImage(file, this.userlogged.uid).then(() => {
+        console.log('Imagen cargada con éxito');
+      }).catch(error => {
+        console.error('Error al cargar la imagen:', error);
+      });
     }
+     
   }
 
   async saveSettings(): Promise<void> {
@@ -146,7 +161,7 @@ export class UserProfileComponent implements OnInit {
       name: this.userlogged.name,
       color: this.customColor,
       currency: this.selectedCurrency,
-      photoURL:'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7',
+      photoURL: this.userProfile.photoURL || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7',
       sharedExpense: this.isSharedExpenseEnabled,
       emailShared: this.sharedEmails
     };

@@ -219,6 +219,19 @@ input:checked + .slider:before {
   display: none;
 }
 
+input[type="file"] {
+  display: none;
+}
+
+.file{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  color: #333;
+  background: #ccc;
+}
+
 
 
 @media (max-width: 768px) {
