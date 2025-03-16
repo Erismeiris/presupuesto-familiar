@@ -1,15 +1,20 @@
 import { Injectable } from '@angular/core';
 import {  Firestore, collection, deleteDoc, doc, updateDoc, getDoc, setDoc, where, getDocs, query } from '@angular/fire/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from '@angular/fire/storage';
+import { Storage,getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from '@angular/fire/storage';
 
 import { UserProfile } from '../interface/user.interface';
+import { from, map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
 
-  constructor(private firestore: Firestore) { }
+  private defaultProfileImagePath = 'profile_images/user_profile.png'
+
+  constructor(private firestore: Firestore, private storage: Storage) { }
+
+
   // Método para obtener el perfil del usuario por UID
   async getProfileByUserId(userId: string): Promise<UserProfile | null> {
     const profilesRef = collection(this.firestore, 'user_profile');
@@ -35,6 +40,34 @@ export class ProfileService {
       const newProfile = doc(collection(this.firestore, 'user_profile'));
       await setDoc(newProfile, profile);
     }
+  }
+ 
+  async getUserProfileByUserId(userId: string): Promise<UserProfile | null> {
+    const userProfileCollection = collection(this.firestore, 'user_profile');
+    const userProfileQuery = query(userProfileCollection, where('userId', '==', userId));
+
+    try {
+      const querySnapshot = await getDocs(userProfileQuery);
+
+      if (!querySnapshot.empty) {
+        // Encontró un perfil de usuario
+        const doc = querySnapshot.docs[0];
+        const data = doc.data() as UserProfile; // Castea los datos al tipo UserProfile
+        return data;
+      } else {
+        // No se encontró ningún perfil de usuario
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al obtener el perfil de usuario:', error);
+      return null;
+    }
+  }
+
+  //Get default
+  getDefaultProfileImageUrl(): Observable<string> {
+    const storageRef = ref(this.storage, this.defaultProfileImagePath);
+    return from(getDownloadURL(storageRef));
   }
 
   //Get profile using firestore by uid

@@ -50,7 +50,7 @@ interface UploadEvent {
 })
 export class UserProfileComponent implements OnInit {
   public userProfile! : UserProfile 
-  public photoUrl = 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7';
+  public photoUrl = '';
   public isLoading!: boolean;
 
   colorFavorite =  "#3498db"
@@ -66,9 +66,11 @@ export class UserProfileComponent implements OnInit {
   customColor!: string;
   selectedCurrency: string = "USD";
   isSharedExpenseEnabled: boolean = false;
-  sharedEmails: string[] = [""];
+  sharedEmails: string[] = [""] ;
   isCardVisible: boolean = false;
+
   public userlogged: User = { uid: '', email: '', name: '' };
+
   public message='';
 
 
@@ -79,38 +81,38 @@ export class UserProfileComponent implements OnInit {
   
 
   ngOnInit(): void {
-    this.loadUserLogged();
-    this.loadSavedSettings(); 
+    this.loadUserLogged();     
     this.customColor = this.colorFavorite;
     this.selectedCurrency = "USD";   
   }
   
   constructor(private profileSerivice: ProfileService ) {
    
+    
+    
    }
 
-    loadUserLogged() {     
-     this.authSerivice.getUserLogged().subscribe((user) => {      
-      if (user) {
-        this.userlogged = {uid: user.uid, email: user.email, name: user.name};
-        this.isLoading = false; 
-      } else {
-        this.isLoading = true;
-      }
-    });
-  }
+    async loadUserLogged() {
+    await this.authSerivice.getUserLogged().subscribe((user) => {
+      this.userlogged = {uid: user.uid, email: user.email, name: user.name};
 
-   loadSavedSettings(): void {
-    const savedSettings = localStorage.getItem("profileSettings");
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      this.selectedPalette = settings.palette;
-      this.customColor = settings.customColor;
-      this.selectedCurrency = settings.currency;
-      this.isSharedExpenseEnabled = settings.sharedExpense;
-      this.sharedEmails = settings.sharedEmails || [""];
+      if (this.userlogged.uid ) {
+        this.profileSerivice.getUserProfileByUserId(this.userlogged.uid).then((profile) => {
+          if (profile) {
+            this.getProfile(this.userlogged.uid);
+          } else {
+            console.error("Profile not found");
+          }
+        });
+      }
+
+
+      
+    });
+    
     }
-  } 
+
+ 
 
   selectTheme(palette: ColorPalette): void {
     this.selectedPalette = palette;
@@ -120,8 +122,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   updateCustomTheme(): void {
-    this.colorFavorite = this.customColor;
-    
+    this.customColor = this.colorFavorite;
   }
 
   updateCurrency(): void {
@@ -163,7 +164,7 @@ export class UserProfileComponent implements OnInit {
       name: this.userlogged.name,
       color: this.customColor,
       currency: this.selectedCurrency,
-      photoURL: this.userProfile?.photoURL?.toString() || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7',
+      photoURL: this.photoUrl,
       sharedExpense: this.isSharedExpenseEnabled,
       emailShared: this.sharedEmails
     };
@@ -173,6 +174,33 @@ export class UserProfileComponent implements OnInit {
     } catch (error) {
       console.error("Error saving settings:", error);
     }
+  }
+ 
+
+  getDefaultProfileImageUrl(): string {
+    let defaultUrl = '';
+    this.profileSerivice.getDefaultProfileImageUrl().subscribe((url) => {
+      defaultUrl = url;
+    });
+    return defaultUrl;
+  }
+
+  async getProfile(userUid:string) {
+   
+   await this.profileSerivice.getUserProfileByUserId(this.userlogged.uid).then((profile) => {
+      if (profile) {
+        this.colorFavorite = profile.color;
+        this.selectedCurrency = profile.currency;
+        this.isSharedExpenseEnabled = profile.sharedExpense;
+        this.sharedEmails = profile.emailShared || [];
+        this.photoUrl = profile.photoURL;
+      } else {
+        console.error("Profile not found");
+      }
+   
+  });
+   
+  
   }
 
   showCard(): void {
