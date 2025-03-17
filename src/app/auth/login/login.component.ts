@@ -11,6 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MenuModule } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import { RouterModule } from '@angular/router';
+import { HeaderComponent } from '../../dashboard/shared/header/header.component';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ import { RouterModule } from '@angular/router';
   imports: [
     CardModule, 
     FormsModule,
+    HeaderComponent,
     ReactiveFormsModule,
     ButtonModule,
     CommonModule,

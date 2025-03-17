@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/cor
 import { Router, RouterModule } from '@angular/router';
 import { PrimeIcons, MenuItem } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
+import { AuthService } from '../../../services/auth.service';
 
 
 
@@ -26,12 +27,16 @@ export class HeaderComponent implements OnInit{
 
   public router = inject(Router)
 
+  public authService = inject(AuthService)
+
   ngOnInit(): void {
     this.items = [
       {
           label: 'Inicio',
           icon: 'pi pi-home',
-          route: 'dashboard'
+         command: () => {
+            this.router.navigate(['dashboard']);
+        }
       },
       {
           label: 'Documentación',
@@ -82,7 +87,10 @@ export class HeaderComponent implements OnInit{
                 {
                     label: 'Cerrar Sesión',
                     icon: 'pi pi-sign-out',
-                    route: 'login'
+                    command: () => {
+                        this.authService.logoutUser();
+                       
+                    }
                 },
                 {
                     label: 'Perfil',
@@ -92,6 +100,15 @@ export class HeaderComponent implements OnInit{
                     }
                     
                 },
+                {
+                    label: 'Login',
+                    icon: 'pi pi-user-edit',
+                    command: () => {
+                        this.router.navigate(['login']);
+                    }
+                    
+                },
+
             ]
                 
         }

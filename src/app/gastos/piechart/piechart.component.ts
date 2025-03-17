@@ -34,7 +34,7 @@ export class PiechartComponent implements OnInit {
     initChart() {      
 
             this.data = {
-                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                labels: ['User1', 'User2', 'User3', 'User4'],
                 datasets: [
                     {
                         label: 'Sales',

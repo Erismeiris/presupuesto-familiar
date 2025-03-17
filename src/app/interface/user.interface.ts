@@ -45,7 +45,7 @@ export interface Gastos {
     date: string;
     descripcion: string;
     monto: number;
-    producto: string;
+    name: string;
     tasa_de_cambio: number;
     userId: User["uid"]; // Reference to the user who made the expense
 }

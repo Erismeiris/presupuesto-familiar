@@ -11,6 +11,7 @@ import { ProfileService } from '../../services/profile.service';
 
 
 import { HttpClientModule } from '@angular/common/http';
+import { HeaderComponent } from '../shared/header/header.component';
 
 
 interface ColorPalette {
@@ -33,6 +34,7 @@ interface UploadEvent {
   selector: 'user-profile',
   standalone: true,
   imports: [
+    HeaderComponent,
     CommonModule, 
     FormsModule,
     RouterModule,
@@ -51,7 +53,7 @@ interface UploadEvent {
 export class UserProfileComponent implements OnInit {
   public userProfile! : UserProfile 
   public photoUrl = '';
-  public isLoading!: boolean;
+  public isLoading: boolean = true;
 
   colorFavorite =  "#3498db"
    
@@ -81,14 +83,13 @@ export class UserProfileComponent implements OnInit {
   
 
   ngOnInit(): void {
-    this.loadUserLogged();     
     this.customColor = this.colorFavorite;
     this.selectedCurrency = "USD";   
   }
   
-  constructor(private profileSerivice: ProfileService ) {
-   
+  constructor(private profileSerivice: ProfileService ) {  
     
+    this.loadUserLogged();     
     
    }
 
@@ -100,6 +101,7 @@ export class UserProfileComponent implements OnInit {
         this.profileSerivice.getUserProfileByUserId(this.userlogged.uid).then((profile) => {
           if (profile) {
             this.getProfile(this.userlogged.uid);
+            this.isLoading = true;
           } else {
             console.error("Profile not found");
           }

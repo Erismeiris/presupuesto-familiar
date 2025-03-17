@@ -3,6 +3,7 @@ import { Component, inject, NgModule, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MessageModule } from 'primeng/message';
+import { HeaderComponent } from '../../dashboard/shared/header/header.component';
 
 @Component({
   standalone: true,
@@ -10,6 +11,7 @@ import { MessageModule } from 'primeng/message';
     // Import the Angular Material module
     CommonModule,
     FormsModule,
+    HeaderComponent,
     ReactiveFormsModule,
     MessageModule,
     RouterModule,

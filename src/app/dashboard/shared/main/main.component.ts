@@ -4,6 +4,7 @@ import { TabsModule } from 'primeng/tabs';
 import { ExpensiveCardComponent } from '../../expensive_card/expensive_card.component';
 import { CommonModule } from '@angular/common';
 import { PiechartComponent } from '../../../gastos/piechart/piechart.component';
+import { ExpensiveRegisterComponent } from '../../../gastos/expensiveRegister/expensiveRegister.component';
 
 export interface ExpensiveCard {
   title: string;
@@ -20,7 +21,8 @@ export interface ExpensiveCard {
     SplitterModule,
     PiechartComponent,
     ExpensiveCardComponent,
-    TabsModule
+    TabsModule,
+    ExpensiveRegisterComponent
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.css'],

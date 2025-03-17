@@ -1,0 +1,83 @@
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="New" icon="pi pi-plus" class="mr-2" (onClick)="openNew()" />        
+    </ng-template>
+
+
+</p-toolbar>
+
+<div class="card">
+    <p-table [value]="gastos" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
+        <ng-template #header>
+            <tr>
+                <th style="width:25%">
+                    Fecha
+                </th>
+                <th style="width:25%">
+                    Producto
+                </th>
+                <th style="width:25%">
+                    Gasto($)
+                </th>
+                <th style="width:25%">
+                    Categoría
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-gasto let-editing="editing">
+            <tr>
+                <td [pEditableColumn]="gasto.date" pEditableColumnField="code">
+                    <p-cellEditor>
+                        <ng-template #input>
+                            <input
+                                pInputText
+                                type="text"
+                                [(ngModel)]="gasto.date" />
+                        </ng-template>
+                        <ng-template #output>
+                            {{ gasto.date }}
+                        </ng-template>
+                    </p-cellEditor>
+                </td>
+                <td [pEditableColumn]="gasto.name" pEditableColumnField="name">
+                    <p-cellEditor>
+                        <ng-template #input>
+                            <input
+                                pInputText
+                                type="text"
+                                [(ngModel)]="gasto.name"
+                                required />
+                        </ng-template>
+                        <ng-template #output>
+                            {{ gasto.name }}
+                        </ng-template>
+                    </p-cellEditor>
+                </td>
+                <td [pEditableColumn]="gasto.monto" pEditableColumnField="monto">
+                    <p-cellEditor>
+                        <ng-template #input>
+                            <input
+                                pInputText
+                                [(ngModel)]="gasto.monto" />
+                        </ng-template>
+                        <ng-template #output>
+                            {{ gasto.monto | currency: 'USD' }}
+                        </ng-template>
+                    </p-cellEditor>
+                </td>
+                <td [pEditableColumn]="gasto.categoria" pEditableColumnField="categoria">
+                    <p-cellEditor>
+                        <ng-template #input>
+                            <input
+                                pInputText type="text"
+                                [(ngModel)]="gasto.categoria" />
+                        </ng-template>
+                        <ng-template #output>
+                            {{ gasto.categoria  }}
+                        </ng-template>
+                    </p-cellEditor>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

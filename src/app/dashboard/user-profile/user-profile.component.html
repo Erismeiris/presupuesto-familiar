@@ -1,66 +1,72 @@
-<div *ngIf="isLoading" class="loading-screen">
-  <p>Loading...</p>
-</div>
 
-<div *ngIf="!isLoading" class="profile-config-container">
-  <div class="profile-header" (mouseover)="showCard()" (mouseout)="hideCard()">
-    <img [src]="photoUrl" alt="Profile Image" class="profile-image"> 
-    <div *ngIf="isCardVisible" class="upload-image">
-     <input id="file" type="file" (change)="onUpload($event)" accept="image/png, image/jpeg"> 
-      <label class="file" for="file" (change)="onUpload($event)">Subir imagen</label> 
-     
-    </div> 
-    <h2>{{userlogged.name}}</h2>    
-  </div>
+<app-header/>
 
-  <div class="settings-section">
-    <h3>Color favorito</h3>
-    <div class="color-palettes">
-      <div [style.backgroundColor]="colorFavorite"             
-           class="palette-option">
-      </div>
+@if(isLoading){
+  <div class="profile-config-container">
+    <div class="profile-header" (mouseover)="showCard()" (mouseout)="hideCard()">
+      <img [src]="photoUrl" alt="Profile Image" class="profile-image"> 
+      <div *ngIf="isCardVisible" class="upload-image">
+       <input id="file" type="file" (change)="onUpload($event)" accept="image/png, image/jpeg"> 
+        <label class="file" for="file" (change)="onUpload($event)">Subir imagen</label> 
+       
+      </div> 
+      <h2>{{userlogged.name}}</h2>    
     </div>
-    <div class="custom-color">
-      <label>Color personalizado:</label>
-      <input type="color" [(ngModel)]="colorFavorite" (change)="updateCustomTheme()">
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <h3>Tipo de moneda</h3>
-    <div class="currency-selector">
-      <select [(ngModel)]="selectedCurrency" (change)="updateCurrency()">
-        <option *ngFor="let currency of currencies" [value]="currency.code">
-          {{currency.code}} - {{currency.name}}
-        </option>
-      </select>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <h3>Gastos Compartidos</h3>
-    <div class="sharing-toggle">
-      <label class="toggle-switch">
-        <input type="checkbox" [(ngModel)]="isSharedExpenseEnabled" (change)="toggleSharedExpense()">
-        <span class="slider"></span>
-      </label>
-      <span class="toggle-label">Activa los gastos compartidos</span>
-    </div>
-    <div class="sharing-details" *ngIf="isSharedExpenseEnabled">
-      <div class="email-list">
-        <div class="email-input-container" *ngFor="let email of sharedEmails; let i = index">
-          <input type="email" 
-                 
-                 placeholder="Enter email address"
-                 class="email-input">
-          <button class="remove-email" (click)="removeEmail(i)">×</button>
+  
+    <div class="settings-section">
+      <h3>Color favorito</h3>
+      <div class="color-palettes">
+        <div [style.backgroundColor]="colorFavorite"             
+             class="palette-option">
         </div>
       </div>
-      <button class="add-email-btn" (click)="addNewEmail()">+ Agrega otro email</button>
+      <div class="custom-color">
+        <label>Color personalizado:</label>
+        <input type="color" [(ngModel)]="colorFavorite" (change)="updateCustomTheme()">
+      </div>
+    </div>
+  
+    <div class="settings-section">
+      <h3>Tipo de moneda</h3>
+      <div class="currency-selector">
+        <select [(ngModel)]="selectedCurrency" (change)="updateCurrency()">
+          <option *ngFor="let currency of currencies" [value]="currency.code">
+            {{currency.code}} - {{currency.name}}
+          </option>
+        </select>
+      </div>
+    </div>
+  
+    <div class="settings-section">
+      <h3>Gastos Compartidos</h3>
+      <div class="sharing-toggle">
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="isSharedExpenseEnabled" (change)="toggleSharedExpense()">
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Activa los gastos compartidos</span>
+      </div>
+      <div class="sharing-details" *ngIf="isSharedExpenseEnabled">
+        <div class="email-list">
+          <div class="email-input-container" *ngFor="let email of sharedEmails; let i = index">
+            <input type="email" 
+                   
+                   placeholder="Enter email address"
+                   class="email-input">
+            <button class="remove-email" (click)="removeEmail(i)">×</button>
+          </div>
+        </div>
+        <button class="add-email-btn" (click)="addNewEmail()">+ Agrega otro email</button>
+      </div>
+    </div>
+  
+    <div class="save-section">
+      <button class="save-button" (click)="saveSettings()">Guardar los cambios</button>
     </div>
   </div>
 
-  <div class="save-section">
-    <button class="save-button" (click)="saveSettings()">Guardar los cambios</button>
+}@else {
+  <div class="loading-container">
+    <p>Cargando...</p>
   </div>
-</div>
+}
