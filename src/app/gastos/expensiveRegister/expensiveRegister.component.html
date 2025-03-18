@@ -2,25 +2,29 @@
     <ng-template #start>
         <p-button label="New" icon="pi pi-plus" class="mr-2" (onClick)="openNew()" />        
     </ng-template>
-
-
 </p-toolbar>
 
 <div class="card">
     <p-table [value]="gastos" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template #header>
             <tr>
-                <th style="width:25%">
+                <th style="width:20%">
                     Fecha
                 </th>
-                <th style="width:25%">
+                <th style="width:20%">
                     Producto
                 </th>
-                <th style="width:25%">
+                <th style="width:20%">
                     Gasto($)
                 </th>
-                <th style="width:25%">
+                <th style="width:20%">
                     Categoría
+                </th>
+                <th style="width:25%">
+                    Descripción
+                </th>
+                <th style="width:25%">
+                    Acciones
                 </th>
             </tr>
         </ng-template>
@@ -76,6 +80,22 @@
                             {{ gasto.categoria  }}
                         </ng-template>
                     </p-cellEditor>
+                </td>
+                <td [pEditableColumn]="gasto.descripcion" pEditableColumnField="descripcion">
+                    <p-cellEditor>
+                        <ng-template #input>
+                            <input
+                                pInputText type="text"
+                                [(ngModel)]="gasto.descripcion" />
+                        </ng-template>
+                        <ng-template #output>
+                            {{ gasto.descripcion  }}
+                        </ng-template>
+                    </p-cellEditor>
+                </td>
+                <td>
+                    <button pButton type="button" icon="pi pi-save" (click)="updateGasto(gasto)"></button>
+                    <button pButton type="button" severity="danger" icon="pi pi-trash" (click)="deleteGasto(gasto)"></button>
                 </td>
             </tr>
         </ng-template>

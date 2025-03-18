@@ -40,13 +40,12 @@ export interface UserData {
 }
 
 export interface Gastos {
-    id: string;
+    id?: string;
     categoria: string;
     date: string;
     descripcion: string;
     monto: number;
-    name: string;
-    tasa_de_cambio: number;
+    name: string;   
     userId: User["uid"]; // Reference to the user who made the expense
 }
 
