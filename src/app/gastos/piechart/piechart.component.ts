@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
+import { GastosService } from '../../services/gastos.service';
+import { AuthService } from '../../services/auth.service';
 
 
 
@@ -16,24 +18,23 @@ import { ChartModule } from 'primeng/chart';
 export class PiechartComponent implements OnInit { 
 
     data: any;
-
     options: any;
-
     platformId = inject(PLATFORM_ID);
-
     
 
-    constructor(private cd: ChangeDetectorRef) {}
-
-    
+    constructor(
+        private cd: ChangeDetectorRef, 
+        private gastosServices: GastosService,
+        private authService: AuthService
+    ) {}    
 
     ngOnInit() {
         this.initChart();
     }
 
-    initChart() {      
-
-            this.data = {
+    initChart() {  
+        
+        this.data = {
                 labels: ['User1', 'User2', 'User3', 'User4'],
                 datasets: [
                     {
@@ -81,5 +82,13 @@ export class PiechartComponent implements OnInit {
             };
             this.cd.markForCheck()
         }
+
+
+   getGastosIfUserIsLogged() {
+    if(this.authService.getUserLogged()){
+        
+   }
+   }
+       
     
 }

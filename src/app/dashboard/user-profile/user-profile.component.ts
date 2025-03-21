@@ -52,6 +52,7 @@ interface UploadEvent {
 })
 export class UserProfileComponent implements OnInit {
   public userProfile! : UserProfile 
+  public user!: User | null;
   public photoUrl = '';
   public isLoading: boolean = true;
 
@@ -87,9 +88,13 @@ export class UserProfileComponent implements OnInit {
     this.selectedCurrency = "USD";   
   }
   
-  constructor(private profileSerivice: ProfileService ) {  
+  constructor(private profileSerivice: ProfileService,  ) {  
     
-    this.loadUserLogged();     
+    this.loadUserLogged();   
+      
+    this.authSerivice.getUser().subscribe(user => {
+      this.user = user;
+    });
     
    }
 
