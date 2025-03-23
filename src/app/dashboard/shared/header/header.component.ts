@@ -4,9 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { PrimeIcons, MenuItem } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
 import { AuthService } from '../../../services/auth.service';
-
-
-
+import swal from 'sweetalert';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -88,8 +86,7 @@ export class HeaderComponent implements OnInit{
                     label: 'Cerrar Sesión',
                     icon: 'pi pi-sign-out',
                     command: () => {
-                        this.authService.logoutUser();
-                       
+                        this.logout(); // Call logout method
                     }
                 },
                 {
@@ -114,6 +111,23 @@ export class HeaderComponent implements OnInit{
         }
   ]
 }
+
+logout() {
+    swal({
+        title: "¿Estás seguro?",
+        text: "¿Quieres cerrar la sesión?",
+        icon: "warning",
+        buttons: ["Cancelar", "Cerrar sesión"],
+        dangerMode: true,
+    })
+    .then((willLogout) => {
+        if (willLogout) {
+        this.authService.logoutUser().then(() => {
+            this.router.navigate(['/login']);
+        });
+        }
+    });
+}
     
-  }
+}
 

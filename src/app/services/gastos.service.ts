@@ -17,7 +17,9 @@ export class GastosService implements OnInit {
 
 
 
-  constructor( private firestore: Firestore ) { }
+  constructor( 
+    private firestore: Firestore
+   ) { }
 
 
 ngOnInit(): void {

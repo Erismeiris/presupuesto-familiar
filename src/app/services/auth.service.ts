@@ -91,9 +91,13 @@ export class AuthService {
   async logoutUser() {
     try {
       await signOut(this.auth);
-      this.userSubject.next(null);
-      localStorage.removeItem('user');
-      this.router.navigate(['/login']);
+      onAuthStateChanged(this.auth, (user) => {
+        if (!user) {
+          this.userSubject.next(null);
+          localStorage.removeItem('user');
+          this.router.navigate(['/login']);
+        }
+      });
     } catch (error) {
       throw error;
     }
@@ -118,7 +122,5 @@ export class AuthService {
     return this.user$;
   }
 
-  isLoggedIn(): boolean {
-    return this.auth.currentUser !== null;
-  }
+ 
 }

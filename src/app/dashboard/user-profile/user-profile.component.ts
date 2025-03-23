@@ -4,7 +4,7 @@ import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User, UserProfile } from '../../interface/user.interface';
 import { ProfileService } from '../../services/profile.service';
@@ -72,12 +72,14 @@ export class UserProfileComponent implements OnInit {
   sharedEmails: string[] = [""] ;
   isCardVisible: boolean = false;
 
-  public userlogged: User = { uid: '', email: '', name: '' };
+ 
 
   public message='';
 
 
   public authSerivice = inject(AuthService);
+  public profileSerivice = inject(ProfileService);
+  public router = inject(Router);
   
 
   
@@ -88,38 +90,18 @@ export class UserProfileComponent implements OnInit {
     this.selectedCurrency = "USD";   
   }
   
-  constructor(private profileSerivice: ProfileService,  ) {  
-    
-    this.loadUserLogged();   
-      
-    this.authSerivice.getUser().subscribe(user => {
-      this.user = user;
-    });
+  constructor( ) {  
+
+    this.authSerivice.getUser().subscribe(userlogged => {
+      const { uid, email, name } = userlogged;
+      this.user = { uid, email, name };
+     
+    }); 
+    this.getProfile();
     
    }
 
-    async loadUserLogged() {
-    await this.authSerivice.getUserLogged().subscribe((user) => {
-      this.userlogged = {uid: user.uid, email: user.email, name: user.name};
-
-      if (this.userlogged.uid ) {
-        this.profileSerivice.getUserProfileByUserId(this.userlogged.uid).then((profile) => {
-          if (profile) {
-            this.getProfile(this.userlogged.uid);
-            this.isLoading = true;
-          } else {
-            console.error("Profile not found");
-          }
-        });
-      }
-
-
-      
-    });
-    
-    }
-
- 
+  
 
   selectTheme(palette: ColorPalette): void {
     this.selectedPalette = palette;
@@ -154,8 +136,8 @@ export class UserProfileComponent implements OnInit {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {      
-      if (this.userlogged.uid && this.userlogged.name) {
-        this.profileSerivice.uploadImage(file, this.userlogged.uid, this.userlogged.name).then((url) => {
+      if (this.user?.uid && this.user?.name) {
+        this.profileSerivice.uploadImage(file, this.user.uid, this.user.name).then((url) => {
           this.photoUrl = url;
         });
       } else {
@@ -167,8 +149,8 @@ export class UserProfileComponent implements OnInit {
 
   async saveSettings(): Promise<void> {
      const userProfile:UserProfile = {
-      userId: this.userlogged.uid,
-      name: this.userlogged.name,
+      userId: this.user?.uid || "",
+      name: this.user?.name || "",
       color: this.customColor,
       currency: this.selectedCurrency,
       photoURL: this.photoUrl,
@@ -177,7 +159,9 @@ export class UserProfileComponent implements OnInit {
     };
 
     try {
-      await this.profileSerivice.addProfile(userProfile);
+      await this.profileSerivice.addProfile(userProfile).then(() => {
+       this.router.navigate(["/dashboard"]);
+      });
     } catch (error) {
       console.error("Error saving settings:", error);
     }
@@ -192,15 +176,16 @@ export class UserProfileComponent implements OnInit {
     return defaultUrl;
   }
 
-  async getProfile(userUid:string) {
+  async getProfile() {
+    if(this.user)
    
-   await this.profileSerivice.getUserProfileByUserId(this.userlogged.uid).then((profile) => {
+   await this.profileSerivice.getUserProfileByUserId(this.user.uid).then((profile) => {
       if (profile) {
         this.colorFavorite = profile.color;
         this.selectedCurrency = profile.currency;
         this.isSharedExpenseEnabled = profile.sharedExpense;
         this.sharedEmails = profile.emailShared || [];
-        this.photoUrl = profile.photoURL;
+        this.photoUrl = profile.photoURL || this.getDefaultProfileImageUrl();
       } else {
         console.error("Profile not found");
       }

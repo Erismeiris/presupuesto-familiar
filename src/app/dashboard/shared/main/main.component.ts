@@ -5,6 +5,10 @@ import { ExpensiveCardComponent } from '../../expensive_card/expensive_card.comp
 import { CommonModule } from '@angular/common';
 import { PiechartComponent } from '../../../gastos/piechart/piechart.component';
 import { ExpensiveRegisterComponent } from '../../../gastos/expensiveRegister/expensiveRegister.component';
+import { AuthService } from '../../../services/auth.service';
+import { User } from '../../../interface/user.interface';
+import { GastosService } from '../../../services/gastos.service';
+import { ProfileService } from '../../../services/profile.service';
 
 export interface ExpensiveCard {
   title: string;
@@ -30,14 +34,17 @@ export interface ExpensiveCard {
 })
 export class MainComponent implements OnInit {  
 
+  user!: User | null ;
+  userProfile: any;
+
   colorList = ['blue', 'green', 'yellow', 'red', 'purple', 'orange', 'pink', 'brown', 'black', 'gray'];
   tabs: { title: string; value: number; content: string }[] = [];
 
   public generalExpensive: ExpensiveCard = {
     title: 'Gastos Generales',
-    value: 0,
+    value: 260,
     percentage: 0.2,
-    color: 'red',
+    color: '#08a644',
   };
 
 
@@ -55,34 +62,34 @@ export class MainComponent implements OnInit {
       color: 'blue',
     },
     {
-      title: 'Gretel',
+      title: 'Abuelita',
       value: 50,
       percentage: 0,
       color: 'blue',
     },
     {
-      title: 'Hansel',
+      title: 'Hermano',
       value: 50,
       percentage: 0,
       color: 'blue',
     },
     {
-      title: 'Bruja',
-      value: 50,
-      percentage: 0,
-      color: 'blue',
-    },
-    {
-      title: 'Casa de dulces',
+      title: 'Suegra',
       value: 50,
       percentage: 0,
       color: 'blue',
     }
+    
      ];
 
 
-  constructor() {  
-   this.generalExpensive.value = this.calculoGastosGenerales();
+  constructor(private authservice: AuthService, private gastoServices: GastosService, private profileService: ProfileService) { 
+   this.authservice.getUser().subscribe(userlogged => {    
+     const { uid, email, name } = userlogged;
+     this.user = { uid, email, name };
+    });
+
+  this.getGastos();
    this.actualizarPorcentaje();
    this.gestionarColor();
     
@@ -94,6 +101,8 @@ export class MainComponent implements OnInit {
       { title: 'Nuevos gastos', value: 1, content: 'Tab 2 Content' },
       { title: 'Transaciones', value: 2, content: 'Tab 3 Content' },
   ];
+
+  
     
   }
 
@@ -114,5 +123,30 @@ export class MainComponent implements OnInit {
       expensive.color = this.colorList[index];
     });
   }
+
+ async getGastos() {
+    if (!this.user) {
+      return;
+    }
+  await this.profileService.getUserProfileByUserId(this.user.uid).then((profile) => {
+      this.userProfile = profile;
+   });
+   await this.gastoServices.getGastos(this.user.uid).subscribe((gastos) => {
+    this.generalExpensive.value = gastos.reduce((acc, curr) => acc + curr.monto, 0);
+    console.log("gastos total",this.generalExpensive.value);
+    this.generalExpensive.color = this.userProfile.color;
+    console.log("color",this.userProfile.color);
+     
+  });
    
 }
+}
+
+
+/* categoria:"Alimentos"
+date:"2025-03-08"
+descripcion:"Compra en Mercadona"
+id:"0CcuzjR1w7J6eaXoU59E"
+monto:"12.31"
+name:"Alimentos"
+userId: "GRTmiNxCQ6VTPRX8BbBXfVEdsLE3" */
