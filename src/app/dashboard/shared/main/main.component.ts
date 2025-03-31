@@ -84,11 +84,8 @@ export class MainComponent implements OnInit {
 
 
   constructor(private authservice: AuthService, private gastoServices: GastosService, private profileService: ProfileService) { 
-   this.authservice.getUser().subscribe(userlogged => {    
-     const { uid, email, name } = userlogged;
-     this.user = { uid, email, name };
-    });
-
+   const user = this.authservice.user();
+   console.log('User:', user);
   this.getGastos();
    this.actualizarPorcentaje();
    this.gestionarColor();

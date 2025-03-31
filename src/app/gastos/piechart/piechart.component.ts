@@ -20,6 +20,10 @@ export class PiechartComponent implements OnInit {
     data: any;
     options: any;
     platformId = inject(PLATFORM_ID);
+
+    dataSetLabels: string = '';
+
+    //TODO: Agregar botones para los dataSetsAlbes Meses, Usuarios, Categorias, Años
     
 
     constructor(
@@ -85,9 +89,8 @@ export class PiechartComponent implements OnInit {
 
 
    getGastosIfUserIsLogged() {
-    if(this.authService.getUserLogged()){
-        
-   }
+    const userUid = this.authService.user()?.uid;
+
    }
        
     

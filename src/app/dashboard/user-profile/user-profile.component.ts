@@ -91,14 +91,8 @@ export class UserProfileComponent implements OnInit {
   }
   
   constructor( ) {  
-
-    this.authSerivice.getUser().subscribe(userlogged => {
-      const { uid, email, name } = userlogged;
-      this.user = { uid, email, name };
-     
-    }); 
     this.getProfile();
-    
+  
    }
 
   
@@ -135,9 +129,11 @@ export class UserProfileComponent implements OnInit {
     const file = event.target.files[0];    
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => {      
-      if (this.user?.uid && this.user?.name) {
-        this.profileSerivice.uploadImage(file, this.user.uid, this.user.name).then((url) => {
+    reader.onload = () => {  
+      const userUid = this.authSerivice.user()?.uid;
+      const username = this.authSerivice.user()?.name ;    
+      if (userUid && username) {
+        this.profileSerivice.uploadImage(file, userUid, username).then((url) => {
           this.photoUrl = url;
         });
       } else {
@@ -177,8 +173,9 @@ export class UserProfileComponent implements OnInit {
   }
 
   async getProfile() {
-    if(this.user)   
-   await this.profileSerivice.getProfileByUserId(this.user.uid).then((profile) => {
+    const userUid = this.authSerivice.user()?.uid;    
+    if(userUid)   
+   await this.profileSerivice.getProfileByUserId(userUid).then((profile) => {
       if (profile) {
         this.colorFavorite = profile.color;
         this.selectedCurrency = profile.currency;

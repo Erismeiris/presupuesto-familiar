@@ -56,9 +56,8 @@ export class ExpensiveRegisterComponent {
       this.userProfile = profile as UserProfile;
       
     });
-    this.userService.getUser().subscribe((user) => {
-      this.user = user;
-      if (this.user && this.user.uid) {
+     const userUid = this.userService.user()?.uid;  
+      if (userUid) {
         this.getGastosByUserId(); 
       }else {
         this.gastos = [
@@ -74,11 +73,12 @@ export class ExpensiveRegisterComponent {
         ];
         this.isloading = false;
       }
-    });
+    
   }
 
   openNew() {
-    if(this.user && this.user.uid){
+    const userUid = this.userService.user()?.uid;
+    if(userUid){
     const newGasto = { 
       id: "",     
       categoria: "",
@@ -86,7 +86,7 @@ export class ExpensiveRegisterComponent {
       descripcion: "",
       monto: 0,
       name: "",    
-      userId: this.user.uid,
+      userId: userUid,
     };
     this.gastos.push(newGasto);
     
@@ -171,8 +171,9 @@ async deleteGasto(gasto: Gastos) {
 
      
    getGastosByUserId(){
-    if(this.user && this.user.uid){
-      this.gastosService.getGastos(this.user.uid).subscribe((gastos) => {
+    const userUid = this.userService.user()?.uid;
+    if(userUid){
+      this.gastosService.getGastos(userUid).subscribe((gastos) => {
         this.gastos = gastos;  
         this.isloading = false;      
       });
