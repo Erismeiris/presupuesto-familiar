@@ -3,13 +3,17 @@ import { ChangeDetectionStrategy, Component, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { Gastos, User } from '../../interface/user.interface';
+import { Gastos, User, UserProfile } from '../../interface/user.interface';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
 import { FileUpload } from 'primeng/fileupload';
 import { GastosService } from '../../services/gastos.service';
 import { AuthService } from '../../services/auth.service';
+import { ProgressBar } from 'primeng/progressbar';
+import { MessageService } from 'primeng/api';
+import swal from 'sweetalert';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-expensive-register',
@@ -19,49 +23,61 @@ import { AuthService } from '../../services/auth.service';
     FormsModule,
     TableModule,
     ToastModule,
-    ToolbarModule, 
+    ToolbarModule,
+    ProgressBar, 
     InputTextModule,
     ButtonModule
     
   ],
   templateUrl: './expensiveRegister.component.html',
-  styleUrl: './expensiveRegister.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './expensiveRegister.component.css',  
+  providers: [MessageService]
 })
 export class ExpensiveRegisterComponent {
 
  public todayDate = new Date().toISOString().split('T')[0];
- public user!: User
- public gastos:Gastos[] = [
-  {
-    id: "",
-    categoria: "Alimentos",
-    date: "12/12/2025",
-    descripcion: "Compra regalo a mi Esposa/Esposo",
-    monto: 100,
-    name: "Lázaro Cárdenas",
-    userId: ""
-  }
- ];
+ public userProfile!: UserProfile;
 
-  constructor(private gastosService: GastosService, private userService: AuthService, private ngZone: NgZone) {
+ isloading = true;
+ public user!: User
+ public gastos:Gastos[] = [];
+
+  constructor(
+    private gastosService: GastosService, 
+    private userService: AuthService,
+    private profileServices: ProfileService,
+  ) {
    
    
   }
 
   ngOnInit(): void {  
-    this.userService.getUserLogged().subscribe((user) => {
-      this.ngZone.run(() => {
-        this.user = user;
-        if (this.user && this.user.uid) {
-          this.getGastosByUserId(); 
+    this.profileServices.profile$.subscribe((profile) => {
+      this.userProfile = profile as UserProfile;
+      
+    });
+    this.userService.getUser().subscribe((user) => {
+      this.user = user;
+      if (this.user && this.user.uid) {
+        this.getGastosByUserId(); 
+      }else {
+        this.gastos = [
+          {
+          id: "",
+          categoria: "Alimentos",
+          date: "12/12/2025",
+          descripcion: "Compra regalo a mi Esposa/Esposo",
+          monto: 100,
+          name: "Lázaro Cárdenas",
+          userId: ""
         }
-      });
+        ];
+        this.isloading = false;
+      }
     });
   }
 
   openNew() {
-
     if(this.user && this.user.uid){
     const newGasto = { 
       id: "",     
@@ -72,10 +88,8 @@ export class ExpensiveRegisterComponent {
       name: "",    
       userId: this.user.uid,
     };
-    this.gastosService.addGastos(newGasto).then((docRef: { id: string }) => {
-      newGasto.id = docRef.id;
-      this.gastos.push(newGasto);
-    });
+    this.gastos.push(newGasto);
+    
   }else{
     this.gastos.push({
       id: "",
@@ -90,30 +104,77 @@ export class ExpensiveRegisterComponent {
   }
 
   updateGasto(gasto: Gastos) {
-   if(gasto.id){
-    this.gastosService.updateData(gasto.id, gasto);
-    
-   }else{
-     console.log('No se puede actualizar el gasto');
-     };
-   }
-
-  deleteGasto(gasto: Gastos) {
-    if(this.user && this.user.uid){
-      this.gastosService.deleteGastos(gasto).then(() => {
-        this.getGastosByUserId();
+    if (gasto.id) {
+      this.gastosService.updateData(gasto.id, gasto).then(() => {
+        swal('Actualizado', 'El gasto ha sido actualizado.', 'success');
+      }).catch((error) => {
+        console.error('Error updating gasto:', error);
+        swal('Error', 'Hubo un problema al actualizar el gasto.', 'error');
       });
-    }else{
-      //delete gasto from array
-      this.gastos = this.gastos.filter((g) => g.id !== gasto.id);
+    } else {
+      // comprobar que no viene vacío
+      if (gasto.categoria === "" || gasto.descripcion === "" || gasto.monto === 0 || gasto.name === "") {
+        swal('Error', 'Todos los campos son obligatorios.', 'error');
+      } else {
+        this.gastosService.addGastos(gasto).then((docRef: { id: string }) => {
+          gasto.id = docRef.id;
+          this.gastos.push(gasto);
+          swal('Guardado', 'El gasto ha sido guardado.', 'success');
+        }).catch((error) => {
+          console.error('Error adding gasto:', error);
+          swal('Error', 'Hubo un problema al guardar el gasto.', 'error');
+        });
+      }
     }
-   
   }
+
+async deleteGasto(gasto: Gastos) {
+  const result = await swal({
+    title: '¿Estás seguro?',
+    text: "¡No podrás revertir esto!",
+    buttons: {
+      cancel: {
+        text: 'Cancelar',
+        value: null,
+        visible: true,
+        className: '',
+        closeModal: true,
+      },
+      confirm: {
+        text: 'Sí, bórralo!',
+        value: true,
+        visible: true,
+        className: 'btn-primary',
+        closeModal: true,
+      }
+    },
+    icon: 'warning'
+  });
+
+  if (result) {
+    if (this.user && this.user.uid) {
+      try {
+        await this.gastosService.deleteGastos(gasto);
+        this.gastos = this.gastos.filter((g) => g.id !== gasto.id); // Actualizar la lista de gastos
+        swal('¡Borrado!', 'El gasto ha sido borrado.', 'success');
+      } catch (error) {
+        console.error('Error deleting gasto:', error);
+        swal('Error', 'Hubo un problema al borrar el gasto.', 'error');
+      }
+    } else {
+      // delete gasto from array
+      this.gastos = this.gastos.filter((g) => g.id !== gasto.id);
+      swal('¡Borrado!', 'El gasto ha sido borrado.', 'success');
+    }
+  }
+}
+
      
    getGastosByUserId(){
     if(this.user && this.user.uid){
       this.gastosService.getGastos(this.user.uid).subscribe((gastos) => {
-        this.gastos = gastos;        
+        this.gastos = gastos;  
+        this.isloading = false;      
       });
     }
    }

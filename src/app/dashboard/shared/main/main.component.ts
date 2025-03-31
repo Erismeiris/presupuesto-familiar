@@ -101,8 +101,15 @@ export class MainComponent implements OnInit {
       { title: 'Nuevos gastos', value: 1, content: 'Tab 2 Content' },
       { title: 'Transaciones', value: 2, content: 'Tab 3 Content' },
   ];
-
-  
+  const userId = this.user?.uid;
+  if (!userId) {
+    return;
+  }
+  this.profileService.loadUserProfile(userId).then(() => {
+    this.profileService.profile$.subscribe(profile => {
+      this.userProfile = profile;
+    });
+  });
     
   }
 
@@ -125,17 +132,16 @@ export class MainComponent implements OnInit {
   }
 
  async getGastos() {
-    if (!this.user) {
+  const userUid = this.user?.uid;
+  console.log('User:', userUid);
+    if (!userUid) {
       return;
     }
-  await this.profileService.getUserProfileByUserId(this.user.uid).then((profile) => {
-      this.userProfile = profile;
-   });
-   await this.gastoServices.getGastos(this.user.uid).subscribe((gastos) => {
-    this.generalExpensive.value = gastos.reduce((acc, curr) => acc + curr.monto, 0);
-    console.log("gastos total",this.generalExpensive.value);
-    this.generalExpensive.color = this.userProfile.color;
-    console.log("color",this.userProfile.color);
+  
+   await this.gastoServices.getGastos(userUid).subscribe((gastos) => {
+    this.generalExpensive.value = gastos.reduce((acc, curr) => acc + curr.monto, 0);    
+    this.generalExpensive.color = this.userProfile?.color
+    
      
   });
    

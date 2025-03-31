@@ -48,7 +48,7 @@ interface UploadEvent {
   ],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  
 })
 export class UserProfileComponent implements OnInit {
   public userProfile! : UserProfile 
@@ -177,9 +177,8 @@ export class UserProfileComponent implements OnInit {
   }
 
   async getProfile() {
-    if(this.user)
-   
-   await this.profileSerivice.getUserProfileByUserId(this.user.uid).then((profile) => {
+    if(this.user)   
+   await this.profileSerivice.getProfileByUserId(this.user.uid).then((profile) => {
       if (profile) {
         this.colorFavorite = profile.color;
         this.selectedCurrency = profile.currency;
