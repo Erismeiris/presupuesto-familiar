@@ -5,7 +5,7 @@ import { collectionData, Firestore, collection, addDoc, deleteDoc, doc, updateDo
 
 
 import { Observable } from 'rxjs';
-import { Gastos, UserDetail } from '../interface/user.interface';
+import { Gastos } from '../interface/user.interface';
 
 
 

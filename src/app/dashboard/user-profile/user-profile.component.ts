@@ -150,8 +150,8 @@ export class UserProfileComponent implements OnInit {
       color: this.customColor,
       currency: this.selectedCurrency,
       photoURL: this.photoUrl,
-      sharedExpense: this.isSharedExpenseEnabled,
-      emailShared: this.sharedEmails
+      isSharingExpenses: this.isSharedExpenseEnabled,
+      sharedWithUsers: this.sharedEmails
     };
 
     try {
@@ -179,8 +179,8 @@ export class UserProfileComponent implements OnInit {
       if (profile) {
         this.colorFavorite = profile.color;
         this.selectedCurrency = profile.currency;
-        this.isSharedExpenseEnabled = profile.sharedExpense;
-        this.sharedEmails = profile.emailShared || [];
+        this.isSharedExpenseEnabled = profile.isSharingExpenses;
+        this.sharedEmails = profile.sharedWithUsers || [];
         this.photoUrl = profile.photoURL || this.getDefaultProfileImageUrl();
       } else {
         console.error("Profile not found");

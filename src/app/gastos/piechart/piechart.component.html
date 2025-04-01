@@ -1,4 +1,9 @@
 <div class="card">
-    <h5>Bar Chart</h5>
+    <div class="button-group">
+        <button (click)="viewBy('months')">Meses</button>
+        <button (click)="viewBy('users')">Usuarios</button>
+        <button (click)="viewBy('categories')">Categorías</button>
+        <button (click)="viewBy('years')">Años</button>
+    </div>
     <p-chart type="bar" [data]="data" [options]="options" />
 </div>

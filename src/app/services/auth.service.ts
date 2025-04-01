@@ -102,15 +102,11 @@ export class AuthService {
   async logoutUser() {
     try {
       await signOut(this.auth);
-      onAuthStateChanged(this.auth, (user) => {
-        if (!user) {
-          this.userSubject.next(null);
-          this.user.set(null); // Actualiza el valor de la señal
-          this.router.navigate(['/login']);
-        }
-      });
+      this.user.set(null);
+      localStorage.removeItem('user');
+      this.router.navigate(['/login']);
     } catch (error) {
-      throw error;
+      console.error('Error al cerrar sesión:', error);
     }
   }
 }
