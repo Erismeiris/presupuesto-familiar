@@ -6,18 +6,18 @@
     <p>Regístrate para comenzar</p>
   </div>
   
-  <form [formGroup]="registerForm"  (ngSubmit)="onSubmit()" class="register-form">
+  <form [formGroup]="registerForm"  (ngSubmit)="register()" class="register-form">
     <div class="form-group">
-      <label for="name">Nombre Completo</label>
+      <label for="userName">Un nombre de usuario</label>
       <input 
         type="text" 
-        id="name" 
-        name="name" 
-        formControlName="name"
+        id="userName" 
+        name="userName" 
+        formControlName="userName"
         required
-        placeholder="Ingresa tu nombre completo"
+        placeholder="Ingresa nombre de usuario"
       >
-      <p-message *ngIf="registerForm.controls['name'].invalid && registerForm.controls['name'].touched" severity="error" text="El nombre es requerido"></p-message>
+      <p-message *ngIf="registerForm.controls['userName'].invalid && registerForm.controls['userName'].touched" severity="error" text="El nombre es requerido"></p-message>
     </div>
     
     <div class="form-group">
@@ -91,6 +91,7 @@
   </form>
 </div>
 
+<p-toast position="top-right"></p-toast>
 
 <!-- <div class="caja">
     <mat-grid-list cols="1" rowHeight="20vw">

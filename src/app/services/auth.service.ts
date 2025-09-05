@@ -67,25 +67,7 @@ export class AuthService {
   }
 
   async register(email: string, password: string, name: string) {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
-      if (userCredential.user) {
-        const userDoc = doc(
-          this.firestore,
-          'usuarios',
-          userCredential.user.uid
-        );
-        await setDoc(userDoc, { name: name, email: email });
-        return userCredential.user;
-      }
-      return null;
-    } catch (error) {
-      throw error;
-    }
+    return this.http.post(`${baseURL}/api/user`, { email, password, name }, { withCredentials: true });
   }
 
   loginUser(name: string, password: string): Observable<any> {
@@ -160,6 +142,31 @@ export class AuthService {
         this.accessTokenSubject.next(null);
         this.user.set(null);
         localStorage.removeItem('user');
+        return throwError(() => error);
+      })
+    );
+  }
+
+  registerUser(name: string, email: string, password: string): Observable<any> {
+    return this.http.post(`${baseURL}/api/users/register`, { name, email, password }).pipe(
+      tap((response: any) => {
+        // Si el registro incluye login automático
+        if (response && response.success && response.user) {
+          const user = {
+            uid: response.user.id || response.user.uid,
+            email: response.user.email,
+            name: response.user.name
+          };
+          this.user.set(user);
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          if (response.accessToken) {
+            this.accessTokenSubject.next(response.accessToken);
+          }
+        }
+      }),
+      catchError(error => {
+        console.error('Register error:', error);
         return throwError(() => error);
       })
     );

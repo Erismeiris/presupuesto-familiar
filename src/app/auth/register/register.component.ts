@@ -2,9 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, NgModule, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { MenuItem, MessageService } from 'primeng/api';
 import { MessageModule } from 'primeng/message';
 import { HeaderComponent } from '../../dashboard/shared/header/header.component';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
+import { SplitButtonModule } from 'primeng/splitbutton';
+import { ToastModule } from 'primeng/toast';
+import { timeout } from 'rxjs';
+
 
 @Component({
   standalone: true,
@@ -16,8 +22,11 @@ import { HttpClientModule } from '@angular/common/http';
     ReactiveFormsModule,
     MessageModule,
     RouterModule,
-    HttpClientModule
+    HttpClientModule,
+    ToastModule,
+    SplitButtonModule
   ],
+  providers: [MessageService],
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
@@ -26,10 +35,12 @@ export class RegisterComponent implements OnInit {
   
   registerForm!: FormGroup
   fb = inject(FormBuilder)
+  
+  
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      userName: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       terms: [false, [Validators.requiredTrue]],
@@ -52,30 +63,55 @@ export class RegisterComponent implements OnInit {
  
  
   constructor(
-    /* private snackBar: MatSnackBar, 
-    private auth: AuthService, */
-    private route: Router) {}
+    //private snackBar: MatSnackBar,
+    private auth: AuthService,
+    private route: Router,
+    private messageService: MessageService
+  ) {}
 
-  /* register() {
+  register() {
     if (this.registerForm.valid) {
       const data = this.registerForm.value;
-      // Envía los datos del formulario a tu servidor
-      const {email, password} = data;
-      this.auth.register({email, password})
-      .then( res => {
-        console.log(res);
-      })
-      .catch( err => {
-        console.log(err);
-      })
-      this.snackBar.open('Registro exitoso', 'Cerrar', { duration: 3000 });
-      this.route.navigate(['/login']);
-      // Realiza alguna otra acción necesaria
+      const {userName, email, password} = data;
+      console.log('Registering user:', userName, email, password);
+      
+      
+      // Usar el método para backend en lugar de Firebase
+      this.auth.registerUser(userName, email, password)
+      .subscribe({
+        next: (res) => {
+          console.log('Registration successful:', res);
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Registro exitoso', 
+            detail: 'Usuario registrado correctamente',
+            life: 5000
+          });
+          // Esperar un poco antes de navegar para que se vea el toast
+          setTimeout(() => {
+            this.route.navigate(['/login']);
+          }, 2000);
+        },
+        error: (err) => {
+          console.error('Registration failed:', err);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Error de registro', 
+            detail: err.error?.message || 'Error al registrar usuario',
+            life: 5000
+          });
+        }
+      });
     } else {
-      this.snackBar.open('El formulario es inválido', 'Cerrar', { duration: 3000 });
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Formulario inválido', 
+        detail: 'Por favor completa todos los campos correctamente',
+        life: 3000
+      });
     }
   }
- */
+ 
   matchConfirmPassword(control: FormControl) {
     const password:any = this.registerForm.controls['password'].value  || '';
     const confirmPassword = control.value;
@@ -83,22 +119,8 @@ export class RegisterComponent implements OnInit {
   }
 
   
+
  
-  onSubmit() {
-    if (this.registerForm.invalid) {
-      console.log('El formulario es inválido');
-      return;
-    }
-   
-    console.log('Registration attempt with:', {
-      name: this.registerForm.value.name,
-      email: this.registerForm.value.email,
-      password: this.registerForm.value.password,
-      confirmPassword: this.registerForm.value.confirmPassword,
-      terms: this.registerForm.value.terms,
-    });
-    // Here you would typically handle user registration
-  }
   
   signUpWithGoogle() {
     console.log('Attempting to sign up with Google');
