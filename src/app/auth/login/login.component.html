@@ -7,14 +7,14 @@
     
     <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
       <div class="form-group">
-        <label for="email">Correo</label>
+        <label for="userName">Nombre de usuario</label>
         <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          formControlName="email"
+          type="text" 
+          id="username" 
+          name="username" 
+          formControlName="username"
           required
-          placeholder="Escribe tu correo"
+          placeholder="Escribe tu nombre de usuario"
         >
       </div>
       

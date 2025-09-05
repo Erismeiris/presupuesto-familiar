@@ -9,7 +9,7 @@ import { routes } from './app.routes';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 
-
+import { provideHttpClient } from '@angular/common/http';
 
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { firebaseConfig } from '../../firebase.config';
@@ -21,6 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }), 
     provideRouter(routes),
     provideAnimationsAsync(),
+    provideHttpClient(),
     providePrimeNG({
         theme: {
             preset: Aura,

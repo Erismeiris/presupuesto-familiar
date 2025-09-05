@@ -4,6 +4,7 @@ import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule, V
 import { Router, RouterModule } from '@angular/router';
 import { MessageModule } from 'primeng/message';
 import { HeaderComponent } from '../../dashboard/shared/header/header.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   standalone: true,
@@ -15,6 +16,7 @@ import { HeaderComponent } from '../../dashboard/shared/header/header.component'
     ReactiveFormsModule,
     MessageModule,
     RouterModule,
+    HttpClientModule
   ],
   selector: 'app-register',
   templateUrl: './register.component.html',

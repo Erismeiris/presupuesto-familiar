@@ -39,7 +39,7 @@ export class LoginComponent {
 
 
   loginForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
+    username: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required]),
   });
 
@@ -51,44 +51,26 @@ export class LoginComponent {
     private router:Router) {}  
 
     login() {
-    
-    if (this.loginForm.valid) {
-      // Lógica de inicio de sesión aquí
-      const { email, password } = this.loginForm.value;
-      this.auth.loginUser(email!,password!).then((res)=>{
-        this.router.navigate(['/dashboard']);
-      }).catch((error)=>{
-        switch (error.code) {
-          case 'auth/user-not-found':
-            this.errorMessages = 'Usuario no encontrado.';
-            break;
-          case 'auth/wrong-password':
-            this.errorMessages = 'Contraseña incorrecta.';
-            break;
-          case 'auth/invalid-email':
-            this.errorMessages = 'Correo electrónico inválido.';
-            break;
-          case 'auth/user-disabled':
-            this.errorMessages = 'Usuario deshabilitado.';
-            break;
-          case 'auth/too-many-requests':
-            this.errorMessages = 'Demasiados intentos. Inténtalo más tarde.';
-            break;
-          case 'auth/network-request-failed':
-            this.errorMessages = 'Error de conexión de red.';
-            break;
-          case 'auth/operation-not-allowed':
-            this.errorMessages = 'Operación no permitida.';
-            break;
-          default:
-            this.errorMessages = 'Error desconocido.';
-            break;
-        }
-      })
-    } else {
-      alert('Formulario inválido');
-      }; 
-    } 
+      if (this.loginForm.valid) {
+        const { username, password } = this.loginForm.value;
+        this.auth.loginUser(username!, password!).subscribe({
+          next: (res: any) => {
+            // Aquí puedes validar la respuesta del backend
+            if (res && res.success) {
+              this.router.navigate(['/dashboard']);
+            } else {
+              this.errorMessages = res?.message || 'Credenciales incorrectas.';
+            }
+          },
+          error: (err: any) => {
+            // Puedes personalizar el mensaje según el error recibido
+            this.errorMessages = err?.error?.message || 'Error de autenticación.';
+          }
+        });
+      } else {
+        alert('Formulario inválido');
+      }
+    }
   }
 
 

@@ -14,8 +14,11 @@ import { Firestore, doc, setDoc } from '@angular/fire/firestore';
 import { BehaviorSubject, take, tap } from 'rxjs';
 import { onAuthStateChanged } from '@angular/fire/auth';
 import { docData } from '@angular/fire/firestore';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+  
 
+var baseURL = 'http://localhost:3000'
 @Injectable({
   providedIn: 'root',
 })
@@ -24,16 +27,23 @@ export class AuthService {
   private userSubject = new BehaviorSubject<any>(null);
   public user$ = this.userSubject.asObservable();
   readonly user = signal<{ uid: string; email: string | null; name: string | null } | null>(null); 
+  private apiUrl = `${baseURL}/api/auth/login`;
 
   constructor(
     private auth: Auth,
     private firestore: Firestore,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     // Inicializa el valor de la señal 'user' desde localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      this.user.set(JSON.parse(storedUser));
+      try {
+        this.user.set(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('user');
+      }
     }
 
     // Escucha los cambios en el estado de autenticación
@@ -77,25 +87,20 @@ export class AuthService {
     }
   }
 
-  async loginUser(email: string, password: string) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      if (userCredential.user) {
-        const userDoc = doc(this.firestore, 'usuarios', userCredential.user.uid);
-        const userData = await docData(userDoc).pipe(take(1)).toPromise(); // Espera a que se obtengan los datos
-        const user = {
-          uid: userCredential.user.uid,
-          email: userCredential.user.email,
-          name: userData?.['name'] || null // Usa el campo 'name' de la colección 'usuarios'
-        };
-
-        this.user.set(user); // Actualiza el valor de la señal
-        localStorage.setItem('user', JSON.stringify(user)); // Persistencia opcional
-      }
-      return userCredential.user;
-    } catch (error) {
-      throw error;
-    }
+  loginUser(name: string, password: string): Observable<any> {
+    return this.http.post(this.apiUrl, { name, password }).pipe(
+      tap((response: any) => {
+        if (response && response.user) {
+          const user = {
+            uid: response.user.id || response.user.uid,
+            email: response.user.email,
+            name: response.user.name
+          };
+          this.user.set(user);
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      })
+    );
   }
  
 
