@@ -11,12 +11,11 @@ import {
   updateCurrentUser,
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc } from '@angular/fire/firestore';
-import { BehaviorSubject, take, tap } from 'rxjs';
+import { BehaviorSubject, Observable, throwError, take, tap } from 'rxjs';
 import { onAuthStateChanged } from '@angular/fire/auth';
 import { docData } from '@angular/fire/firestore';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-  
+import { catchError } from 'rxjs/operators';
 
 var baseURL = 'http://localhost:3000'
 @Injectable({
@@ -27,7 +26,9 @@ export class AuthService {
   private userSubject = new BehaviorSubject<any>(null);
   public user$ = this.userSubject.asObservable();
   readonly user = signal<{ uid: string; email: string | null; name: string | null } | null>(null); 
-  private apiUrl = `${baseURL}/api/auth/login`;
+  private apiUrl = `${baseURL}/api/auth/login`;  
+  private accessTokenSubject = new BehaviorSubject<string | null>(null);
+  public accessToken$ = this.accessTokenSubject.asObservable();
 
   constructor(
     private auth: Auth,
@@ -88,9 +89,10 @@ export class AuthService {
   }
 
   loginUser(name: string, password: string): Observable<any> {
-    return this.http.post(this.apiUrl, { name, password }).pipe(
+    return this.http.post(this.apiUrl, { name, password }, { withCredentials: true }).pipe(
       tap((response: any) => {
-        if (response && response.user) {
+        // Verificar que el login fue exitoso
+        if (response && response.success && response.user) {
           const user = {
             uid: response.user.id || response.user.uid,
             email: response.user.email,
@@ -98,7 +100,20 @@ export class AuthService {
           };
           this.user.set(user);
           localStorage.setItem('user', JSON.stringify(user));
+          
+          // Save access token - ahora siempre debería existir según la respuesta
+          if (response.accessToken) {
+            this.accessTokenSubject.next(response.accessToken);
+          } else {
+            console.warn('No access token received from backend');
+          }
+        } else {
+          console.error('Login response missing required fields:', response);
         }
+      }),
+      catchError(error => {
+        console.error('Login error:', error);
+        return throwError(() => error);
       })
     );
   }
@@ -113,5 +128,66 @@ export class AuthService {
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
+  }
+
+  refreshToken(): Observable<any> {
+    return this.http.post<any>(`${baseURL}/api/auth/refresh`, {}, 
+      { withCredentials: true }
+    ).pipe(
+      tap(response => {
+        if (response && response.accessToken) {
+          this.accessTokenSubject.next(response.accessToken);
+        }
+      }),
+      catchError(error => {
+        this.logout();
+        return throwError(() => error);
+      })
+    );
+  }
+
+  logout(): Observable<any> {
+    return this.http.post(`${baseURL}/api/auth/logout`, {}, 
+      { withCredentials: true }
+    ).pipe(
+      tap(() => {
+        this.accessTokenSubject.next(null);
+        this.user.set(null);
+        localStorage.removeItem('user');
+      }),
+      catchError(error => {
+        // Even if logout fails on backend, clear local state
+        this.accessTokenSubject.next(null);
+        this.user.set(null);
+        localStorage.removeItem('user');
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getAccessToken(): string | null {
+    return this.accessTokenSubject.value;
+  }
+
+  isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp * 1000; // Convert to milliseconds
+      return Date.now() >= exp;
+    } catch {
+      return true;
+    }
+  }
+
+  isAuthenticated(): boolean {
+    // Check if user exists in signal (for Firebase auth)
+    const currentUser = this.user();
+    if (currentUser) {
+      return true;
+    }
+    
+    // Check JWT token for backend auth
+    const token = this.getAccessToken();
+    return token !== null && !this.isTokenExpired(token);
   }
 }
