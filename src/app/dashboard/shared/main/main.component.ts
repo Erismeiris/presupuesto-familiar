@@ -102,7 +102,7 @@ export class MainComponent implements OnInit {
   if (!userId) {
     return;
   }
-  this.profileService.loadUserProfile(userId).then(() => {
+  this.profileService.getProfileByUserId(userId).then(() => {
     this.profileService.profile$.subscribe(profile => {
       this.userProfile = profile;
     });

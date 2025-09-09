@@ -6,7 +6,7 @@
     <div class="profile-header" (mouseover)="showCard()" (mouseout)="hideCard()">
       <img [src]="photoUrl" alt="Profile Image" class="profile-image"> 
       <div *ngIf="isCardVisible" class="upload-image">
-       <input id="file" type="file" (change)="onUpload($event)" accept="image/png, image/jpeg"> 
+       <input id="file" type="file" (change)="onUpload($event)" accept="image/png, image/jpeg, image/jpg"/> 
         <label class="file" for="file" (change)="onUpload($event)">Subir imagen</label> 
        
       </div> 

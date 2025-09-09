@@ -125,7 +125,7 @@ export class UserProfileComponent implements OnInit {
     }
   }
   //Capturar la imagen y convertirla en base64, enviarla al servicios de firebase
-  async onUpload(event: any) {
+ async onUpload(event: any) {
     const file = event.target.files[0];    
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -143,7 +143,7 @@ export class UserProfileComponent implements OnInit {
      
   }
 
-  async saveSettings(): Promise<void> {
+ async saveSettings(): Promise<void> {
      const userProfile:UserProfile = {
       userId: this.user?.uid || "",
       name: this.user?.name || "",
@@ -155,22 +155,16 @@ export class UserProfileComponent implements OnInit {
     };
 
     try {
-      await this.profileSerivice.addProfile(userProfile).then(() => {
+      //await this.profileSerivice.addProfile(userProfile).then(() => {
        this.router.navigate(["/dashboard"]);
-      });
+      // });
     } catch (error) {
       console.error("Error saving settings:", error);
     }
   }
  
 
-  getDefaultProfileImageUrl(): string {
-    let defaultUrl = '';
-    this.profileSerivice.getDefaultProfileImageUrl().subscribe((url) => {
-      defaultUrl = url;
-    });
-    return defaultUrl;
-  }
+
 
   async getProfile() {
     const userUid = this.authSerivice.user()?.uid;    
@@ -181,7 +175,7 @@ export class UserProfileComponent implements OnInit {
         this.selectedCurrency = profile.currency;
         this.isSharedExpenseEnabled = profile.isSharingExpenses;
         this.sharedEmails = profile.sharedWithUsers || [];
-        this.photoUrl = profile.photoURL || this.getDefaultProfileImageUrl();
+        this.photoUrl = profile.photoURL || '';
       } else {
         console.error("Profile not found");
       }
