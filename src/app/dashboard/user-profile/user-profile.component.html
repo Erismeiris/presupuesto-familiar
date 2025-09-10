@@ -1,16 +1,71 @@
-
 <app-header/>
 
-@if(isLoading){
-  <div class="profile-config-container">
-    <div class="profile-header" (mouseover)="showCard()" (mouseout)="hideCard()">
-      <img [src]="photoUrl" alt="Profile Image" class="profile-image"> 
-      <div *ngIf="isCardVisible" class="upload-image">
-       <input id="file" type="file" (change)="onUpload($event)" accept="image/png, image/jpeg, image/jpg"/> 
-        <label class="file" for="file" (change)="onUpload($event)">Subir imagen</label> 
-       
-      </div> 
-      <h2>{{user?.name }}</h2>    
+@if(!isLoading){
+  <div class="profile-config-container">    
+
+    <!-- Sección de imagen de perfil y nombre -->
+    <div class="profile-header">
+      <!-- Imagen de perfil con preview -->
+      <div class="profile-image-section">
+        <div class="current-image" *ngIf="!showPreview">          
+          <img [src]="photoUrl || './assets/default-avatar.png'" alt="Profile Image" class="profile-img" (error)="onImageError($event)">
+          <div class="image-controls">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+            <button type="button" class="change-image-btn" (click)="fileInput.click()">
+              <i class="pi pi-camera"></i> Cambiar Imagen
+            </button>
+          </div>
+        </div>
+ 
+
+      <!-- Preview de la nueva imagen -->
+      <div class="image-preview" *ngIf="showPreview">
+        <h4>Vista Previa</h4>
+        <div class="preview-container">
+          <img [src]="previewImageUrl" alt="Preview Image" class="preview-img">
+        </div>
+        <div class="preview-actions">
+          <button type="button" class="confirm-btn" (click)="confirmImageUpload()" [disabled]="isUploadingImage">
+            <i class="pi pi-check"></i> 
+            {{ isUploadingImage ? 'Subiendo...' : 'Confirmar' }}
+          </button>
+          <button type="button" class="cancel-btn" (click)="cancelImageUpload()" [disabled]="isUploadingImage">
+            <i class="pi pi-times"></i> Cancelar
+          </button>
+        </div>
+      </div>
+
+      <!-- Sección de edición de nombre -->
+      <div class="name-section">
+        <div class="name-display" *ngIf="!isEditingName">
+          <h2>{{userProfile.name }}</h2>
+          <button type="button" class="edit-name-btn" (click)="startEditingName()">
+            <i class="pi pi-pencil"></i>
+          </button>
+        </div>
+        
+        <div class="name-edit" *ngIf="isEditingName">
+          <div class="name-input-container">
+            <input 
+              type="text" 
+              [(ngModel)]="editedName" 
+              class="name-input"
+              placeholder="Ingresa tu nombre"
+              maxlength="50"
+              (keyup.enter)="saveNameEdit()"
+              (keyup.escape)="cancelNameEdit()"
+            >
+            <div class="name-edit-actions">
+              <button type="button" class="save-name-btn" (click)="saveNameEdit()" [disabled]="!editedName.trim()">
+                <i class="pi pi-check"></i>
+              </button>
+              <button type="button" class="cancel-name-btn" (click)="cancelNameEdit()">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   
     <div class="settings-section">
@@ -63,6 +118,7 @@
     <div class="save-section">
       <button class="save-button" (click)="saveSettings()">Guardar los cambios</button>
     </div>
+  </div>
   </div>
 
 }@else {

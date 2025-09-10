@@ -47,23 +47,64 @@ export class ProfileService {
     return null;
   }
 
-  // Método para osubir la imagen del perfil
-  async uploadImage(file: File, userId: string, username: string): Promise<string> {
+  // Método para subir la imagen del perfil
+  async uploadImage(
+    file: File,
+    userId: string,
+    userName: string
+  ): Promise<string> {
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('userId', userId);
-    formData.append('username', username);
+
     try {
-      const response = await this.http.post<{ imageUrl: string }>(`http://localhost:3000/api/userprofiles/${userId}/upload-image`, formData).toPromise();
-      return response?.imageUrl || this.defaultProfileImagePath;
+      const url = `http://localhost:3000/api/userprofiles/${userId}/upload-image`;
+      const response = await this.http.post<any>(url, formData).toPromise();
+      
+      // Extraer la URL de la imagen de la respuesta del backend
+      // El backend devuelve: { message: '...', profile: {...}, photoURL: 'url' }
+      const imageUrl = response?.photoURL || '';
+      
+      console.log('ProfileService: Extracted imageUrl:', imageUrl);
+      return imageUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
-      return this.defaultProfileImagePath;
+      console.error('ProfileService: Error uploading image:', error);
+      throw error;
     }
   }
 
+  // Método para actualizar el perfil del usuario
+  async updateProfile(
+    profileId: string,
+    profileData: {
+      name?: string;
+      color?: string;
+      isSharingExpenses?: boolean;
+      sharedWithUsers?: string[];
+      currency?: string;
+      emailVerified?: boolean;
+      photoURL?: string;
+    }
+  ): Promise<UserProfile | null> {
+    try {
+      const response = await this.http.put<UserProfile>(
+        `http://localhost:3000/api/userprofiles/${profileId}`, 
+        profileData
+      ).toPromise();
 
-  
+      if (response) {
+        // Actualizar el caché con el perfil actualizado
+        this.cachedProfile = response;
+        this.profileSubject.next(response);
+        console.log('Profile updated successfully:', response);
+        console.log('Updated profile photoURL:', response.photoURL);
+        return response;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  }
 
-  
 }

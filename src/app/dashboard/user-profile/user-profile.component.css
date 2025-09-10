@@ -13,9 +13,10 @@
 
 .profile-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 20px;
+  margin-bottom: 30px;
   position: relative; /* Add this line */
 }
 
@@ -232,11 +233,261 @@ input[type="file"] {
   background: #ccc;
 }
 
+/* Estilos para el preview de imagen */
+.profile-image-section {
+  margin: 20px 0;
+  text-align: center;
+}
 
+.current-image, .image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
 
+.profile-img, .preview-img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e0e0e0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-img {
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.image-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.change-image-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.change-image-btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+.preview-container {
+  margin: 10px 0;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.confirm-btn:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.confirm-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-2px);
+}
+
+.cancel-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.image-preview h4 {
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+/* Estilos para la sección del perfil header */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* Estilos para la edición del nombre */
+.name-section {
+  text-align: center;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.name-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.name-display h2 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.edit-name-btn {
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.edit-name-btn:hover {
+  background: #f0f0f0;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.name-edit {
+  width: 100%;
+  max-width: 300px;
+}
+
+.name-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 2px solid #007bff;
+  border-radius: 25px;
+  padding: 5px;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.name-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  background: transparent;
+  color: #333;
+}
+
+.name-input::placeholder {
+  color: #999;
+}
+
+.name-edit-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.save-name-btn, .cancel-name-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.save-name-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-name-btn:hover:not(:disabled) {
+  background: #218838;
+  transform: scale(1.1);
+}
+
+.save-name-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.cancel-name-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.cancel-name-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .profile-config-container {
     margin: 1rem;
     padding: 1rem;
+  }
+  
+  .profile-header {
+    gap: 15px;
+  }
+  
+  .name-display h2 {
+    font-size: 20px;
+  }
+  
+  .name-input-container {
+    max-width: 250px;
   }
 }

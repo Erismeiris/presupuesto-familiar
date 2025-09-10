@@ -37,33 +37,54 @@ export class AuthService {
     private http: HttpClient
   ) {
     // Inicializa el valor de la señal 'user' desde localStorage
+    this.initializeUserFromStorage();
+  }
+
+  private initializeUserFromStorage() {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        this.user.set(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        this.user.set(parsedUser);
+        
+        // Verificar si el token aún es válido
+        const token = this.getAccessToken();
+        console.log('Checking stored token:', token ? 'exists' : 'missing');
+        
+        if (!token) {
+          console.log('No access token found, user needs to login again');
+          this.clearUserSession();
+          return;
+        }
+        
+        if (this.isTokenExpired(token)) {
+          console.log('Token expired, attempting refresh...');
+          // Intentar refrescar el token
+          this.refreshToken().subscribe({
+            next: () => {
+              console.log('Token refreshed successfully');
+            },
+            error: (error) => {
+              console.error('Token refresh failed:', error);
+              console.log('Redirecting to login...');
+              this.clearUserSession();
+              this.router.navigate(['/login']);
+            }
+          });
+        } else {
+          console.log('Token still valid');
+        }
       } catch (error) {
         console.error('Error parsing stored user:', error);
-        localStorage.removeItem('user');
+        this.clearUserSession();
       }
     }
+  }
 
-    // Escucha los cambios en el estado de autenticación
-    onAuthStateChanged(this.auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const userDoc = doc(this.firestore, 'usuarios', firebaseUser.uid);
-        const userData = await docData(userDoc).pipe(take(1)).toPromise();
-        const user = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          name: userData?.['name'] || null
-        };
-        this.user.set(user);
-        localStorage.setItem('user', JSON.stringify(user)); // Actualiza localStorage
-      } else {
-        this.user.set(null);
-        localStorage.removeItem('user'); // Limpia localStorage
-      }
-    });
+  private clearUserSession() {
+    this.user.set(null);
+    this.accessTokenSubject.next(null);
+    localStorage.removeItem('user');
   }
 
   async register(email: string, password: string, name: string) {
@@ -76,9 +97,9 @@ export class AuthService {
         // Verificar que el login fue exitoso
         if (response && response.success && response.user) {
           const user = {
-            uid: response.user.id || response.user.uid,
-            email: response.user.email,
-            name: response.user.name
+            uid: response.user.id.toString(), // Asegurar que sea string
+            email: response.user.email || null,
+            name: response.user.name || null
           };
           this.user.set(user);
           localStorage.setItem('user', JSON.stringify(user));
@@ -113,16 +134,25 @@ export class AuthService {
   }
 
   refreshToken(): Observable<any> {
+    console.log('Attempting to refresh token...');
     return this.http.post<any>(`${baseURL}/api/auth/refresh`, {}, 
       { withCredentials: true }
     ).pipe(
       tap(response => {
+        console.log('Refresh token response:', response);
         if (response && response.accessToken) {
           this.accessTokenSubject.next(response.accessToken);
+          console.log('Access token updated');
+        } else {
+          console.warn('No access token in refresh response');
         }
       }),
       catchError(error => {
-        this.logout();
+        console.error('Refresh token error:', error.status, error.error);
+        if (error.status === 401) {
+          console.log('Refresh token invalid or expired, clearing session');
+        }
+        this.clearUserSession();
         return throwError(() => error);
       })
     );
@@ -153,9 +183,9 @@ export class AuthService {
         // Si el registro incluye login automático
         if (response && response.success && response.user) {
           const user = {
-            uid: response.user.id || response.user.uid,
-            email: response.user.email,
-            name: response.user.name
+            uid: response.user.id.toString(), // Asegurar que sea string
+            email: response.user.email || null,
+            name: response.user.name || null
           };
           this.user.set(user);
           localStorage.setItem('user', JSON.stringify(user));
@@ -196,5 +226,25 @@ export class AuthService {
     // Check JWT token for backend auth
     const token = this.getAccessToken();
     return token !== null && !this.isTokenExpired(token);
+  }
+
+  getCurrentUser(): { uid: string; email: string | null; name: string | null } | null {
+    let currentUser = this.user();
+    
+    // Si no hay usuario en el signal, intentar desde localStorage
+    if (!currentUser) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          currentUser = JSON.parse(storedUser);
+          this.user.set(currentUser);
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          return null;
+        }
+      }
+    }
+    
+    return currentUser;
   }
 }

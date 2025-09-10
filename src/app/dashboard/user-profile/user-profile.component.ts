@@ -6,7 +6,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { User, UserProfile } from '../../interface/user.interface';
+import { UserProfile } from '../../interface/user.interface';
 import { ProfileService } from '../../services/profile.service';
 
 
@@ -52,9 +52,15 @@ interface UploadEvent {
 })
 export class UserProfileComponent implements OnInit {
   public userProfile! : UserProfile 
-  public user!: User | null;
+  public user: { uid: string; email: string | null; name: string | null } | null = null;
   public photoUrl = '';
+  public previewImageUrl = '';
+  public selectedFile: File | null = null;
+  public showPreview = false;
   public isLoading: boolean = true;
+  public isUploadingImage: boolean = false;
+  public isEditingName = false;
+  public editedName = '';
 
   colorFavorite =  "#3498db"
    
@@ -77,8 +83,8 @@ export class UserProfileComponent implements OnInit {
   public message='';
 
 
-  public authSerivice = inject(AuthService);
-  public profileSerivice = inject(ProfileService);
+  public authService = inject(AuthService);
+  public profileService = inject(ProfileService);
   public router = inject(Router);
   
 
@@ -124,42 +130,182 @@ export class UserProfileComponent implements OnInit {
       this.sharedEmails.splice(index, 1);
     }
   }
-  //Capturar la imagen y convertirla en base64, enviarla al servicios de firebase
- async onUpload(event: any) {
-    const file = event.target.files[0];    
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {  
-      const userUid = this.authSerivice.user()?.uid;
-      const username = this.authSerivice.user()?.name ;    
-      if (userUid && username) {
-        this.profileSerivice.uploadImage(file, userUid, username).then((url) => {
-          this.photoUrl = url;
-        });
-      } else {
-        console.error("User ID or name is undefined");
+  // Capturar la imagen y mostrar preview
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      
+      // Crear URL de preview para mostrar la imagen
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewImageUrl = e.target.result;
+        this.showPreview = true;
+      };
+      reader.readAsDataURL(file);
+      
+      console.log("File selected:", file.name);
+    }
+  }
+
+  // Confirmar y subir la imagen
+  async confirmImageUpload() {
+    if (!this.selectedFile) return;
+    
+    const currentUser = this.authService.getCurrentUser();
+    const userUid = currentUser?.uid;
+    const username = currentUser?.name;
+    
+    if (userUid && this.userProfile?.id) {
+      try {
+        this.isUploadingImage = true;
+        const userName = username || `user_${userUid}`;
+        
+        // Llamar al servicio de upload
+        const imageUrl = await this.profileService.uploadImage(this.selectedFile, userUid, userName);
+        
+        // Verificar si se obtuvo una URL válida
+        if (!imageUrl || imageUrl.trim() === '') {
+          console.error("No image URL received from upload");
+          console.error("Check the backend response structure in the console above");
+          // Solo mostrar error en consola, no alert ya que puede ser un problema temporal
+          return;
+        }
+        
+        // Actualizar la imagen del perfil localmente
+        this.photoUrl = imageUrl;
+        
+        // Actualizar el perfil en el backend con la nueva imagen
+        const profileData = {
+          name: this.user?.name || "",
+          color: this.colorFavorite,
+          currency: this.selectedCurrency,
+          isSharingExpenses: this.isSharedExpenseEnabled,
+          sharedWithUsers: this.sharedEmails.filter(email => email.trim() !== ""),
+          emailVerified: this.userProfile.emailVerified || false,
+          photoURL: imageUrl // Incluir la nueva URL de la imagen
+        };
+
+        const updatedProfile = await this.profileService.updateProfile(this.userProfile.id, profileData);
+        
+        // Actualizar el perfil local con los datos del backend
+        if (updatedProfile) {
+          this.userProfile = updatedProfile;
+          this.photoUrl = updatedProfile.photoURL || imageUrl;
+        }
+        
+        this.showPreview = false;
+        this.selectedFile = null;
+        this.previewImageUrl = '';
+        
+        console.log("Image uploaded and profile updated successfully");
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      } finally {
+        this.isUploadingImage = false;
+      }
+    } else {
+      console.error("User ID or Profile ID is undefined");
+    }
+  }
+
+  // Cancelar la subida y volver a la imagen anterior
+  cancelImageUpload() {
+    this.showPreview = false;
+    this.selectedFile = null;
+    this.previewImageUrl = '';
+    
+    // Reset del input file
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  // Iniciar edición del nombre
+  startEditingName() {
+    this.isEditingName = true;
+    this.editedName = this.user?.name || '';
+  }
+
+  // Guardar el nombre editado
+  async saveNameEdit() {
+    if (this.editedName.trim() && this.user && this.userProfile?.id) {
+      try {
+        // Actualizar el usuario local temporalmente
+        this.user = { ...this.user, name: this.editedName.trim() };
+        localStorage.setItem('user', JSON.stringify(this.user));
+        this.authService.user.set(this.user);
+        
+        // Guardar en el backend
+        const profileData = {
+          name: this.editedName.trim(),
+          color: this.colorFavorite,
+          currency: this.selectedCurrency,
+          isSharingExpenses: this.isSharedExpenseEnabled,
+          sharedWithUsers: this.sharedEmails.filter(email => email.trim() !== ""),
+          emailVerified: this.userProfile.emailVerified || false,
+          photoURL: this.photoUrl
+        };
+
+        const updatedProfile = await this.profileService.updateProfile(this.userProfile.id, profileData);
+        
+        if (updatedProfile) {
+          // Actualizar el perfil local con la respuesta del backend
+          this.userProfile = updatedProfile;
+          console.log('Name updated successfully in backend:', this.editedName);
+        } else {
+          console.error('Failed to update name in backend');
+        }
+        
+        this.isEditingName = false;
+      } catch (error) {
+        console.error('Error updating name:', error);
+        // Revertir cambios locales si falla el backend
+        this.user = { ...this.user, name: this.userProfile?.name || '' };
+        localStorage.setItem('user', JSON.stringify(this.user));
+        this.authService.user.set(this.user);
       }
     }
-     
+  }
+
+  // Cancelar edición del nombre
+  cancelNameEdit() {
+    this.isEditingName = false;
+    this.editedName = '';
   }
 
  async saveSettings(): Promise<void> {
-     const userProfile:UserProfile = {
-      userId: this.user?.uid || "",
-      name: this.user?.name || "",
-      color: this.customColor,
-      currency: this.selectedCurrency,
-      photoURL: this.photoUrl,
-      isSharingExpenses: this.isSharedExpenseEnabled,
-      sharedWithUsers: this.sharedEmails
-    };
+    if (!this.userProfile?.id) {
+      console.error("No profile ID available for update");
+      return;
+    }
 
     try {
-      //await this.profileSerivice.addProfile(userProfile).then(() => {
-       this.router.navigate(["/dashboard"]);
-      // });
+      this.isLoading = true;
+      
+      const profileData = {
+        name: this.user?.name || "",
+        color: this.colorFavorite,
+        currency: this.selectedCurrency,
+        isSharingExpenses: this.isSharedExpenseEnabled,
+        sharedWithUsers: this.sharedEmails.filter(email => email.trim() !== ""),
+        emailVerified: this.userProfile.emailVerified || false,
+        photoURL: this.photoUrl // Incluir la URL de la imagen actual
+      };
+
+      const updatedProfile = await this.profileService.updateProfile(this.userProfile.id, profileData);
+      
+      if (updatedProfile) {
+        console.log("Profile updated successfully:", updatedProfile);
+        this.router.navigate(["/dashboard"]);
+      } else {
+        console.error("Failed to update profile");
+      }
     } catch (error) {
       console.error("Error saving settings:", error);
+    } finally {
+      this.isLoading = false;
     }
   }
  
@@ -167,22 +313,51 @@ export class UserProfileComponent implements OnInit {
 
 
   async getProfile() {
-    const userUid = this.authSerivice.user()?.uid;    
-    if(userUid)   
-   await this.profileSerivice.getProfileByUserId(userUid).then((profile) => {
-      if (profile) {
-        this.colorFavorite = profile.color;
-        this.selectedCurrency = profile.currency;
-        this.isSharedExpenseEnabled = profile.isSharingExpenses;
-        this.sharedEmails = profile.sharedWithUsers || [];
-        this.photoUrl = profile.photoURL || '';
-      } else {
-        console.error("Profile not found");
+    // Verificar si el usuario está autenticado
+    if (!this.authService.isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login');
+      this.router.navigate(['/login']);
+      return;
+    }
+    
+    // Obtener usuario actual
+    this.user = this.authService.getCurrentUser();
+    console.log('Current user:', this.user);
+    
+    const userUid = this.user?.uid;    
+    if(userUid) {
+      try {
+        const profile = await this.profileService.getProfileByUserId(userUid);
+        if (profile) {
+          this.userProfile = profile; // Guardar el perfil completo
+          this.colorFavorite = profile.color || "#3498db";
+          this.selectedCurrency = profile.currency || "USD";
+          this.isSharedExpenseEnabled = profile.isSharingExpenses || false;
+          this.sharedEmails = profile.sharedWithUsers || [""];
+          this.photoUrl = profile.photoURL || '';
+          console.log('Profile loaded successfully');
+        } else {
+          console.log("No profile found, using defaults");
+        }
+      } catch (error: any) {
+        console.error("Error loading profile:", error);
+        // Si hay error de autenticación, redirigir al login
+        if (error?.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      } finally {
+        this.isLoading = false; // Importante: terminar el loading cuando se complete la carga
       }
-   
-  });
-   
-  
+    } else {
+      console.error("No user UID available");
+      this.router.navigate(['/login']);
+    }
+  }
+
+  onImageError(event: any) {
+    console.error("Error loading image:", event);
+    console.log("Failed image src:", event.target.src);
+    console.log("Current photoUrl:", this.photoUrl);
   }
 
   showCard(): void {
