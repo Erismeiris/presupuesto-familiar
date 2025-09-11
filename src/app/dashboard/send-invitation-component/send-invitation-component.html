@@ -1,0 +1,54 @@
+<div class="card">
+  <div class="card-header">
+    <div class="flex align-items-center gap-2">
+      <i class="pi pi-user-plus"></i>
+      <h2>Invitar a Compartir Gastos</h2>
+    </div>
+    <p class="text-600 mt-2">
+      Invita a otra persona para compartir y dividir gastos
+    </p>
+  </div>
+
+  <div class="card-body">
+    <form [formGroup]="invitationForm" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="email" class="block text-900 font-medium mb-2">Email del usuario a invitar</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-envelope"></i>
+          <input 
+            id="email"
+            type="email" 
+            pInputText 
+            formControlName="toUserEmail"
+            placeholder="ejemplo@correo.com"
+            class="w-full"
+            [class.ng-invalid]="invitationForm.get('toUserEmail')?.invalid && invitationForm.get('toUserEmail')?.touched"
+            [class.ng-dirty]="invitationForm.get('toUserEmail')?.dirty">
+        </span>
+        <small 
+          class="p-error" 
+          *ngIf="invitationForm.get('toUserEmail')?.hasError('required') && invitationForm.get('toUserEmail')?.touched">
+          El email es requerido
+        </small>
+        <small 
+          class="p-error" 
+          *ngIf="invitationForm.get('toUserEmail')?.hasError('email') && invitationForm.get('toUserEmail')?.touched">
+          Ingresa un email válido
+        </small>
+      </div>
+
+      <div class="flex justify-content-end mt-4">
+        <p-button 
+          type="submit"
+          label="{{ (loading$ | async) ? 'Enviando...' : 'Enviar Invitación' }}"
+          icon="{{ (loading$ | async) ? 'pi pi-spin pi-spinner' : 'pi pi-send' }}"
+          [disabled]="invitationForm.invalid || (loading$ | async)"
+          styleClass="p-button-primary">
+        </p-button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast para notificaciones -->
+<p-toast></p-toast>
