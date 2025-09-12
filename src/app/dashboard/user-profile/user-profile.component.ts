@@ -147,6 +147,7 @@ export class UserProfileComponent implements OnInit {
       console.log("File selected:", file.name);
     }
   }
+  
 
   // Confirmar y subir la imagen
   async confirmImageUpload() {

@@ -1,16 +1,52 @@
 .card {
-      height: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  
+  .card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+    
+    h2 {
+      margin: 0;
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 600;
     }
     
-    .card-header {
-      padding: 1rem;
-      border-bottom: 1px solid var(--surface-border);
-    }
-    
-    .card-body {
-      padding: 1rem;
-    }
-    
-    .text-primary {
+    .pi {
       color: var(--primary-color);
     }
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.p-inputtext {
+  &.ng-invalid.ng-dirty {
+    border-color: var(--red-500);
+  }
+}
+
+.p-error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .card {
+    margin: 10px;
+    max-width: none;
+  }
+  
+  .card-header, .card-body {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,87 @@
+.card {
+  margin: 20px;
+  
+  .card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+    
+    h2 {
+      margin: 0;
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .pi {
+      color: var(--primary-color);
+    }
+  }
+}
+
+.surface-card {
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  }
+}
+
+.p-avatar {
+  background-color: var(--surface-200);
+  color: var(--text-color);
+}
+
+.text-6xl {
+  font-size: 4rem;
+}
+
+// Status icons colors
+.text-green-500 {
+  color: var(--green-500);
+}
+
+.text-red-500 {
+  color: var(--red-500);
+}
+
+.text-orange-500 {
+  color: var(--orange-500);
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .card {
+    margin: 10px;
+  }
+  
+  .surface-card {
+    .flex.align-items-start {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .flex.gap-2 {
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      .p-button {
+        width: 100%;
+      }
+    }
+  }
+  
+  .text-6xl {
+    font-size: 2.5rem;
+  }
+}
+
+// PrimeNG TabView customization
+::ng-deep .p-tabview {
+  .p-tabview-nav {
+    background: var(--surface-50);
+  }
+  
+  .p-tabview-panel {
+    padding: 0;
+  }
+}

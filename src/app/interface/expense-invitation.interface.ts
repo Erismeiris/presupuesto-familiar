@@ -1,5 +1,5 @@
 export interface ExpenseInvitation {
-    d: string;
+   id: string;
   fromUserId: string;
   toUserEmail: string;
   toUserId?: string;

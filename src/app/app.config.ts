@@ -14,6 +14,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { firebaseConfig } from '../../firebase.config';
+import { MessageService } from 'primeng/api';
 
 
 
@@ -37,6 +38,7 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),  
     provideStorage(() => getStorage()),
+    MessageService, // Proporcionar globalmente
     
   ]
 };

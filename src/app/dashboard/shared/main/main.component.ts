@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { SplitterModule } from 'primeng/splitter';
 import { TabsModule } from 'primeng/tabs';
 import { ExpensiveCardComponent } from '../../expensive_card/expensive_card.component';
@@ -9,6 +9,7 @@ import { AuthService } from '../../../services/auth.service';
 import { User } from '../../../interface/user.interface';
 import { GastosService } from '../../../services/gastos.service';
 import { ProfileService } from '../../../services/profile.service';
+import { MessageService } from 'primeng/api';
 
 export interface ExpensiveCard {
   title: string;
@@ -28,12 +29,13 @@ export interface ExpensiveCard {
     TabsModule,
     ExpensiveRegisterComponent
   ],
+  providers: [MessageService],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainComponent implements OnInit {  
-
+  private messageService = inject(MessageService);
   user!: User | null ;
   userProfile: any;
 

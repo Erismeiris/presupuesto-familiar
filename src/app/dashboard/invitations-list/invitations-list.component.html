@@ -1,0 +1,162 @@
+<app-header/>
+<div class="card">
+  <div class="card-header">
+    <div class="flex align-items-center gap-2">
+      <i class="pi pi-users"></i>
+      <h2>Invitaciones para Compartir Gastos</h2>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <p-tabView [(activeIndex)]="activeIndex">
+      
+      <!-- Tab: Invitaciones Recibidas -->
+      <p-tabPanel header="Recibidas" leftIcon="pi pi-inbox">
+        <div class="p-4">
+          <!-- Loading State -->
+          <div *ngIf="loading$ | async" class="flex flex-column align-items-center justify-content-center p-6">
+            <p-progressSpinner strokeWidth="4" animationDuration="1s"></p-progressSpinner>
+            <p class="mt-3 text-600">Cargando invitaciones...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!(loading$ | async) && (receivedInvitations$ | async)?.length === 0" 
+               class="flex flex-column align-items-center justify-content-center p-6 text-center">
+            <i class="pi pi-inbox text-6xl text-400 mb-3"></i>
+            <h3 class="text-900 mb-2">No hay invitaciones recibidas</h3>
+            <p class="text-600 mb-0">Cuando alguien te invite a compartir gastos, aparecerán aquí.</p>
+          </div>
+
+          <!-- Invitations List -->
+          <div *ngIf="!(loading$ | async) && (receivedInvitations$ | async)?.length! > 0">
+            <div *ngFor="let invitation of receivedInvitations$ | async" class="mb-4">
+              <div class="surface-card shadow-2 border-round p-4">
+                <!-- Header -->
+                <div class="flex align-items-start justify-content-between mb-3">
+                  <div class="flex align-items-center gap-3">
+                    <p-avatar 
+                      icon="pi pi-user" 
+                      styleClass="surface-100" 
+                      size="large">
+                    </p-avatar>
+                    <div>
+                      <h4 class="text-900 font-semibold m-0">{{ invitation.fromUser?.name }}</h4>
+                      <p class="text-600 m-0 mt-1">{{ invitation.fromUser?.email }}</p>
+                    </div>
+                  </div>
+                  <p-tag 
+                    [value]="invitation.status | titlecase"
+                    [severity]="getStatusSeverity(invitation.status)"
+                    [icon]="getStatusIcon(invitation.status)">
+                  </p-tag>
+                </div>
+
+                <!-- Content -->
+                <div class="mb-3">
+                  <p class="text-900 mb-2">Te ha invitado a compartir gastos</p>
+                  <small class="text-500">{{ invitation.created_at | date:'medium' }}</small>
+                </div>
+
+                <!-- Actions for Pending -->
+                <div *ngIf="invitation.status === 'pending'" class="flex gap-2">
+                  <p-button 
+                    label="Aceptar"
+                    icon="pi pi-check"
+                    size="small"
+                    styleClass="p-button-success"
+                    (click)="respondToInvitation(invitation, 'accepted')">
+                  </p-button>
+                  <p-button 
+                    label="Rechazar"
+                    icon="pi pi-times"
+                    size="small"
+                    styleClass="p-button-outlined p-button-danger"
+                    (click)="respondToInvitation(invitation, 'rejected')">
+                  </p-button>
+                </div>
+
+                <!-- Status for Responded -->
+                <div *ngIf="invitation.status !== 'pending'" class="flex align-items-center gap-2">
+                  <i [class]="getStatusIcon(invitation.status)" 
+                     [ngClass]="{'text-green-500': invitation.status === 'accepted', 'text-red-500': invitation.status === 'rejected'}"></i>
+                  <span class="text-sm">
+                    {{ invitation.status === 'accepted' ? 'Aceptada' : 'Rechazada' }} el 
+                    {{ invitation.responded_at | date:'medium' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tab: Invitaciones Enviadas -->
+      <p-tabPanel header="Enviadas" leftIcon="pi pi-send">
+        <div class="p-4">
+          <!-- Loading State -->
+          <div *ngIf="loading$ | async" class="flex flex-column align-items-center justify-content-center p-6">
+            <p-progressSpinner strokeWidth="4" animationDuration="1s"></p-progressSpinner>
+            <p class="mt-3 text-600">Cargando invitaciones...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!(loading$ | async) && (sentInvitations$ | async)?.length === 0" 
+               class="flex flex-column align-items-center justify-content-center p-6 text-center">
+            <i class="pi pi-send text-6xl text-400 mb-3"></i>
+            <h3 class="text-900 mb-2">No has enviado invitaciones</h3>
+            <p class="text-600 mb-0">Las invitaciones que envíes aparecerán aquí.</p>
+          </div>
+
+          <!-- Invitations List -->
+          <div *ngIf="!(loading$ | async) && (sentInvitations$ | async)?.length! > 0">
+            <div *ngFor="let invitation of sentInvitations$ | async" class="mb-4">
+              <div class="surface-card shadow-2 border-round p-4">
+                <!-- Header -->
+                <div class="flex align-items-start justify-content-between mb-3">
+                  <div class="flex align-items-center gap-3">
+                    <p-avatar 
+                      icon="pi pi-envelope" 
+                      styleClass="surface-100" 
+                      size="large">
+                    </p-avatar>
+                    <div>
+                      <h4 class="text-900 font-semibold m-0">{{ invitation.toUserEmail }}</h4>
+                      <p class="text-600 m-0 mt-1" *ngIf="invitation.toUser">{{ invitation.toUser.name }}</p>
+                      <p class="text-orange-500 m-0 mt-1" *ngIf="!invitation.toUser">
+                        <i class="pi pi-user-plus mr-1"></i>Usuario nuevo
+                      </p>
+                    </div>
+                  </div>
+                  <p-tag 
+                    [value]="invitation.status | titlecase"
+                    [severity]="getStatusSeverity(invitation.status)"
+                    [icon]="getStatusIcon(invitation.status)">
+                  </p-tag>
+                </div>
+
+                <!-- Content -->
+                <div class="mb-3">
+                  <p class="text-900 mb-2">Invitación para compartir gastos</p>
+                  <small class="text-500">Enviada el {{ invitation.created_at | date:'medium' }}</small>
+                </div>
+
+                <!-- Status for Responded -->
+                <div *ngIf="invitation.status !== 'pending'" class="flex align-items-center gap-2">
+                  <i [class]="getStatusIcon(invitation.status)" 
+                     [ngClass]="{'text-green-500': invitation.status === 'accepted', 'text-red-500': invitation.status === 'rejected'}"></i>
+                  <span class="text-sm">
+                    {{ invitation.status === 'accepted' ? 'Aceptada' : 'Rechazada' }} el 
+                    {{ invitation.responded_at | date:'medium' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>
+
+<!-- Toast para notificaciones -->
+<p-toast></p-toast>

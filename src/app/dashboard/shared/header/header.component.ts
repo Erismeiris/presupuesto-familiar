@@ -5,21 +5,25 @@ import { PrimeIcons, MenuItem } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
 import { AuthService } from '../../../services/auth.service';
 import swal from 'sweetalert';
+import { MessageService } from 'primeng/api';
+
+
 @Component({
-  selector: 'app-header',
-  standalone: true,
-  imports: [
-    Menubar,
-    CommonModule,
-    RouterModule     
-     
+    selector: 'app-header',
+    standalone: true,
+    imports: [
+        Menubar,
+        CommonModule,
+        RouterModule     
+        
     ],
-  templateUrl: './header.component.html',
-  styleUrl: './header.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './header.component.html',
+    styleUrl: './header.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent implements OnInit{ 
-  title = 'Control de Presupuesto Familiar';
+    title = 'Control de Presupuesto Familiar';
+    private messageService = inject(MessageService);
 
   items: MenuItem[] | undefined;
 
@@ -108,7 +112,14 @@ export class HeaderComponent implements OnInit{
 
             ]
                 
-        }
+        },
+        {
+          label: 'Notificaciones',
+          icon: 'pi pi-bell',
+         command: () => {
+                        this.router.navigate(['invitations']);
+                    }
+      },
   ]
 }
 
