@@ -6,12 +6,17 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { UserProfile } from '../../interface/user.interface';
+import { EmailValidationState, UserProfile } from '../../interface/user.interface';
 import { ProfileService } from '../../services/profile.service';
 
 
 import { HttpClientModule } from '@angular/common/http';
 import { HeaderComponent } from '../shared/header/header.component';
+import { debounceTime, from, of, Subject, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ExpenseInvitationService } from '../../services/expense-invitation.service';
+import { UserSearchService } from '../../services/user-search.service';
+import { ExpenseInvitation, SendInvitationRequest } from '../../interface/expense-invitation.interface';
 
 
 interface ColorPalette {
@@ -75,33 +80,37 @@ export class UserProfileComponent implements OnInit {
   customColor!: string;
   selectedCurrency: string = "USD";
   isSharedExpenseEnabled: boolean = false;
+  public emailStates: EmailValidationState[] = []; // Inicializar vacío
+  public expensesInvitation: ExpenseInvitationService = inject(ExpenseInvitationService);
+  
   sharedEmails: string[] = [""] ;
   isCardVisible: boolean = false;
 
- 
+
 
   public message='';
 
+  private emailSearchSubject = new Subject<{ email: string; index: number }>();
 
   public authService = inject(AuthService);
+  public userSearchService = inject(UserSearchService);
   public profileService = inject(ProfileService);
   public router = inject(Router);
-  
+  public invitationService = inject(ExpenseInvitationService);
 
   
   
+
+  constructor() {
+    this.getProfile();
+    this.setupEmailSearch(); // Mover aquí desde ngOnInit
+  }
 
   ngOnInit(): void {
     this.customColor = this.colorFavorite;
-    this.selectedCurrency = "USD";   
+    this.selectedCurrency = "USD"; 
+    // Remover setupEmailSearch() de aquí
   }
-  
-  constructor( ) {  
-    this.getProfile();
-  
-   }
-
-  
 
   selectTheme(palette: ColorPalette): void {
     this.selectedPalette = palette;
@@ -119,17 +128,23 @@ export class UserProfileComponent implements OnInit {
   }
   toggleSharedExpense(): void {
     console.log("Shared expense toggled:", this.isSharedExpenseEnabled);
-  }
-
-  addNewEmail(): void {
-    this.sharedEmails.push("");
-  }
-
-   removeEmail(index: number): void {
-    if (this.sharedEmails.length > 1) {
-      this.sharedEmails.splice(index, 1);
+    
+    if (this.isSharedExpenseEnabled) {
+      // Cuando se activa, inicializar con un email vacío
+      this.emailStates = [{
+        email: '',
+        isValidating: false,
+        userExists: null,
+        canSendInvitation: false,
+        validationMessage: ''
+      }];
+    } else {
+      // Cuando se desactiva, limpiar completamente
+      this.emailStates = [];
     }
   }
+
+   
   // Capturar la imagen y mostrar preview
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -182,7 +197,7 @@ export class UserProfileComponent implements OnInit {
           color: this.colorFavorite,
           currency: this.selectedCurrency,
           isSharingExpenses: this.isSharedExpenseEnabled,
-          sharedWithUsers: this.sharedEmails.filter(email => email.trim() !== ""),
+          sharedWithUsers: this.getValidEmails(),
           emailVerified: this.userProfile.emailVerified || false,
           photoURL: imageUrl // Incluir la nueva URL de la imagen
         };
@@ -244,7 +259,7 @@ export class UserProfileComponent implements OnInit {
           color: this.colorFavorite,
           currency: this.selectedCurrency,
           isSharingExpenses: this.isSharedExpenseEnabled,
-          sharedWithUsers: this.sharedEmails.filter(email => email.trim() !== ""),
+          sharedWithUsers: this.getValidEmails(),
           emailVerified: this.userProfile.emailVerified || false,
           photoURL: this.photoUrl
         };
@@ -290,7 +305,7 @@ export class UserProfileComponent implements OnInit {
         color: this.colorFavorite,
         currency: this.selectedCurrency,
         isSharingExpenses: this.isSharedExpenseEnabled,
-        sharedWithUsers: this.sharedEmails.filter(email => email.trim() !== ""),
+        sharedWithUsers: this.getValidEmails(),
         emailVerified: this.userProfile.emailVerified || false,
         photoURL: this.photoUrl // Incluir la URL de la imagen actual
       };
@@ -330,10 +345,32 @@ export class UserProfileComponent implements OnInit {
       try {
         const profile = await this.profileService.getProfileByUserId(userUid);
         if (profile) {
-          this.userProfile = profile; // Guardar el perfil completo
+          this.userProfile = profile;
           this.colorFavorite = profile.color || "#3498db";
           this.selectedCurrency = profile.currency || "USD";
           this.isSharedExpenseEnabled = profile.isSharingExpenses || false;
+          
+          // Solo cargar emails si está habilitado el gasto compartido
+          if (this.isSharedExpenseEnabled && profile.sharedWithUsers && profile.sharedWithUsers.length > 0) {
+            this.emailStates = profile.sharedWithUsers.map(email => ({
+              email: email,
+              isValidating: false,
+              userExists: null,
+              canSendInvitation: false,
+              validationMessage: ''
+            }));
+          } else if (this.isSharedExpenseEnabled) {
+            // Si está habilitado pero no hay emails guardados, inicializar con uno vacío
+            this.emailStates = [{
+              email: '',
+              isValidating: false,
+              userExists: null,
+              canSendInvitation: false,
+              validationMessage: ''
+            }];
+          }
+          // Si no está habilitado, emailStates permanece vacío
+          
           this.sharedEmails = profile.sharedWithUsers || [""];
           this.photoUrl = profile.photoURL || '';
           console.log('Profile loaded successfully');
@@ -368,4 +405,175 @@ export class UserProfileComponent implements OnInit {
   hideCard(): void {
     this.isCardVisible = false;
   }
+
+  // ✨ Configurar búsqueda reactiva con debounce
+  private setupEmailSearch(): void {
+    this.emailSearchSubject.pipe(
+      debounceTime(500), // Esperar 500ms después de que el usuario pare de escribir
+      switchMap(({ email, index }) => {
+        if (!email || !this.isValidEmail(email)) {
+          return of({ index, result: null });
+        }
+        
+        this.emailStates[index].isValidating = true;
+        this.emailStates[index].validationMessage = 'Buscando usuario...';
+        
+        // ✨ Aquí usarías tu servicio real para buscar usuarios
+        return from(this.searchUserByEmail(email)).pipe(
+          switchMap(userExists => of({ index, result: { userExists, email } }))
+        );
+      }),
+      takeUntilDestroyed() // Ahora funciona porque está en el constructor
+    ).subscribe(({ index, result }) => {
+      if (result) {
+        this.updateEmailValidationState(index, result.email, result.userExists || false);
+      } else {
+        this.emailStates[index].isValidating = false;
+        this.emailStates[index].userExists = null;
+        this.emailStates[index].canSendInvitation = false;
+        this.emailStates[index].validationMessage = '';
+      }
+    });
+  }
+  // ✨ NUEVO: Validar formato de email
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+   // ✨ Búsqueda de usuario (reemplazar con tu servicio real)
+  private searchUserByEmail(email: string) {
+   
+    return this.userSearchService.searchUserByEmail(email).toPromise()
+    .then(res => res?.exists).catch(() => false);
+  }
+
+   // ✨ NUEVO: Actualizar estado de validación del email
+  private updateEmailValidationState(index: number, email: string, userExists: boolean): void {
+    const state = this.emailStates[index];
+    state.isValidating = false;
+    state.userExists = userExists;
+    state.canSendInvitation = userExists;
+    
+    if (userExists) {
+      state.validationMessage = '✅ Usuario encontrado - Listo para invitar';
+      state.userName = `Usuario de ${email}`; // Aquí pondrías el nombre real del usuario
+    } else {
+      state.validationMessage = '⚠️ Usuario no registrado - Se enviará invitación de registro';
+      state.canSendInvitation = true; // También podemos invitar a usuarios nuevos
+    }
+  }
+
+  onEmailChange(email: string, index: number): void {
+    this.emailStates[index].email = email;
+    
+    if (!email.trim()) {
+      this.emailStates[index].userExists = null;
+      this.emailStates[index].canSendInvitation = false;
+      this.emailStates[index].validationMessage = '';
+      return;
+    }
+
+    if (!this.isValidEmail(email)) {
+      this.emailStates[index].validationMessage = '❌ Formato de email inválido';
+      this.emailStates[index].canSendInvitation = false;
+      return;
+    }
+
+    // Verificar que no sea el email del usuario actual
+    if (email === this.user?.email) {
+      this.emailStates[index].validationMessage = '❌ No puedes invitarte a ti mismo';
+      this.emailStates[index].canSendInvitation = false;
+      return;
+    }
+
+    // Verificar emails duplicados
+    const duplicateIndex = this.emailStates.findIndex((state, i) => 
+      i !== index && state.email.toLowerCase() === email.toLowerCase()
+    );
+    
+    if (duplicateIndex !== -1) {
+      this.emailStates[index].validationMessage = '❌ Email ya agregado';
+      this.emailStates[index].canSendInvitation = false;
+      return;
+    }
+
+    // Buscar usuario
+    this.emailSearchSubject.next({ email, index });
+  }
+
+  // ✨ NUEVO: Enviar invitación a un usuario específico
+  async sendInvitation(index: number): Promise<void> {
+    const emailState = this.emailStates[index];
+    
+    if (!emailState.canSendInvitation || !this.user?.uid) {
+      return;
+    }
+
+    try {
+      emailState.isValidating = true;
+      emailState.validationMessage = 'Enviando invitación...';
+
+      // Usar el servicio de invitaciones que ya implementaste
+      const result = await this.invitationService.sendInvitation({
+        fromUserId: this.user.uid,
+        toUserEmail: emailState.email
+      }).toPromise();
+
+      if (result) {
+        emailState.validationMessage = '✅ Invitación enviada exitosamente';
+        emailState.canSendInvitation = false; // Desactivar botón después de enviar
+        
+        // Mostrar mensaje de éxito
+        console.log(`Invitación enviada a ${emailState.email}:`, result);
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      emailState.validationMessage = '❌ Error al enviar invitación';
+    } finally {
+      emailState.isValidating = false;
+    }
+  }
+
+   // ✨ MODIFICADO: Agregar nuevo email
+  addNewEmail(): void {
+    this.emailStates.push({
+      email: '',
+      isValidating: false,
+      userExists: null,
+      canSendInvitation: false,
+      validationMessage: ''
+    });
+  }
+
+  // ✨ MODIFICADO: Remover email
+  removeEmail(index: number): void {
+    if (this.emailStates.length > 1) {
+      this.emailStates.splice(index, 1);
+    }
+  }
+
+   // ✨ MODIFICADO: Obtener lista de emails válidos para guardar
+  private getValidEmails(): string[] {
+    return this.emailStates
+      .map(state => state.email.trim())
+      .filter(email => email && this.isValidEmail(email));
+  }
+
+  // Métodos getter para el template
+  get registeredUsersCount(): number {
+    return this.emailStates.filter(e => e.userExists === true).length;
+  }
+
+  get newUsersCount(): number {
+    return this.emailStates.filter(e => e.userExists === false).length;
+  }
+
+  get readyToInviteCount(): number {
+    return this.emailStates.filter(e => e.canSendInvitation).length;
+  }
+
+  get shouldShowSummary(): boolean {
+    return this.emailStates.length > 1;
+  }
+
 }

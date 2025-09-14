@@ -33,3 +33,22 @@ export interface Gastos {
 interface GastosUsuario {
   [gastoId: string]: Gastos;
 }
+
+
+export interface UserSearchResult {
+  exists: boolean;
+  user?: {
+    uid: string;
+    email: string;
+    name: string;
+  };
+}
+
+export interface EmailValidationState {
+  email: string;
+  isValidating: boolean;
+  userExists: boolean | null;
+  userName?: string;
+  canSendInvitation: boolean;
+  validationMessage: string;
+}

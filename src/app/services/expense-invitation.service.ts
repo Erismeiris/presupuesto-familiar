@@ -17,7 +17,7 @@ import { tap, catchError, map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ExpenseInvitationService {
-private readonly API_URL = `${environment.apiUrl}/api/expense-invitations`;
+private readonly API_URL = `${environment.apiUrl}/expense-invitations`;
 // Subjects para estado reactivo
   private sentInvitationsSubject = new BehaviorSubject<ExpenseInvitation[]>([]);
   private receivedInvitationsSubject = new BehaviorSubject<ExpenseInvitation[]>([]);

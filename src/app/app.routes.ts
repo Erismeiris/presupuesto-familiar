@@ -14,6 +14,7 @@ export const routes: Routes = [
     {path:'user-profile', component: UserProfileComponent, canActivate: [authGuard], data: {title: 'User Profile'}},    
     {
         path: 'invitations',
+        title: 'Invitaciones',
         canActivate: [authGuard], // Proteger toda la sección de invitations
         children: [
             {

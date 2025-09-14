@@ -101,17 +101,97 @@
         </label>
         <span class="toggle-label">Activa los gastos compartidos</span>
       </div>
+
       <div class="sharing-details" *ngIf="isSharedExpenseEnabled">
-        <div class="email-list">
-          <div class="email-input-container" *ngFor="let email of sharedEmails; let i = index">
-            <input type="email" 
-                   
-                   placeholder="Enter email address"
-                   class="email-input">
-            <button class="remove-email" (click)="removeEmail(i)">×</button>
+        <div class="emails-header">
+            <h4>Invitar usuarios para compartir gastos</h4>
+            <p class="helper-text">Escribe el email de las personas con quienes quieres compartir gastos. Te indicaremos si ya están registrados.</p>
           </div>
+
+        <div class="email-list">
+         <div class="email-input-container" *ngFor="let emailState of emailStates; let i = index">
+              <!-- Input de email con estado -->
+              <div class="email-field">
+                <input 
+                  type="email" 
+                  [(ngModel)]="emailState.email"
+                  (ngModelChange)="onEmailChange($event, i)"
+                  placeholder="usuario@ejemplo.com"
+                  class="email-input"
+                  [class.validating]="emailState.isValidating"
+                  [class.valid]="emailState.userExists === true"
+                  [class.new-user]="emailState.userExists === false"
+                  [class.invalid]="emailState.validationMessage.includes('❌')"
+                >
+                
+                <!-- Indicador de carga -->
+                <div class="loading-indicator" *ngIf="emailState.isValidating">
+                  <i class="pi pi-spin pi-spinner"></i>
+                </div>
+                
+                <!-- Indicador de estado -->
+                <div class="status-indicator" *ngIf="!emailState.isValidating && emailState.userExists !== null">
+                  <i class="pi pi-check-circle" *ngIf="emailState.userExists === true" style="color: #28a745;"></i>
+                  <i class="pi pi-exclamation-triangle" *ngIf="emailState.userExists === false" style="color: #ffc107;"></i>
+                </div>
+                
+                <!-- Botón de enviar invitación -->
+                <button 
+                  class="send-invitation-btn"
+                  *ngIf="emailState.canSendInvitation && !emailState.isValidating"
+                  (click)="sendInvitation(i)"
+                  [disabled]="emailState.isValidating"
+                  title="Enviar invitación">
+                  <i class="pi pi-send"></i>
+                </button>
+                
+                <!-- Botón de remover -->
+                <button class="remove-email" (click)="removeEmail(i)" [disabled]="emailStates.length === 1">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+              
+              <!-- Mensaje de validación -->
+              <div class="validation-message" *ngIf="emailState.validationMessage">
+                <small [innerHTML]="emailState.validationMessage"></small>
+              </div>
+              
+              <!-- Información del usuario encontrado -->
+              <div class="user-info" *ngIf="emailState.userExists === true && emailState.userName">
+                <div class="user-card">
+                  <i class="pi pi-user"></i>
+                  <span>{{ emailState.userName }}</span>
+                  <small class="user-status">Usuario registrado</small>
+                </div>
+              </div>
+            </div>
         </div>
-        <button class="add-email-btn" (click)="addNewEmail()">+ Agrega otro email</button>
+        <!-- Botón para agregar más emails -->
+          <div class="add-email-section">
+            <button class="add-email-btn" (click)="addNewEmail()">
+              <i class="pi pi-plus"></i> Agregar otro email
+            </button>
+          </div>
+           <!-- Resumen de invitaciones -->
+          <div class="invitations-summary" *ngIf="shouldShowSummary">
+            <div class="summary-card">
+              <h5>Resumen</h5>
+              <div class="summary-stats">
+                <div class="stat">
+                  <span class="count">{{ registeredUsersCount }}</span>
+                  <small>Usuarios registrados</small>
+                </div>
+                <div class="stat">
+                  <span class="count">{{ newUsersCount }}</span>
+                  <small>Usuarios nuevos</small>
+                </div>
+                <div class="stat">
+                  <span class="count">{{ readyToInviteCount }}</span>
+                  <small>Listos para invitar</small>
+                </div>
+              </div>
+            </div>
+          </div>
       </div>
     </div>
   
