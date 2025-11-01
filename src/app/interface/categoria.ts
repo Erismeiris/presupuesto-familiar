@@ -1,4 +1,7 @@
 export interface Categoria {    
         "id":string,
-        "name": string;     
+        "nombre": string; 
+        "descripcion": string;
+        "public": boolean;
+        "userId"?: string;   
 }

@@ -14,6 +14,10 @@ import { ProgressBar } from 'primeng/progressbar';
 import { MessageService } from 'primeng/api';
 import swal from 'sweetalert';
 import { ProfileService } from '../../services/profile.service';
+import { Categoria } from '../../interface/categoria';
+import { CategoriaService } from '../../services/categoria.service';
+import { DropdownModule } from 'primeng/dropdown';
+
 
 @Component({
   selector: 'app-expensive-register',
@@ -26,7 +30,8 @@ import { ProfileService } from '../../services/profile.service';
     ToolbarModule,
     ProgressBar, 
     InputTextModule,
-    ButtonModule
+    ButtonModule,
+    DropdownModule
     
   ],
   templateUrl: './expensiveRegister.component.html',
@@ -37,6 +42,7 @@ export class ExpensiveRegisterComponent {
 
  public todayDate = new Date().toISOString().split('T')[0];
  public userProfile!: UserProfile;
+ public categoriaList!: Categoria[];
 
  isloading = true;
  public user!: User
@@ -44,6 +50,7 @@ export class ExpensiveRegisterComponent {
 
   constructor(
     private gastosService: GastosService, 
+    private categoriaService: CategoriaService,
     private userService: AuthService,
     private profileServices: ProfileService,
   ) {
@@ -54,6 +61,7 @@ export class ExpensiveRegisterComponent {
   ngOnInit(): void {  
     this.profileServices.profile$.subscribe((profile) => {
       this.userProfile = profile as UserProfile;
+      this.getCategorias();
       
     });
      const userUid = this.userService.user()?.uid;  
@@ -103,7 +111,9 @@ export class ExpensiveRegisterComponent {
   }
   }
 
+  
   updateGasto(gasto: Gastos) {
+    /*
     if (gasto.id) {
       this.gastosService.updateData(gasto.id, gasto).then(() => {
         swal('Actualizado', 'El gasto ha sido actualizado.', 'success');
@@ -126,6 +136,7 @@ export class ExpensiveRegisterComponent {
         });
       }
     }
+      */
   }
 
 async deleteGasto(gasto: Gastos) {
@@ -179,6 +190,23 @@ async deleteGasto(gasto: Gastos) {
       });
     }
    }
-  
+    createGasto(gasto: Gastos) {
+    this.gastosService.createGasto(gasto).subscribe((newGasto) => {
+      this.gastos.push(newGasto);
+      swal('Guardado', 'El gasto ha sido guardado.', 'success');
+    }, (error) => {
+      console.error('Error creating gasto:', error);
+      swal('Error', 'Hubo un problema al guardar el gasto.', 'error');
+    });
+  }
+
+  getCategorias(): Categoria[] {
+    this.categoriaService.getCategoria().subscribe((categorias) => {
+      this.categoriaList = categorias;
+      console.log(this.categoriaList);
+    });
+    
+    return this.categoriaList;
+  }
 
  }

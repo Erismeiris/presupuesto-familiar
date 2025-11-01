@@ -5,7 +5,7 @@
     <ng-template #panel >        
         <div class="card">
             <div class="card-header">
-              <h3 class="title">{{generalExpensive.title}}</h3>
+              <h3 class="title">{{generalExpensive.name}}</h3>
               <div class="circle"></div>
             </div>
             <div class="card-body">
@@ -17,7 +17,7 @@
     </ng-template>
     <ng-template #panel *ngFor="let item of expensiveCard">        
         <expensive-card 
-        [title]="item.title"
+        [title]="item.name"
         [value]="item.value"
         [percentage]="item.percentage"
         [color]="item.color" 
@@ -30,7 +30,8 @@
         <p-tablist>           
                 <p-tab value="1">Gráficos de gastos</p-tab>
                 <p-tab value="2">Nuevos gastos</p-tab>
-                <p-tab value="3">Transaciones</p-tab>            
+                <p-tab value="3">Transacciones</p-tab>            
+                <p-tab value="4">Ingresos</p-tab>            
         </p-tablist>
         <p-tabpanels>
             <!-- @for (tab of tabs; track tab.value) {

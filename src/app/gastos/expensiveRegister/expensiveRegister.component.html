@@ -76,9 +76,9 @@
                     <td [pEditableColumn]="gasto.categoria" pEditableColumnField="categoria">
                         <p-cellEditor>
                             <ng-template #input>
-                                <input
-                                    pInputText type="text"
-                                    [(ngModel)]="gasto.categoria" />
+                                <p-dropdown 
+                                [options]="categoriaList" 
+                                optionLabel="nombre" optionValue="nombre" placeholder="Seleccione una categoría" [(ngModel)]="gasto.categoria"></p-dropdown>                                    
                             </ng-template>
                             <ng-template #output>
                                 {{ gasto.categoria  }}
@@ -98,8 +98,10 @@
                         </p-cellEditor>
                     </td>
                     <td>
+                        
                         <button pButton type="button" icon="pi pi-save" (click)="updateGasto(gasto)"></button>
                         <button pButton type="button" severity="danger" icon="pi pi-trash" (click)="deleteGasto(gasto)"></button>
+                        
                     </td>
                 </tr>
             </ng-template>

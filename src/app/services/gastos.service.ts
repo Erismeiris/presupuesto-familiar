@@ -6,6 +6,8 @@ import { collectionData, Firestore, collection, addDoc, deleteDoc, doc, updateDo
 
 import { Observable } from 'rxjs';
 import { Gastos } from '../interface/user.interface';
+import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 
 
@@ -14,11 +16,11 @@ import { Gastos } from '../interface/user.interface';
   providedIn: 'root'
 })
 export class GastosService implements OnInit {
-
+private baseUrl = environment.apiUrl;
 
 
   constructor( 
-    private firestore: Firestore
+    private http: HttpClient,
    ) { }
 
 
@@ -27,28 +29,33 @@ ngOnInit(): void {
 }
 
 addGastos(gastos: Gastos){
-  const newGastos = collection(this.firestore, 'gastos');
-  return addDoc(newGastos, gastos)
+  //const newGastos = collection(this.firestore, 'gastos');
+  //return addDoc(newGastos, gastos)
 
 }
 
 //Get gastos by userID
 getGastos(userId: string): Observable<Gastos[]> {
-  const gastosRef = collection(this.firestore, 'gastos');
-  const q = query(gastosRef, where('userId', '==', userId));
-  return collectionData(q, { idField: 'id' }) as Observable<Gastos[]>;
+  const url = `${this.baseUrl}/gastos/user/${userId}`;
+  const gastos = this.http.get<Gastos[]>(url);
+  return gastos;
 }
 
 deleteGastos(gasto:Gastos){
-  const gastosRef = doc(this.firestore, `gastos/${gasto.id}`)
-  return deleteDoc(gastosRef);
+  //const gastosRef = doc(this.firestore, `gastos/${gasto.id}`)
+  //return deleteDoc(gastosRef);
 
 }
 
 //Update gastos using firestore
-updateData(documentId: string, newData: any): Promise<void> {
-  const gastosRef = doc(this.firestore, `gastos/${documentId}`)
-  return updateDoc(gastosRef, newData)
+updateData(id: string, data: Partial<Gastos>) {
+  const url = `${this.baseUrl}/gastos/${id}`;
+  return this.http.put(url, data);
+}
+
+createGasto(gasto: Gastos): Observable<Gastos> {
+  const url = `${this.baseUrl}/gastos`;
+  return this.http.post<Gastos>(url, gasto);
 }
 
 }
