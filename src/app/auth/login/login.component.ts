@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators,FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 import { CardModule } from 'primeng/card';
@@ -47,8 +47,9 @@ export class LoginComponent {
   hide = false;
 
   constructor(
-    private auth:AuthService, 
-    private router:Router) {}  
+    private auth:AuthService,
+    private router:Router,
+    private route:ActivatedRoute) {}
 
     login() {
       if (this.loginForm.valid) {
@@ -57,7 +58,10 @@ export class LoginComponent {
           next: (res: any) => {
             // Aquí puedes validar la respuesta del backend
             if (res && res.success) {
-              this.router.navigate(['/dashboard']);
+              // Si el guard nos trajo aquí, se vuelve a esa página; si no, al
+              // presupuesto, que es la pantalla de entrada de la aplicación.
+              const destino = this.route.snapshot.queryParamMap.get('returnUrl') || '/presupuesto';
+              this.router.navigateByUrl(destino);
             } else {
               this.errorMessages = res?.message || 'Credenciales incorrectas.';
             }

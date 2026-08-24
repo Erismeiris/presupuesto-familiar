@@ -41,6 +41,13 @@ export class HeaderComponent implements OnInit{
         }
       },
       {
+          label: 'Presupuesto',
+          icon: 'pi pi-wallet',
+          command: () => {
+            this.router.navigate(['presupuesto']);
+        }
+      },
+      {
           label: 'Documentación',
           icon: 'pi pi-info',
           route: 'documentation'

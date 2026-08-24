@@ -12,7 +12,7 @@ import {
   updateCurrentUser,
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable, throwError, take, tap } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable, throwError, take, tap } from 'rxjs';
 import { onAuthStateChanged } from '@angular/fire/auth';
 import { docData } from '@angular/fire/firestore';
 import { HttpClient } from '@angular/common/http';
@@ -41,44 +41,26 @@ export class AuthService {
     this.initializeUserFromStorage();
   }
 
+  /**
+   * Recupera de `localStorage` quién es el usuario. Es solo su identidad, no la
+   * prueba de que la sesión siga viva: eso lo dice el access token.
+   *
+   * El access token vive únicamente en memoria, así que al arrancar la página
+   * nunca hay ninguno. Antes esa ausencia se interpretaba como sesión perdida y
+   * se borraba el usuario guardado, de modo que cada recarga te dejaba fuera.
+   * Ahora no se borra nada: el guard y el interceptor renuevan con la cookie de
+   * refresh en la primera petición, y si esa cookie ya no vale, el interceptor
+   * propaga el 401 y la sesión se limpia entonces.
+   */
   private initializeUserFromStorage() {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        this.user.set(parsedUser);
-        
-        // Verificar si el token aún es válido
-        const token = this.getAccessToken();
-        console.log('Checking stored token:', token ? 'exists' : 'missing');
-        
-        if (!token) {
-          console.log('No access token found, user needs to login again');
-          this.clearUserSession();
-          return;
-        }
-        
-        if (this.isTokenExpired(token)) {
-          console.log('Token expired, attempting refresh...');
-          // Intentar refrescar el token
-          this.refreshToken().subscribe({
-            next: () => {
-              console.log('Token refreshed successfully');
-            },
-            error: (error) => {
-              console.error('Token refresh failed:', error);
-              console.log('Redirecting to login...');
-              this.clearUserSession();
-              this.router.navigate(['/login']);
-            }
-          });
-        } else {
-          console.log('Token still valid');
-        }
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        this.clearUserSession();
-      }
+    if (!storedUser) return;
+
+    try {
+      this.user.set(JSON.parse(storedUser));
+    } catch (error) {
+      console.error('Error parsing stored user:', error);
+      this.clearUserSession();
     }
   }
 
@@ -123,15 +105,22 @@ export class AuthService {
   }
  
 
-  async logoutUser() {
+  /**
+   * Cierra la sesión de verdad: invalida el refresh token en el servidor y
+   * limpia el estado local. Antes solo hacía signOut de Firebase, que aquí no
+   * autentica a nadie, así que la cookie de refresh seguía siendo válida y la
+   * sesión se podía recuperar con /api/auth/refresh.
+   */
+  async logoutUser(): Promise<void> {
     try {
-      await signOut(this.auth);
-      this.user.set(null);
-      localStorage.removeItem('user');
-      this.router.navigate(['/login']);
+      await firstValueFrom(this.logout());
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      // logout() ya ha limpiado el estado local en el catchError, así que
+      // aunque el servidor no responda se sale de la sesión en el navegador.
+      console.error('Error al cerrar sesión en el servidor:', error);
     }
+
+    this.router.navigate(['/login']);
   }
 
   refreshToken(): Observable<any> {
@@ -146,6 +135,19 @@ export class AuthService {
           console.log('Access token updated');
         } else {
           console.warn('No access token in refresh response');
+        }
+
+        // El endpoint devuelve también el usuario, así que se aprovecha para
+        // rehacer la identidad: cubre el caso de cookie válida sin nada en
+        // localStorage, por ejemplo tras limpiar el almacenamiento del navegador.
+        if (response && response.user && response.user.id != null) {
+          const user = {
+            uid: response.user.id.toString(),
+            email: response.user.email || null,
+            name: response.user.name || null
+          };
+          this.user.set(user);
+          localStorage.setItem('user', JSON.stringify(user));
         }
       }),
       catchError(error => {
@@ -163,16 +165,10 @@ export class AuthService {
     return this.http.post(`${baseURL}/api/auth/logout`, {}, 
       { withCredentials: true }
     ).pipe(
-      tap(() => {
-        this.accessTokenSubject.next(null);
-        this.user.set(null);
-        localStorage.removeItem('user');
-      }),
+      tap(() => this.clearUserSession()),
       catchError(error => {
         // Even if logout fails on backend, clear local state
-        this.accessTokenSubject.next(null);
-        this.user.set(null);
-        localStorage.removeItem('user');
+        this.clearUserSession();
         return throwError(() => error);
       })
     );
@@ -217,14 +213,18 @@ export class AuthService {
     }
   }
 
+  /**
+   * Hay sesión solo si tenemos un access token vigente.
+   *
+   * Antes bastaba con que existiera el usuario en `localStorage`, que sobrevive
+   * a la caducidad del token: el guard daba paso con sesiones ya muertas y el
+   * fallo aparecía después, en la primera petición al servidor.
+   *
+   * Al recargar la página no hay token en memoria (solo la cookie de refresh),
+   * así que aquí se responde `false` a propósito: el guard y el interceptor
+   * renuevan contra /api/auth/refresh y vuelven a preguntar.
+   */
   isAuthenticated(): boolean {
-    // Check if user exists in signal (for Firebase auth)
-    const currentUser = this.user();
-    if (currentUser) {
-      return true;
-    }
-    
-    // Check JWT token for backend auth
     const token = this.getAccessToken();
     return token !== null && !this.isTokenExpired(token);
   }

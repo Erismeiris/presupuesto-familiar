@@ -1,0 +1,403 @@
+:host {
+  display: block;
+  color: var(--pf-texto);
+}
+
+/* --- Banda de instrucciones --- */
+.instrucciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+}
+
+.instrucciones h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--pf-verde);
+}
+
+.instrucciones p {
+  margin: 0 0 0.25rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--pf-texto-suave);
+}
+
+.nota-destacada {
+  font-weight: 600;
+  color: var(--pf-texto);
+}
+
+/* --- Cabecera con navegación de mes --- */
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--pf-verde);
+}
+
+.cabecera h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--pf-verde);
+}
+
+.navegacion-mes {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.navegacion-mes .mes {
+  min-width: 10rem;
+  text-align: center;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.saldo-inicial {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.saldo-inicial .etiqueta {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pf-texto-suave);
+}
+
+.valor-editable {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--pf-verde);
+  background: var(--pf-verde-suave);
+  border: 1px dashed var(--pf-borde);
+  border-radius: var(--pf-radio);
+  cursor: pointer;
+}
+
+.valor-editable:hover {
+  border-color: var(--pf-verde-medio);
+}
+
+.valor-editable i {
+  font-size: 0.75rem;
+  color: var(--pf-texto-suave);
+}
+
+/* Saldo del ejemplo: se ve igual de destacado, pero no invita a pulsarlo. */
+.valor-fijo {
+  padding: 0.35rem 0.7rem;
+  font-weight: 700;
+  color: var(--pf-verde);
+}
+
+/* --- Banda del presupuesto de ejemplo --- */
+.banda-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--pf-texto);
+  background: var(--pf-papel);
+  border: 1px solid var(--pf-verde-medio);
+  border-left: 4px solid var(--pf-verde-medio);
+  border-radius: var(--pf-radio);
+}
+
+.acciones-demo {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.enlace-demo {
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #fff;
+  background: var(--pf-verde);
+  border: 1px solid var(--pf-verde);
+  border-radius: var(--pf-radio);
+  white-space: nowrap;
+}
+
+.enlace-demo-secundario {
+  color: var(--pf-verde);
+  background: transparent;
+}
+
+.enlace-demo:hover {
+  border-color: var(--pf-verde-medio);
+}
+
+.aviso {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--pf-texto-suave);
+}
+
+.aviso-error {
+  color: var(--pf-rojo);
+}
+
+/* --- Saldos y ahorro --- */
+.panel-superior {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.grafico-saldos,
+.tarjeta-ahorro {
+  padding: 1.25rem;
+  background: var(--pf-papel);
+  border: 1px solid var(--pf-borde);
+  border-radius: var(--pf-radio);
+}
+
+.barras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: end;
+  height: 9rem;
+  padding: 0 2rem;
+}
+
+.barras .columna {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+}
+
+.barra {
+  width: 100%;
+  max-width: 5rem;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.25s ease;
+}
+
+.barra-inicial {
+  background: var(--pf-verde-medio);
+}
+
+.barra-final {
+  background: var(--pf-verde);
+}
+
+.etiquetas-barras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 0.6rem 2rem 0;
+  border-top: 1px solid var(--pf-borde);
+}
+
+.etiquetas-barras .columna {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.etiquetas-barras .nombre {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--pf-texto-suave);
+}
+
+.etiquetas-barras .importe {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.etiquetas-barras .destacada .importe {
+  color: var(--pf-verde);
+}
+
+.tarjeta-ahorro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.tarjeta-ahorro hr {
+  width: 60%;
+  margin: 0 auto;
+  border: none;
+  border-top: 1px solid var(--pf-borde);
+}
+
+.tarjeta-ahorro .dato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.tarjeta-ahorro .cifra {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--pf-verde);
+}
+
+.tarjeta-ahorro .cifra.negativa {
+  color: var(--pf-rojo);
+}
+
+.tarjeta-ahorro .leyenda {
+  font-size: 0.75rem;
+  color: var(--pf-texto-suave);
+}
+
+/* --- Barras Previsto vs Real --- */
+.comparativas,
+.tablas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.comparativas {
+  margin-bottom: 2rem;
+}
+
+.comparativa h3,
+.tabla-bloque h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-verde);
+}
+
+.fila-barra {
+  display: grid;
+  grid-template-columns: 5rem 6.5rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.fila-barra .concepto {
+  font-size: 0.8rem;
+  color: var(--pf-texto-suave);
+}
+
+.fila-barra .importe {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pista {
+  height: 0.85rem;
+  background: var(--pf-verde-suave);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.relleno {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.relleno-previsto {
+  background: var(--pf-verde-medio);
+}
+
+.relleno-real {
+  background: var(--pf-verde);
+}
+
+/* --- Tablas de detalle --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+thead th {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--pf-verde);
+  text-align: left;
+}
+
+tbody th {
+  padding: 0.45rem 0.6rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+tbody td {
+  padding: 0.45rem 0.6rem;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--pf-papel);
+}
+
+tr.totales {
+  background: var(--pf-verde-suave) !important;
+  font-weight: 700;
+}
+
+tr.sin-presupuesto th {
+  color: var(--pf-texto-suave);
+}
+
+.marca {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pf-rojo);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.negativo {
+  color: var(--pf-rojo);
+}
+
+@media (max-width: 900px) {
+  .instrucciones,
+  .panel-superior,
+  .comparativas,
+  .tablas {
+    grid-template-columns: 1fr;
+  }
+}

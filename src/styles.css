@@ -1,3 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
 
+/* Paleta de la plantilla "Presupuesto mensual": verdes sobre papel claro.
+   Las pantallas de presupuesto se apoyan en estas variables. */
+:root {
+  --pf-verde: #0f6b5c;
+  --pf-verde-medio: #2e9e88;
+  --pf-verde-suave: #e8f4f0;
+  --pf-papel: #faf9f5;
+  --pf-texto: #22322f;
+  --pf-texto-suave: #6b7c78;
+  --pf-borde: #d7e3df;
+  --pf-rojo: #c0392b;
+  --pf-radio: 10px;
+}

@@ -1,0 +1,201 @@
+@if (modoDemo()) {
+  <section class="banda-demo">
+    <div>
+      <strong>Estás viendo un presupuesto de ejemplo.</strong>
+      Las cifras son inventadas, para que veas cómo queda la pantalla.
+    </div>
+    <div class="acciones-demo">
+      <a routerLink="/login" class="enlace-demo">Iniciar sesión</a>
+      <a routerLink="/register" class="enlace-demo enlace-demo-secundario">Crear cuenta</a>
+    </div>
+  </section>
+}
+
+<!-- Banda de instrucciones, como la cabecera de la plantilla -->
+<section class="instrucciones">
+  <div>
+    <h4>INSTRUCCIONES</h4>
+    <p>
+      Introduce tu saldo inicial y el gasto estimado de cada categoría en
+      "Ajustes". El resumen se actualiza solo a medida que registras
+      transacciones.
+    </p>
+  </div>
+  <div>
+    <h4>NOTA</h4>
+    <p class="nota-destacada">Solo se editan el saldo inicial y los importes previstos.</p>
+    <p>El resto de cifras se calculan a partir de tus transacciones.</p>
+  </div>
+</section>
+
+<header class="cabecera">
+  <div class="titulo">
+    <h2>Presupuesto mensual</h2>
+    <div class="navegacion-mes">
+      <p-button icon="pi pi-chevron-left" [text]="true" (onClick)="cambiarMes(-1)"
+                ariaLabel="Mes anterior" />
+      <span class="mes">{{ tituloMes() }}</span>
+      <p-button icon="pi pi-chevron-right" [text]="true" (onClick)="cambiarMes(1)"
+                ariaLabel="Mes siguiente" />
+      @if (!esMesActual()) {
+        <p-button label="Mes actual" size="small" [text]="true" (onClick)="irAlMesActual()" />
+      }
+    </div>
+  </div>
+
+  @if (resumen(); as datos) {
+    <div class="saldo-inicial">
+      <span class="etiqueta">Saldo inicial:</span>
+      @if (modoDemo()) {
+        <span class="valor-fijo">
+          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}
+        </span>
+      } @else if (saldoEnEdicion() === null) {
+        <button type="button" class="valor-editable" (click)="editarSaldo()">
+          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}
+          <i class="pi pi-pencil"></i>
+        </button>
+      } @else {
+        <p-inputNumber [ngModel]="saldoEnEdicion()" (ngModelChange)="saldoEnEdicion.set($event)"
+                       mode="currency" [currency]="datos.moneda" locale="es-ES"
+                       [showButtons]="false" styleClass="entrada-saldo" />
+        <p-button icon="pi pi-check" size="small" [loading]="guardandoSaldo()"
+                  (onClick)="guardarSaldo()" ariaLabel="Guardar" />
+        <p-button icon="pi pi-times" size="small" severity="secondary" [text]="true"
+                  (onClick)="cancelarEdicionSaldo()" ariaLabel="Cancelar" />
+      }
+    </div>
+  }
+</header>
+
+@if (cargando() && !resumen()) {
+  <p class="aviso">Cargando el presupuesto…</p>
+} @else if (error()) {
+  <p class="aviso aviso-error">{{ error() }}</p>
+}
+
+@if (datosVisibles(); as datos) {
+
+  <!-- Saldo inicial vs final + ahorro del mes -->
+  <section class="panel-superior">
+    <div class="grafico-saldos">
+      <div class="barras">
+        <div class="columna">
+          <div class="barra barra-inicial" [style.height.%]="alturaBarras().inicial"></div>
+        </div>
+        <div class="columna">
+          <div class="barra barra-final" [style.height.%]="alturaBarras().final"></div>
+        </div>
+      </div>
+      <div class="etiquetas-barras">
+        <div class="columna">
+          <span class="nombre">SALDO INICIAL</span>
+          <span class="importe">{{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+        </div>
+        <div class="columna destacada">
+          <span class="nombre">SALDO FINAL</span>
+          <span class="importe">{{ datos.saldoFinal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tarjeta-ahorro">
+      <div class="dato">
+        <span class="cifra" [class.negativa]="(datos.variacionAhorroPct ?? 0) < 0">
+          @if (datos.variacionAhorroPct === null) {
+            —
+          } @else {
+            {{ datos.variacionAhorroPct > 0 ? '+' : '' }}{{ datos.variacionAhorroPct | number:'1.0-1' }} %
+          }
+        </span>
+        <span class="leyenda">aumento del ahorro total</span>
+      </div>
+      <hr />
+      <div class="dato">
+        <span class="cifra" [class.negativa]="datos.ahorroMes < 0">
+          {{ datos.ahorroMes | currency:datos.moneda:'symbol':'1.0-2' }}
+        </span>
+        <span class="leyenda">
+          {{ datos.ahorroMes < 0 ? 'de más gastado este mes' : 'ahorrados este mes' }}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Previsto vs Real, en barras -->
+  <section class="comparativas">
+    @for (bloque of [
+      { titulo: 'Gastos', datos: datos.gastos },
+      { titulo: 'Ganancias', datos: datos.ingresos }
+    ]; track bloque.titulo) {
+      <div class="comparativa">
+        <h3>{{ bloque.titulo }}</h3>
+        <div class="fila-barra">
+          <span class="concepto">Previsto</span>
+          <span class="importe">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <div class="pista">
+            <div class="relleno relleno-previsto"
+                 [style.width.%]="anchoBarra(bloque.datos.previstoTotal, bloque.datos)"></div>
+          </div>
+        </div>
+        <div class="fila-barra">
+          <span class="concepto">Real</span>
+          <span class="importe">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <div class="pista">
+            <div class="relleno relleno-real"
+                 [style.width.%]="anchoBarra(bloque.datos.realTotal, bloque.datos)"></div>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Tablas de detalle por categoría -->
+  <section class="tablas">
+    @for (bloque of [
+      { titulo: 'Gastos', datos: datos.gastos },
+      { titulo: 'Ganancias', datos: datos.ingresos }
+    ]; track bloque.titulo) {
+      <div class="tabla-bloque">
+        <h3>{{ bloque.titulo }}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" class="num">Previsto</th>
+              <th scope="col" class="num">Real</th>
+              <th scope="col" class="num">Difer.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="totales">
+              <th scope="row">Totales</th>
+              <td class="num">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+              <td class="num">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+              <td class="num" [class.negativo]="bloque.datos.diferenciaTotal < 0">
+                {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.0-2' }}
+              </td>
+            </tr>
+            @for (linea of bloque.datos.lineas; track linea.lineaId ?? linea.nombre) {
+              <tr [class.sin-presupuesto]="!linea.presupuestada">
+                <th scope="row">
+                  {{ linea.nombre }}
+                  @if (!linea.presupuestada) {
+                    <span class="marca" title="Con movimientos pero sin importe previsto">
+                      sin previsión
+                    </span>
+                  }
+                </th>
+                <td class="num">{{ linea.previsto | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+                <td class="num">{{ linea.real | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+                <td class="num" [class.negativo]="linea.diferencia < 0">
+                  {{ linea.diferencia | currency:datos.moneda:'symbol':'1.0-2' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+}
