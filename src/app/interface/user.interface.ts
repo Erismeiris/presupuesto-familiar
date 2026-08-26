@@ -21,13 +21,16 @@ export interface UserProfile {
 
 export interface Gastos {
   id?: string;
-  categoria: string;
+  categoria: string;  // Nombre para mostrar
+  categoriaId?: string;  // ID para enviar al backend
   date: string;
   descripcion: string;
   monto: number;
   userId: string; // Usar string en lugar de User["uid"]
   sharedWith?: string[]; // Array de UserIds con los que se compartió
   name: string; //Eliminamos userName y dejamos solo name.
+  origen?: string;
+  categoriaClasificada?: string;
 }
 
 interface GastosUsuario {

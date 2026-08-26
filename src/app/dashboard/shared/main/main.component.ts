@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit } from '@angular/core';
 import { SplitterModule } from 'primeng/splitter';
 import { TabsModule } from 'primeng/tabs';
 import { ExpensiveCardComponent } from '../../expensive_card/expensive_card.component';
@@ -36,7 +36,6 @@ export interface ExpensiveCard {
 })
 export class MainComponent implements OnInit {  
   private messageService = inject(MessageService);
-  user!: User | null ;
   userProfile: any;
 
   colorList = ['blue', 'green', 'yellow', 'red', 'purple', 'orange', 'pink', 'brown', 'black', 'gray'];
@@ -85,13 +84,29 @@ export class MainComponent implements OnInit {
      ];
 
 
-  constructor(private authservice: AuthService, private gastoServices: GastosService, private profileService: ProfileService) { 
-    // Obtener el usuario correctamente desde el AuthService   
-    console.log('User from AuthService:', this.user);
-    
-    this.getGastos();
-    this.actualizarPorcentaje();
-    this.gestionarColor();
+  constructor(
+    private authservice: AuthService, 
+    private gastoServices: GastosService, 
+    private profileService: ProfileService,
+    private cdr: ChangeDetectorRef
+  ) { 
+    // Usar effect() para reaccionar cuando el usuario cambie
+    effect(() => {
+      const user = this.authservice.user();
+      console.log('User changed in effect:', user);
+      this.getGastos();
+      
+      // Si hay usuario, cargar su perfil
+      if (user?.uid) {
+        this.profileService.getProfileByUserId(user.uid).then(() => {
+          this.profileService.profile$.subscribe(profile => {
+            this.userProfile = profile;
+            this.generalExpensive.color = this.userProfile?.color;
+            this.cdr.markForCheck();
+          });
+        });
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -100,21 +115,6 @@ export class MainComponent implements OnInit {
       { title: 'Nuevos gastos', value: 1, content: 'Tab 2 Content' },
       { title: 'Transaciones', value: 2, content: 'Tab 3 Content' },
     ];
-    
-    // Usar el usuario ya obtenido en el constructor
-    const userId = this.user?.uid;
-    if (!userId) {
-      console.error('No user ID available');
-      return;
-    }
-    
-    this.profileService.getProfileByUserId(userId).then(() => {
-      this.profileService.profile$.subscribe(profile => {
-        this.userProfile = profile;
-        // Actualizar color después de obtener el perfil
-        this.generalExpensive.color = this.userProfile?.color;
-      });
-    });
   }
 
   calculoGastosGenerales(): number {   
@@ -136,11 +136,16 @@ export class MainComponent implements OnInit {
   }
 
  async getGastos() {
-    // Verificar que el usuario esté disponible
-    const currentUser = this.user || this.authservice.getCurrentUser();
+    // Leer el usuario directamente de la señal
+    const currentUser = this.authservice.user() || this.authservice.getCurrentUser();
     
     if (!currentUser?.uid) {
-      console.error('No user available for getGastos');
+      console.log('No user available - using demo data');
+      // Modo demo: usar datos de ejemplo
+      this.generalExpensive.value = 260;
+      this.actualizarPorcentaje();
+      this.gestionarColor();
+      this.cdr.markForCheck();
       return;
     }
     
@@ -152,9 +157,23 @@ export class MainComponent implements OnInit {
         console.log('Gastos received:', gastos);
         this.generalExpensive.value = gastos.reduce((acc, curr) => acc + curr.monto, 0);    
         this.generalExpensive.color = this.userProfile?.color;
+        this.actualizarPorcentaje();
+        this.gestionarColor();
+        this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error getting gastos:', error);
+        // 404 significa que el usuario no tiene gastos todavía
+        if (error.status === 404) {
+          console.log('Usuario sin gastos - mostrando 0');
+          this.generalExpensive.value = 0;
+        } else {
+          console.error('Error getting gastos:', error);
+          // En caso de error real, usar datos demo como fallback
+          this.generalExpensive.value = 260;
+        }
+        this.actualizarPorcentaje();
+        this.gestionarColor();
+        this.cdr.markForCheck();
       }
     });
   }

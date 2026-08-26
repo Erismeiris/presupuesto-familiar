@@ -3,6 +3,163 @@
   color: var(--pf-texto);
 }
 
+/* --- Panel settings --- */
+.panel-settings {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+.panel-settings h4 {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-verde);
+}
+.tabla-settings {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+.tabla-settings th {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-texto-suave);
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-verde) 30%, transparent);
+}
+.tabla-settings td {
+  padding: 0.4rem 0.5rem;
+  vertical-align: middle;
+}
+:host ::ng-deep .dd-dist .p-dropdown {
+  width: 100%;
+  min-width: 150px;
+}
+.settings-agregar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.settings-agregar p-dropdown {
+  flex: 1 1 200px;
+}
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.titulo h2 {
+  flex: 1;
+}
+
+/* --- Filas de categoría clicables --- */
+.fila-categoria {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fila-categoria:hover {
+  background: var(--pf-verde-suave);
+}
+.fila-seleccionada {
+  background: var(--pf-verde-suave);
+  font-weight: 600;
+}
+.icono-expand {
+  margin-left: 0.4rem;
+  font-size: 0.65rem;
+  opacity: 0.5;
+}
+
+/* --- Tabla de detalle de gastos --- */
+.detalle-gastos {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+.detalle-gastos h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: var(--pf-verde);
+}
+.detalle-gastos table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.detalle-gastos th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--pf-verde);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--pf-texto-suave);
+}
+.detalle-gastos td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-verde) 20%, transparent);
+}
+.sin-datos {
+  text-align: center;
+  color: var(--pf-texto-suave);
+  padding: 1.5rem !important;
+}
+
+/* --- Formulario de nuevo gasto --- */
+.nueva-transaccion {
+  margin-bottom: 1.5rem;
+}
+
+.form-gasto {
+  padding: 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+
+.form-gasto h4 {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-verde);
+}
+
+.form-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.form-campos p-dropdown,
+.form-campos input,
+.form-campos p-inputNumber {
+  flex: 1 1 160px;
+}
+
+.entrada-fecha {
+  flex: 1 1 140px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--p-inputtext-border-color, #d1d5db);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: var(--pf-texto);
+  background: #fff;
+}
+
+.form-acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* --- Banda de instrucciones --- */
 .instrucciones {
   display: grid;
@@ -272,6 +429,51 @@
   color: var(--pf-texto-suave);
 }
 
+/* --- Distribución 50/30/20 --- */
+.bloque-503020 {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: var(--pf-papel);
+  border: 1px solid var(--pf-borde);
+  border-radius: var(--pf-radio);
+}
+
+.bloque-503020 h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--pf-verde);
+}
+
+.fila-503020 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.fila-503020 .item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--pf-borde);
+  border-radius: var(--pf-radio);
+}
+
+.fila-503020 .titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pf-texto-suave);
+}
+
+.fila-503020 .valor {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--pf-verde);
+}
+
 /* --- Barras Previsto vs Real --- */
 .comparativas,
 .tablas {
@@ -393,11 +595,52 @@ tr.sin-presupuesto th {
   color: var(--pf-rojo);
 }
 
+/* --- Inputs editables en tablas --- */
+::ng-deep .entrada-previsto .p-inputnumber-input {
+  width: 7rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.86rem;
+  text-align: right;
+  border: 1px solid var(--pf-borde);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+::ng-deep .entrada-previsto .p-inputnumber-input:hover {
+  border-color: var(--pf-verde-medio);
+}
+
+::ng-deep .entrada-previsto .p-inputnumber-input:focus {
+  border-color: var(--pf-verde);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.1);
+}
+
+::ng-deep .entrada-saldo .p-inputnumber-input {
+  padding: 0.35rem 0.7rem;
+  font-weight: 700;
+  color: var(--pf-verde);
+  background: var(--pf-verde-suave);
+  border: 1px dashed var(--pf-borde);
+  border-radius: var(--pf-radio);
+}
+
+::ng-deep .entrada-saldo .p-inputnumber-input:hover {
+  border-color: var(--pf-verde-medio);
+}
+
+::ng-deep .entrada-saldo .p-inputnumber-input:focus {
+  border-color: var(--pf-verde);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.1);
+}
+
 @media (max-width: 900px) {
   .instrucciones,
   .panel-superior,
   .comparativas,
-  .tablas {
+  .tablas,
+  .fila-503020 {
     grid-template-columns: 1fr;
   }
 }

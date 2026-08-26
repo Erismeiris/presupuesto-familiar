@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { addDoc, collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Categoria } from '../interface/categoria';
 import { HttpClient } from '@angular/common/http';
@@ -13,16 +12,16 @@ export class CategoriaService {
 
 constructor( private http: HttpClient) { }
 
-
-
-addCategoria(categoria: Categoria){
-  
-
+getCategoria():Observable<Categoria[]>{
+  return this.http.get<Categoria[]>(`${this.baseUrl}/categorias`);
 }
 
-getCategoria():Observable<Categoria[]>{
-  const url = `${this.baseUrl}/categorias`;
-  return this.http.get<Categoria[]>(url);
+updateCategoria(id: string, data: Partial<Categoria>): Observable<Categoria> {
+  return this.http.put<Categoria>(`${this.baseUrl}/categorias/${id}`, data);
+}
+
+crearCategoria(data: Partial<Categoria>): Observable<Categoria> {
+  return this.http.post<Categoria>(`${this.baseUrl}/categorias`, data);
 }
 
 }

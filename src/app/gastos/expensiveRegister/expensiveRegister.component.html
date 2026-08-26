@@ -9,7 +9,7 @@
     </div>
 }@else{
     <div class="card">
-        <p-table [value]="gastos" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
+        <p-table [value]="gastos" dataKey="id" editMode="row" [tableStyle]="{ 'min-width': '50rem' }">
             <ng-template #header>
                 <tr>
                     <th style="width:20%">
@@ -33,75 +33,113 @@
                 </tr>
             </ng-template>
             <ng-template #body let-gasto let-editing="editing">
-                <tr>
-                    <td [pEditableColumn]="gasto.date" pEditableColumnField="code">
-                        <p-cellEditor>
-                            <ng-template #input>
-                                <input
-                                    pInputText
-                                    type="text"
-                                    [(ngModel)]="gasto.date" />
-                            </ng-template>
-                            <ng-template #output>
-                                {{ gasto.date }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td [pEditableColumn]="gasto.name" pEditableColumnField="name">
-                        <p-cellEditor>
-                            <ng-template #input>
-                                <input
-                                    pInputText
-                                    type="text"
-                                    [(ngModel)]="gasto.name"
-                                    required />
-                            </ng-template>
-                            <ng-template #output>
-                                {{ gasto.name }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td [pEditableColumn]="gasto.monto" pEditableColumnField="monto">
-                        <p-cellEditor>
-                            <ng-template #input>
-                                <input
-                                    pInputText
-                                    [(ngModel)]="gasto.monto" />
-                            </ng-template>
-                            <ng-template #output>
-                                {{ gasto.monto | currency: 'USD' }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td [pEditableColumn]="gasto.categoria" pEditableColumnField="categoria">
-                        <p-cellEditor>
-                            <ng-template #input>
-                                <p-dropdown 
-                                [options]="categoriaList" 
-                                optionLabel="nombre" optionValue="nombre" placeholder="Seleccione una categoría" [(ngModel)]="gasto.categoria"></p-dropdown>                                    
-                            </ng-template>
-                            <ng-template #output>
-                                {{ gasto.categoria  }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td [pEditableColumn]="gasto.descripcion" pEditableColumnField="descripcion">
-                        <p-cellEditor>
-                            <ng-template #input>
-                                <input
-                                    pInputText type="text"
-                                    [(ngModel)]="gasto.descripcion" />
-                            </ng-template>
-                            <ng-template #output>
-                                {{ gasto.descripcion  }}
-                            </ng-template>
-                        </p-cellEditor>
+                <tr [pEditableRow]="gasto">
+                    <td>
+                        @if (!gasto.id) {
+                            <input pInputText type="text" [(ngModel)]="gasto.date" style="width: 100%;" />
+                        } @else {
+                            <p-cellEditor>
+                                <ng-template #input>
+                                    <input pInputText type="text" [(ngModel)]="gasto.date" />
+                                </ng-template>
+                                <ng-template #output>
+                                    {{ gasto.date }}
+                                </ng-template>
+                            </p-cellEditor>
+                        }
                     </td>
                     <td>
-                        
-                        <button pButton type="button" icon="pi pi-save" (click)="updateGasto(gasto)"></button>
-                        <button pButton type="button" severity="danger" icon="pi pi-trash" (click)="deleteGasto(gasto)"></button>
-                        
+                        @if (!gasto.id) {
+                            <input pInputText type="text" [(ngModel)]="gasto.name" placeholder="Nombre del producto" required style="width: 100%;" />
+                        } @else {
+                            <p-cellEditor>
+                                <ng-template #input>
+                                    <input pInputText type="text" [(ngModel)]="gasto.name" required />
+                                </ng-template>
+                                <ng-template #output>
+                                    {{ gasto.name }}
+                                </ng-template>
+                            </p-cellEditor>
+                        }
+                    </td>
+                    <td>
+                        @if (!gasto.id) {
+                            <input pInputText type="number" [(ngModel)]="gasto.monto" placeholder="0.00" style="width: 100%;" />
+                        } @else {
+                            <p-cellEditor>
+                                <ng-template #input>
+                                    <input pInputText [(ngModel)]="gasto.monto" />
+                                </ng-template>
+                                <ng-template #output>
+                                    {{ gasto.monto | currency: 'USD' }}
+                                </ng-template>
+                            </p-cellEditor>
+                        }
+                    </td>
+                    <td>
+                        @if (!gasto.id) {
+                            <p-dropdown 
+                                [options]="categoriaList" 
+                                optionLabel="nombre" 
+                                optionValue="id" 
+                                placeholder="Seleccione categoría" 
+                                [(ngModel)]="gasto.categoriaId"
+                                (onChange)="onCategoriaChange($event, gasto)"
+                                appendTo="body"
+                                [style]="{'width': '100%'}"></p-dropdown>
+                        } @else {
+                            <p-cellEditor>
+                                <ng-template #input>
+                                    <p-dropdown 
+                                        [options]="categoriaList" 
+                                        optionLabel="nombre" 
+                                        optionValue="id" 
+                                        placeholder="Seleccione una categoría" 
+                                        appendTo="body"
+                                        (onChange)="onCategoriaChange($event, gasto)"
+                                        [(ngModel)]="gasto.categoriaId"></p-dropdown>                                    
+                                </ng-template>
+                                <ng-template #output>
+                                    {{ gasto.categoria  }}
+                                </ng-template>
+                            </p-cellEditor>
+                        }
+                    </td>
+                    <td>
+                        @if (!gasto.id) {
+                            <input pInputText type="text" [(ngModel)]="gasto.descripcion" placeholder="Descripción" style="width: 100%;" />
+                        } @else {
+                            <p-cellEditor>
+                                <ng-template #input>
+                                    <input pInputText type="text" [(ngModel)]="gasto.descripcion" />
+                                </ng-template>
+                                <ng-template #output>
+                                    {{ gasto.descripcion  }}
+                                </ng-template>
+                            </p-cellEditor>
+                        }
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            @if (!gasto.id) {
+                                <p-button icon="pi pi-save" severity="success" (onClick)="updateGasto(gasto)"
+                                          [disabled]="!gasto.categoriaId || !gasto.name || !gasto.monto || !gasto.date || !gasto.descripcion"
+                                          pTooltip="Guardar" tooltipPosition="top" />
+                                <p-button icon="pi pi-trash" severity="danger" (onClick)="deleteGasto(gasto)"
+                                          pTooltip="Eliminar" tooltipPosition="top" />
+                            } @else if (!editing) {
+                                <p-button icon="pi pi-pencil" severity="info" pInitEditableRow
+                                          pTooltip="Editar" tooltipPosition="top" />
+                                <p-button icon="pi pi-trash" severity="danger" (onClick)="deleteGasto(gasto)"
+                                          pTooltip="Eliminar" tooltipPosition="top" />
+                            } @else {
+                                <p-button icon="pi pi-save" severity="success" pSaveEditableRow (onClick)="updateGasto(gasto)"
+                                          [disabled]="!gasto.categoriaId || !gasto.name || !gasto.monto || !gasto.date || !gasto.descripcion"
+                                          pTooltip="Guardar" tooltipPosition="top" />
+                                <p-button icon="pi pi-times" severity="secondary" pCancelEditableRow
+                                          pTooltip="Cancelar" tooltipPosition="top" />
+                            }
+                        </div>
                     </td>
                 </tr>
             </ng-template>

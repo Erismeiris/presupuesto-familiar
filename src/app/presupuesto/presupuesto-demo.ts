@@ -74,6 +74,16 @@ export const resumenDemo = (mes: string): ResumenMensual => {
 
   const ahorroMes = redondear(ingresos.realTotal - gastos.realTotal);
 
+  // Calcular porcentajes 50/30/20 basados en gastos reales demo
+  // Necesidades: Comida, Salud, Vivienda, Transporte, Suministros, Deuda
+  const necesidades = 478.35 + 62.4 + 850 + 205.7 + 236.8 + 320;
+  // Deseos: Regalos, Gastos personales, Mascotas, Otros, Suscripciones
+  const deseos = 45 + 132.9 + 51.2 + 38.6 + 24.99;
+  // Ahorro/inversión: Viajes (0 este mes)
+  const ahorro = 0;
+  
+  const totalGastos = gastos.realTotal;
+  
   return {
     presupuestoId: 'demo',
     mes,
@@ -84,6 +94,10 @@ export const resumenDemo = (mes: string): ResumenMensual => {
     ahorroPrevisto: redondear(ingresos.previstoTotal - gastos.previstoTotal),
     variacionAhorroPct: redondear((ahorroMes / SALDO_INICIAL_DEMO) * 100),
     gastos,
-    ingresos
+    ingresos,
+    // Porcentajes de la regla 50/30/20
+    porcentajeNecesidades: redondear((necesidades / totalGastos) * 100),
+    porcentajeDeseos: redondear((deseos / totalGastos) * 100),
+    porcentajeAhorro: redondear((ahorro / totalGastos) * 100)
   };
 };

@@ -1,0 +1,127 @@
+<!-- Botón disparador -->
+@if (paso() === 'idle') {
+  <p-button label="Importar Excel" icon="pi pi-file-excel" [text]="true"
+            severity="secondary" (onClick)="seleccionarArchivo()" />
+}
+
+<!-- Paso 1: Mapeo de columnas -->
+@if (paso() === 'mapeo') {
+  <div class="panel-import">
+    <h4>Asociar columnas del archivo</h4>
+
+    <p class="muted">Muestra de datos detectados:</p>
+    <div class="muestra-scroll">
+      <table class="tabla-muestra">
+        <thead>
+          <tr>
+            @for (h of headers(); track h) {
+              <th>{{ h }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filasMuestra(); track $index) {
+            <tr>
+              @for (h of headers(); track h) {
+                <td>{{ row[h] ?? '' }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mapeo-campos">
+      <div class="campo-mapeo">
+        <label>📅 Fecha</label>
+        <p-dropdown [options]="opcionesCampo()" [(ngModel)]="mapa.fecha"
+                    appendTo="body" placeholder="Selecciona columna" />
+      </div>
+      <div class="campo-mapeo">
+        <label>📝 Descripción / Nombre</label>
+        <p-dropdown [options]="opcionesCampo()" [(ngModel)]="mapa.descripcion"
+                    appendTo="body" placeholder="Selecciona columna" />
+      </div>
+      <div class="campo-mapeo">
+        <label>💶 Importe</label>
+        <p-dropdown [options]="opcionesCampo()" [(ngModel)]="mapa.monto"
+                    appendTo="body" placeholder="Selecciona columna" />
+      </div>
+    </div>
+
+    <div class="import-acciones">
+      <p-button label="Clasificar con IA" icon="pi pi-sparkles"
+                [disabled]="!puedeMapear()"
+                (onClick)="clasificar()" />
+      <p-button label="Cancelar" severity="secondary" [text]="true"
+                (onClick)="cancelar()" />
+    </div>
+  </div>
+}
+
+<!-- Paso 2: Clasificando -->
+@if (paso() === 'clasificando') {
+  <div class="panel-import panel-cargando">
+    <i class="pi pi-spin pi-spinner" style="font-size:2rem"></i>
+    <p>Clasificando gastos con IA…</p>
+  </div>
+}
+
+<!-- Paso 3: Revisión y aprobación -->
+@if (paso() === 'revision') {
+  <div class="panel-import">
+    <h4>Revisar clasificación — {{ filas().length }} movimientos</h4>
+    <p class="muted">Verifica el tipo y la categoría de cada movimiento antes de importar.</p>
+
+    <div class="tabla-revision-scroll">
+      <table class="tabla-revision">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th class="num">Importe</th>
+            <th>Tipo</th>
+            <th>Categoría</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of filas(); track $index; let i = $index) {
+            <tr [class.sin-cat]="!fila.categoriaId">
+              <td>{{ fila.date }}</td>
+              <td>{{ fila.descripcion }}</td>
+              <td class="num">{{ fila.monto | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td>
+                <p-button [label]="fila.tipo === 'gasto' ? 'Gasto' : 'Ingreso'"
+                          [severity]="fila.tipo === 'gasto' ? 'danger' : 'success'"
+                          size="small" [text]="true"
+                          (onClick)="toggleTipo(i)" />
+              </td>
+              <td>
+                <p-dropdown [options]="opcionesParaFila(fila)"
+                            [ngModel]="fila.categoriaId"
+                            (onChange)="actualizarCategoria(i, $any($event.value))"
+                            appendTo="body"
+                            placeholder="Sin categoría" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="import-acciones">
+      <p-button label="Importar todos" icon="pi pi-check"
+                (onClick)="importar()" />
+      <p-button label="Cancelar" severity="secondary" [text]="true"
+                (onClick)="cancelar()" />
+    </div>
+  </div>
+}
+
+<!-- Paso 4: Importando -->
+@if (paso() === 'importando') {
+  <div class="panel-import panel-cargando">
+    <i class="pi pi-spin pi-spinner" style="font-size:2rem"></i>
+    <p>Importando {{ importados() }} / {{ filas().length }} gastos…</p>
+  </div>
+}

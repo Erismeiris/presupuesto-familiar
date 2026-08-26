@@ -75,8 +75,10 @@ export class AuthService {
   }
 
   loginUser(name: string, password: string): Observable<any> {
+    console.log('LoginUser called with:', { name });
     return this.http.post(this.apiUrl, { name, password }, { withCredentials: true }).pipe(
       tap((response: any) => {
+        console.log('Login response received:', response);
         // Verificar que el login fue exitoso
         if (response && response.success && response.user) {
           const user = {
@@ -84,11 +86,13 @@ export class AuthService {
             email: response.user.email || null,
             name: response.user.name || null
           };
+          console.log('Setting user signal:', user);
           this.user.set(user);
           localStorage.setItem('user', JSON.stringify(user));
           
           // Save access token - ahora siempre debería existir según la respuesta
           if (response.accessToken) {
+            console.log('Setting access token');
             this.accessTokenSubject.next(response.accessToken);
           } else {
             console.warn('No access token received from backend');

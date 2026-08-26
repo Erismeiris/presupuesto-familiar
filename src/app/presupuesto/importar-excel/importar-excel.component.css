@@ -1,0 +1,81 @@
+.panel-import {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+.panel-import h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-verde);
+}
+.muted {
+  font-size: 0.8rem;
+  color: var(--pf-texto-suave);
+  margin: 0 0 0.75rem;
+}
+.muestra-scroll,
+.tabla-revision-scroll {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+.tabla-muestra,
+.tabla-revision {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 400px;
+}
+.tabla-muestra th,
+.tabla-revision th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 2px solid var(--pf-verde);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--pf-texto-suave);
+  white-space: nowrap;
+}
+.tabla-muestra td,
+.tabla-revision td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-verde) 20%, transparent);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.tabla-revision tr.sin-cat {
+  background: color-mix(in srgb, orange 10%, transparent);
+}
+.mapeo-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.campo-mapeo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 180px;
+}
+.campo-mapeo label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pf-texto-suave);
+}
+.import-acciones {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.panel-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: var(--pf-verde);
+}
+.num { text-align: right; }

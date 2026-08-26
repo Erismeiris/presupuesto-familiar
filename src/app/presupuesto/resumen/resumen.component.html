@@ -41,6 +41,12 @@
         <p-button label="Mes actual" size="small" [text]="true" (onClick)="irAlMesActual()" />
       }
     </div>
+    @if (!modoDemo()) {
+      <p-button icon="pi pi-cog" [text]="true" severity="secondary"
+                [class.activo]="mostrarSettings()"
+                (onClick)="toggleSettings()"
+                ariaLabel="Configurar categorías" pTooltip="Categorías y distribución" tooltipPosition="left" />
+    }
   </div>
 
   @if (resumen(); as datos) {
@@ -50,23 +56,68 @@
         <span class="valor-fijo">
           {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}
         </span>
-      } @else if (saldoEnEdicion() === null) {
-        <button type="button" class="valor-editable" (click)="editarSaldo()">
-          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}
-          <i class="pi pi-pencil"></i>
-        </button>
       } @else {
-        <p-inputNumber [ngModel]="saldoEnEdicion()" (ngModelChange)="saldoEnEdicion.set($event)"
+        <p-inputNumber [ngModel]="saldoEnEdicion() ?? datos.saldoInicial" 
+                       (ngModelChange)="saldoEnEdicion.set($event)"
                        mode="currency" [currency]="datos.moneda" locale="es-ES"
                        [showButtons]="false" styleClass="entrada-saldo" />
-        <p-button icon="pi pi-check" size="small" [loading]="guardandoSaldo()"
-                  (onClick)="guardarSaldo()" ariaLabel="Guardar" />
-        <p-button icon="pi pi-times" size="small" severity="secondary" [text]="true"
-                  (onClick)="cancelarEdicionSaldo()" ariaLabel="Cancelar" />
+        @if (saldoEnEdicion() !== null) {
+          <p-button icon="pi pi-check" size="small" [loading]="guardandoSaldo()"
+                    (onClick)="guardarSaldo()" ariaLabel="Guardar" />
+          <p-button icon="pi pi-times" size="small" severity="secondary" [text]="true"
+                    (onClick)="cancelarEdicionSaldo()" ariaLabel="Cancelar" />
+        }
       }
     </div>
   }
 </header>
+
+<!-- Panel de configuración de categorías -->
+@if (mostrarSettings() && !modoDemo()) {
+  <section class="panel-settings">
+    <h4>Categorías del presupuesto</h4>
+    <table class="tabla-settings">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Distribución</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (linea of lineasConPresupuesto(resumen()?.gastos?.lineas ?? []); track linea.lineaId) {
+          <tr>
+            <td>{{ linea.nombre }}</td>
+            <td>
+              <p-dropdown [options]="distribucionOpciones"
+                          optionLabel="label" optionValue="value"
+                          [ngModel]="linea.tipo503020 ?? 'necesidades'"
+                          (onChange)="cambiarDistribucion(linea, $any($event.value))"
+                          appendTo="body" styleClass="dd-dist" />
+            </td>
+            <td>
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                        (onClick)="quitarCategoria(linea.lineaId!)"
+                        pTooltip="Quitar del presupuesto" tooltipPosition="left" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="settings-agregar">
+      <p-dropdown [options]="categoriasParaAgregar()"
+                  optionLabel="nombre" optionValue="id"
+                  [ngModel]="categoriaNueva()"
+                  (onChange)="categoriaNueva.set($event.value)"
+                  placeholder="Selecciona categoría para añadir"
+                  appendTo="body" />
+      <p-button label="Añadir" icon="pi pi-plus"
+                [disabled]="!categoriaNueva()"
+                (onClick)="agregarCategoria()" />
+    </div>
+  </section>
+}
 
 @if (cargando() && !resumen()) {
   <p class="aviso">Cargando el presupuesto…</p>
@@ -121,6 +172,32 @@
       </div>
     </div>
   </section>
+<section class="bloque-503020">
+  <h3>Distribución 50/30/20</h3>
+
+  <div class="fila-503020">
+    <div class="item">
+      <span class="titulo">Necesidades (50%)</span>
+      <span class="valor">
+        {{ (datos.porcentajeNecesidades ?? 0) | number:'1.0-1' }} %
+      </span>
+    </div>
+
+    <div class="item">
+      <span class="titulo">Deseos (30%)</span>
+      <span class="valor">
+        {{ (datos.porcentajeDeseos ?? 0) | number:'1.0-1' }} %
+      </span>
+    </div>
+
+    <div class="item">
+      <span class="titulo">Ahorro (20%)</span>
+      <span class="valor">
+        {{ (datos.porcentajeAhorro ?? 0) | number:'1.0-1' }} %
+      </span>
+    </div>
+  </div>
+</section>
 
   <!-- Previsto vs Real, en barras -->
   <section class="comparativas">
@@ -150,10 +227,56 @@
     }
   </section>
 
-  <!-- Tablas de detalle por categoría -->
+  <!-- Formulario de nuevo gasto + importación Excel -->
+  @if (!modoDemo()) {
+    <div class="nueva-transaccion">
+      @if (!mostrarFormGasto()) {
+        <div class="acciones-gasto">
+          <p-button label="Añadir gasto" icon="pi pi-plus" [text]="true"
+                    (onClick)="abrirFormGasto()" />
+          <app-importar-excel />
+        </div>
+      } @else {
+        <div class="form-gasto">
+          <h4>Nuevo gasto</h4>
+          <div class="form-campos">
+            <input pInputText
+                   [ngModel]="formNombre()"
+                   (ngModelChange)="formNombre.set($event)"
+                   placeholder="Nombre del gasto" />
+            <input pInputText
+                   [ngModel]="formDesc()"
+                   (ngModelChange)="formDesc.set($event)"
+                   placeholder="Descripción (opcional)" />
+            <p-dropdown [options]="categoriasDiponibles()"
+                        optionLabel="nombre" optionValue="id"
+                        [ngModel]="formCategoriaId()"
+                        (onChange)="formCategoriaId.set($event.value)"
+                        placeholder="Categoría" appendTo="body" />
+            <p-inputNumber [ngModel]="formMonto()"
+                           (onChange)="formMonto.set($any($event).value ?? 0)"
+                           mode="currency" [currency]="datos.moneda" locale="es-ES"
+                           placeholder="Importe" />
+            <input type="date" class="entrada-fecha"
+                   [ngModel]="formDate()"
+                   (ngModelChange)="formDate.set($event)" />
+          </div>
+          <div class="form-acciones">
+            <p-button label="Guardar" [loading]="guardandoGasto()"
+                      [disabled]="!formCategoriaId() || !formNombre() || !(formMonto() > 0)"
+                      (onClick)="guardarGasto()" />
+            <p-button label="Cancelar" severity="secondary" [text]="true"
+                      (onClick)="cancelarGasto()" />
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Tablas de categorías con presupuesto -->
   <section class="tablas">
     @for (bloque of [
-      { titulo: 'Gastos', datos: datos.gastos },
+      { titulo: 'Categorías', datos: datos.gastos },
       { titulo: 'Ganancias', datos: datos.ingresos }
     ]; track bloque.titulo) {
       <div class="tabla-bloque">
@@ -176,17 +299,34 @@
                 {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.0-2' }}
               </td>
             </tr>
-            @for (linea of bloque.datos.lineas; track linea.lineaId ?? linea.nombre) {
-              <tr [class.sin-presupuesto]="!linea.presupuestada">
+            @for (linea of lineasConPresupuesto(bloque.datos.lineas); track linea.lineaId ?? linea.nombre) {
+              <tr class="fila-categoria"
+                  [class.fila-seleccionada]="categoriaSeleccionada()?.lineaId === linea.lineaId"
+                  (click)="seleccionarCategoria(linea)">
                 <th scope="row">
                   {{ linea.nombre }}
-                  @if (!linea.presupuestada) {
-                    <span class="marca" title="Con movimientos pero sin importe previsto">
-                      sin previsión
-                    </span>
-                  }
+                  <span class="icono-expand">{{ categoriaSeleccionada()?.lineaId === linea.lineaId ? '▲' : '▼' }}</span>
                 </th>
-                <td class="num">{{ linea.previsto | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+                <td class="num">
+                  @if (modoDemo() || !linea.lineaId) {
+                    {{ linea.previsto | currency:datos.moneda:'symbol':'1.0-2' }}
+                  } @else {
+                    <div style="display: flex; align-items: center; gap: 0.25rem; justify-content: flex-end;">
+                      <p-inputNumber [ngModel]="obtenerPrevisto(linea)"
+                                     (ngModelChange)="actualizarPrevisto(linea.lineaId, $event)"
+                                     mode="currency" [currency]="datos.moneda" locale="es-ES"
+                                     [showButtons]="false" [minFractionDigits]="0" [maxFractionDigits]="2"
+                                     styleClass="entrada-previsto" />
+                      @if (estaEditando(linea.lineaId)) {
+                        <p-button icon="pi pi-check" size="small" [text]="true"
+                                  [loading]="estaGuardando(linea.lineaId)"
+                                  (onClick)="guardarPrevisto(linea.lineaId)" ariaLabel="Guardar" />
+                        <p-button icon="pi pi-times" size="small" severity="secondary" [text]="true"
+                                  (onClick)="cancelarEdicionPrevisto(linea.lineaId)" ariaLabel="Cancelar" />
+                      }
+                    </div>
+                  }
+                </td>
                 <td class="num">{{ linea.real | currency:datos.moneda:'symbol':'1.0-2' }}</td>
                 <td class="num" [class.negativo]="linea.diferencia < 0">
                   {{ linea.diferencia | currency:datos.moneda:'symbol':'1.0-2' }}
@@ -198,4 +338,64 @@
       </div>
     }
   </section>
+
+  <!-- Detalle de gastos de la categoría seleccionada -->
+  @if (categoriaSeleccionada(); as cat) {
+    <section class="detalle-gastos">
+      <h3>Gastos — {{ cat.nombre }}</h3>
+      @if (cargandoTx()) {
+        <p class="aviso">Cargando gastos…</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Nombre</th>
+              <th scope="col">Descripción</th>
+              <th scope="col" class="num">Importe</th>
+              <th scope="col">Categoría</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of transaccionesFiltradas(); track tx.id) {
+              @if (gastoEditandoId() === tx.id) {
+                <tr class="fila-editando">
+                  <td><input pInputText type="date" [ngModel]="editFecha()" (ngModelChange)="editFecha.set($event)" style="width:100%" /></td>
+                  <td><input pInputText type="text" [ngModel]="editNombre()" (ngModelChange)="editNombre.set($event)" style="width:100%" /></td>
+                  <td><input pInputText [ngModel]="editDescripcion()" (ngModelChange)="editDescripcion.set($event)" style="width:100%" /></td>                  
+                  <td class="num"><input pInputText type="number" [ngModel]="editMonto()" (ngModelChange)="editMonto.set(+$event)" style="width:80px;text-align:right" /></td>
+                  <td>
+                    <select [ngModel]="editCategoriaId()" (ngModelChange)="editCategoriaId.set($event)" style="width:100%">
+                      <option value="">Sin categoría</option>
+                      @for (c of categoriasDiponibles(); track c.id) {
+                        <option [value]="c.id">{{ c.nombre }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td style="white-space:nowrap">
+                    <p-button icon="pi pi-save" severity="success" size="small" [loading]="guardandoEdicion()" (onClick)="guardarEdicionGasto(tx)" pTooltip="Guardar" tooltipPosition="top" />
+                    <p-button icon="pi pi-times" severity="secondary" size="small" (onClick)="cancelarEdicionGasto()" pTooltip="Cancelar" tooltipPosition="top" />
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  <td>{{ tx.date | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ tx.name }}</td>
+                  <td>{{ tx.descripcion }}</td>
+                  <td class="num">{{ tx.monto | currency:datos.moneda:'symbol':'1.2-2' }}</td>
+                  <td>{{ tx.categoria }}</td>
+                  <td>
+                    <p-button icon="pi pi-pencil" severity="info" size="small" [text]="true" (onClick)="editarGasto(tx)" pTooltip="Editar" tooltipPosition="top" />
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr><td colspan="5" class="sin-datos">Sin gastos registrados en esta categoría</td></tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  }
 }

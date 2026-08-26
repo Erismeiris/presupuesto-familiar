@@ -88,12 +88,8 @@ export class PresupuestoService {
           this.cargando.set(false);
         },
         error: (err) => {
-          // Sesión caducada: la cuenta guardada ya no vale, así que se trata
-          // igual que no tener cuenta y se cae al ejemplo.
-          if (err?.status === 401 || err?.status === 403) {
-            this.mostrarDemo(mes);
-            return;
-          }
+          // 401/403 significa sesión expirada: el interceptor ya habrá
+          // intentado renovar y redirigido al login si falló.
           this.error.set(err?.error?.error ?? 'No se pudo cargar el presupuesto.');
           this.cargando.set(false);
         }
@@ -136,6 +132,10 @@ export class PresupuestoService {
 
   guardarPrevisto(lineaId: string, previsto: number): Observable<LineaPresupuesto> {
     return this.http.put<LineaPresupuesto>(`${this.baseUrl}/lineas/${lineaId}`, { previsto });
+  }
+
+  vincularCategoria(lineaId: string, categoriaId: string): Observable<LineaPresupuesto> {
+    return this.http.put<LineaPresupuesto>(`${this.baseUrl}/lineas/${lineaId}`, { categoriaId });
   }
 
   renombrarLinea(lineaId: string, nombre: string): Observable<LineaPresupuesto> {

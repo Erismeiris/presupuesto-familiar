@@ -1,5 +1,8 @@
 export type TipoMovimiento = 'gasto' | 'ingreso';
 
+/** Clasificación de la categoría según la regla 50/30/20 */
+export type TipoCategoria503020 = 'necesidades' | 'deseos' | 'ahorro';
+
 /** Una fila de las tablas "Gastos" o "Ganancias" del resumen. */
 export interface LineaResumen {
   lineaId: string | null;
@@ -11,6 +14,8 @@ export interface LineaResumen {
   diferencia: number;
   /** false para categorías con movimientos pero sin importe previsto. */
   presupuestada: boolean;
+  /** Clasificación para la regla 50/30/20 */
+  tipo503020?: TipoCategoria503020;
 }
 
 export interface BloqueResumen {
@@ -33,12 +38,19 @@ export interface ResumenMensual {
   variacionAhorroPct: number | null;
   gastos: BloqueResumen;
   ingresos: BloqueResumen;
+  /** Porcentaje de necesidades (regla 50/30/20) */
+  porcentajeNecesidades?: number;
+  /** Porcentaje de deseos (regla 50/30/20) */
+  porcentajeDeseos?: number;
+  /** Porcentaje de ahorro (regla 50/30/20) */
+  porcentajeAhorro?: number;
 }
 
 /** Una fila de la hoja "Transacciones". */
 export interface Transaccion {
   id: string;
   tipo: TipoMovimiento;
+  name: string;
   date: string;
   descripcion: string;
   monto: number;

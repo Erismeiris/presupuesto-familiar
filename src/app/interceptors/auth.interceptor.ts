@@ -1,10 +1,12 @@
 import { HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
   
   // Add auth header if token exists
   const token = authService.getAccessToken();
@@ -33,7 +35,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             return next(retryReq);
           }),
           catchError(refreshError => {
-            // Refresh failed, user needs to login again
+            // Refresh failed — session is dead, redirect to login
+            router.navigate(['/login']);
             return throwError(() => refreshError);
           })
         );
