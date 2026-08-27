@@ -14,6 +14,8 @@ export interface LineaResumen {
   diferencia: number;
   /** false para categorías con movimientos pero sin importe previsto. */
   presupuestada: boolean;
+  /** 'gasto' o 'ingreso' */
+  tipo: TipoMovimiento;
   /** Clasificación para la regla 50/30/20 */
   tipo503020?: TipoCategoria503020;
 }

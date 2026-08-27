@@ -13,7 +13,9 @@ import { forkJoin } from 'rxjs';
 import { Categoria } from '../../interface/categoria';
 import { BloqueResumen, LineaResumen, NuevaTransaccion, TipoCategoria503020, Transaccion } from '../../interface/presupuesto.interface';
 import { CategoriaService } from '../../services/categoria.service';
+import { CategoriaIngreso, CategoriaIngresoService } from '../../services/categoria-ingreso.service';
 import { GastosService } from '../../services/gastos.service';
+import { AuthService } from '../../services/auth.service';
 import {
   desplazarMes,
   mesActual,
@@ -33,6 +35,8 @@ export class ResumenComponent implements OnInit {
   private presupuestoService = inject(PresupuestoService);
   private categoriaService = inject(CategoriaService);
   private gastosService = inject(GastosService);
+  private categoriaIngresoService = inject(CategoriaIngresoService);
+  private authService = inject(AuthService);
 
   readonly resumen = this.presupuestoService.resumen;
   readonly cargando = this.presupuestoService.cargando;
@@ -64,22 +68,46 @@ export class ResumenComponent implements OnInit {
   readonly formMonto     = signal(0);
   readonly formDate      = signal('');
 
+  readonly mostrarFormIngreso = signal(false);
+  readonly guardandoIngreso = signal(false);
+
+  readonly formIngresoCategoriaId = signal('');
+  readonly formIngresoNombre = signal('');
+  readonly formIngresoDesc = signal('');
+  readonly formIngresoMonto = signal(0);
+  readonly formIngresoDate = signal('');
+
   readonly categoriaSeleccionada = signal<LineaResumen | null>(null);
   readonly transacciones = signal<Transaccion[]>([]);
   readonly cargandoTx = signal(false);
 
   readonly mostrarSettings = signal(false);
   readonly categoriaNueva = signal('');
+  readonly tipoCategoriaNueva = signal<'gasto' | 'ingreso'>('gasto');
+  readonly nombreCategoriaNueva = signal('');
+  readonly guardandoCategoriaNueva = signal(false);
 
   toggleSettings(): void {
     this.mostrarSettings.update(v => !v);
   }
 
+  readonly tipoCategoriaOptions = [
+    { label: 'Gasto', value: 'gasto' },
+    { label: 'Ingreso', value: 'ingreso' }
+  ];
+
   readonly categoriasParaAgregar = computed(() => {
-    const idsEnUso = new Set(
+    const idsGastoEnUso = new Set(
       (this.resumen()?.gastos.lineas ?? []).map(l => l.categoriaId).filter(Boolean)
     );
-    return this._categorias().filter(c => !idsEnUso.has(c.id));
+    const idsIngresoEnUso = new Set(
+      (this.resumen()?.ingresos.lineas ?? []).map(l => l.categoriaId).filter(Boolean)
+    );
+
+    if (this.tipoCategoriaNueva() === 'gasto') {
+      return this._categorias().filter(c => !idsGastoEnUso.has(c.id));
+    }
+    return this._categoriasIngreso().filter(c => !idsIngresoEnUso.has(c.id));
   });
 
   readonly distribucionOpciones = [
@@ -91,7 +119,10 @@ export class ResumenComponent implements OnInit {
   readonly transaccionesFiltradas = computed(() => {
     const cat = this.categoriaSeleccionada();
     if (!cat) return [];
-    return this.transacciones().filter(t => t.categoriaId === cat.categoriaId);
+    return this.transacciones().filter(t =>
+      (cat.categoriaId && t.categoriaId === cat.categoriaId) ||
+      (!cat.categoriaId && t.categoria?.toLowerCase() === cat.nombre.toLowerCase())
+    );
   });
 
   setMonto(v: number | null): void {
@@ -99,8 +130,10 @@ export class ResumenComponent implements OnInit {
   }
 
   private readonly _categorias = signal<Categoria[]>([]);
+  private readonly _categoriasIngreso = signal<CategoriaIngreso[]>([]);
 
   readonly categoriasDiponibles = computed(() => this._categorias());
+  readonly categoriasIngresoDisponibles = computed(() => this._categoriasIngreso());
 
   /** Alto de las barras de saldo, en % de la más alta. Mínimo visible del 8%. */
   readonly alturaBarras = computed(() => {
@@ -116,6 +149,7 @@ export class ResumenComponent implements OnInit {
 
   ngOnInit(): void {
     this.presupuestoService.cargarResumen();
+    this.categoriaIngresoService.getCategorias().subscribe(cats => this._categoriasIngreso.set(cats));
     this.categoriaService.getCategoria().subscribe(cats => {
       this._categorias.set(cats);
       const intentar = () => {
@@ -227,6 +261,12 @@ export class ResumenComponent implements OnInit {
     return lineas.filter(l => l.presupuestada);
   }
 
+  lineasTodasCategorias(): LineaResumen[] {
+    const gastos = this.resumen()?.gastos?.lineas ?? [];
+    const ingresos = this.resumen()?.ingresos?.lineas ?? [];
+    return [...gastos, ...ingresos].filter(l => l.presupuestada);
+  }
+
   cambiarDistribucion(linea: LineaResumen, tipo: TipoCategoria503020): void {
     if (!linea.categoriaId) return;
     this.categoriaService.updateCategoria(linea.categoriaId, { tipo503020: tipo })
@@ -238,13 +278,18 @@ export class ResumenComponent implements OnInit {
       .subscribe({ next: () => this.presupuestoService.recargar(), error: () => {} });
   }
 
-  agregarCategoria(): void {
+  agregarCategoriaExistente(): void {
     const catId = this.categoriaNueva();
     const resumen = this.resumen();
+    const tipo = this.tipoCategoriaNueva();
     if (!catId || !resumen) return;
-    const cat = this._categorias().find(c => c.id === catId);
+
+    const cat = tipo === 'gasto'
+      ? this._categorias().find(c => c.id === catId)
+      : this._categoriasIngreso().find(c => c.id === catId);
     if (!cat) return;
-    this.presupuestoService.crearLinea(resumen.presupuestoId, 'gasto', cat.nombre)
+
+    this.presupuestoService.crearLinea(resumen.presupuestoId, tipo, cat.nombre)
       .subscribe({
         next: (linea) => {
           this.categoriaNueva.set('');
@@ -253,6 +298,40 @@ export class ResumenComponent implements OnInit {
         },
         error: () => {}
       });
+  }
+
+  crearCategoriaNueva(): void {
+    const nombre = this.nombreCategoriaNueva().trim();
+    const tipo = this.tipoCategoriaNueva();
+    const resumen = this.resumen();
+    if (!nombre || !resumen) return;
+
+    this.guardandoCategoriaNueva.set(true);
+
+    const userId = this.authService.user()?.uid ?? undefined;
+    const crear$ = tipo === 'gasto'
+      ? this.categoriaService.crearCategoria({ nombre, descripcion: '', public: false, userId })
+      : this.categoriaIngresoService.crearCategoria({ nombre, descripcion: '', public: false, userId });
+
+    crear$.subscribe({
+      next: (cat) => {
+        this.nombreCategoriaNueva.set('');
+        if (tipo === 'gasto') {
+          this._categorias.update(cats => [...cats, cat as Categoria]);
+        } else {
+          this._categoriasIngreso.update(cats => [...cats, cat as CategoriaIngreso]);
+        }
+        this.presupuestoService.crearLinea(resumen.presupuestoId, tipo, cat.nombre)
+          .subscribe({
+            next: (linea) => {
+              this.presupuestoService.vincularCategoria(linea.id, cat.id)
+                .subscribe({ next: () => { this.guardandoCategoriaNueva.set(false); this.presupuestoService.recargar(); }, error: () => this.guardandoCategoriaNueva.set(false) });
+            },
+            error: () => this.guardandoCategoriaNueva.set(false)
+          });
+      },
+      error: () => this.guardandoCategoriaNueva.set(false)
+    });
   }
 
   seleccionarCategoria(linea: LineaResumen): void {
@@ -264,8 +343,7 @@ export class ResumenComponent implements OnInit {
     this.cargandoTx.set(true);
     this.presupuestoService.getTransacciones().subscribe({
       next: txs => {
-        console.log('Transacciones recibidas:', txs);
-        this.transacciones.set(txs.filter(t => t.tipo === 'gasto'));
+        this.transacciones.set(txs.filter(t => t.tipo === linea.tipo));
         this.cargandoTx.set(false);
       },
       error: () => this.cargandoTx.set(false)
@@ -278,6 +356,7 @@ export class ResumenComponent implements OnInit {
     this.formDesc.set('');
     this.formMonto.set(0);
     this.formDate.set(new Date().toISOString().split('T')[0]);
+    this.mostrarFormIngreso.set(false);
     this.mostrarFormGasto.set(true);
   }
 
@@ -306,6 +385,41 @@ export class ResumenComponent implements OnInit {
     });
   }
 
+  abrirFormIngreso(): void {
+    this.formIngresoCategoriaId.set('');
+    this.formIngresoNombre.set('');
+    this.formIngresoDesc.set('');
+    this.formIngresoMonto.set(0);
+    this.formIngresoDate.set(new Date().toISOString().split('T')[0]);
+    this.mostrarFormGasto.set(false);
+    this.mostrarFormIngreso.set(true);
+  }
+
+  cancelarIngreso(): void {
+    this.mostrarFormIngreso.set(false);
+  }
+
+  guardarIngreso(): void {
+    const categoriaId = this.formIngresoCategoriaId();
+    const name = this.formIngresoNombre();
+    const descripcion = this.formIngresoDesc();
+    const monto = this.formIngresoMonto();
+    const date = this.formIngresoDate();
+    if (!categoriaId || !name || !(monto > 0) || !date) return;
+
+    this.guardandoIngreso.set(true);
+    this.presupuestoService.crearTransaccion('ingreso', {
+      categoriaId, date, descripcion, monto, name
+    }).subscribe({
+      next: () => {
+        this.mostrarFormIngreso.set(false);
+        this.guardandoIngreso.set(false);
+        this.presupuestoService.recargar();
+      },
+      error: () => this.guardandoIngreso.set(false)
+    });
+  }
+
   readonly gastoEditandoId  = signal<string | null>(null);
   readonly editNombre       = signal('');
   readonly editFecha        = signal('');
@@ -329,16 +443,39 @@ export class ResumenComponent implements OnInit {
 
   guardarEdicionGasto(tx: Transaccion): void {
     this.guardandoEdicion.set(true);
-    const cat = this._categorias().find(c => c.id === this.editCategoriaId());
-    this.gastosService.updateData(tx.id, {
+    const esIngreso = tx.tipo === 'ingreso';
+    const cats = esIngreso ? this._categoriasIngreso() : this._categorias();
+    const cat = cats.find(c => c.id === this.editCategoriaId());
+
+    const payload = {
       date:        this.editFecha(),
       descripcion: this.editDescripcion(),
       monto:       this.editMonto(),
       categoriaId: this.editCategoriaId() || undefined,
-      name:       this.editNombre(),
+      name:        this.editNombre(),
       categoria:   cat?.nombre ?? tx.categoria
-    }).subscribe({
-      next: (updated) => {
+    };
+
+    if (esIngreso) {
+      this.categoriaIngresoService.updateIngreso(tx.id, payload).subscribe({
+        next: (updated: any) => {
+          this.transacciones.update(txs => txs.map(t => t.id === tx.id
+            ? { ...t, date: updated.date, descripcion: updated.descripcion, monto: updated.monto,
+                name: updated.name,
+                categoriaId: updated.categoriaId ?? null, categoria: cat?.nombre ?? t.categoria }
+            : t
+          ));
+          this.gastoEditandoId.set(null);
+          this.guardandoEdicion.set(false);
+          this.presupuestoService.recargar();
+        },
+        error: () => this.guardandoEdicion.set(false)
+      });
+      return;
+    }
+
+    this.gastosService.updateData(tx.id, payload).subscribe({
+      next: (updated: any) => {
         this.transacciones.update(txs => txs.map(t => t.id === tx.id
           ? { ...t, date: updated.date, descripcion: updated.descripcion, monto: updated.monto,
               name: updated.name,

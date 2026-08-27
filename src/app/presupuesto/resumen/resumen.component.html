@@ -81,19 +81,29 @@
         <tr>
           <th>Categoría</th>
           <th>Distribución</th>
+          <th>Tipo</th>          
           <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (linea of lineasConPresupuesto(resumen()?.gastos?.lineas ?? []); track linea.lineaId) {
+        @for (linea of lineasTodasCategorias(); track linea.lineaId) {
           <tr>
             <td>{{ linea.nombre }}</td>
             <td>
-              <p-dropdown [options]="distribucionOpciones"
-                          optionLabel="label" optionValue="value"
-                          [ngModel]="linea.tipo503020 ?? 'necesidades'"
-                          (onChange)="cambiarDistribucion(linea, $any($event.value))"
-                          appendTo="body" styleClass="dd-dist" />
+              @if (linea.tipo === 'gasto') {
+                <p-dropdown [options]="distribucionOpciones"
+                            optionLabel="label" optionValue="value"
+                            [ngModel]="linea.tipo503020 ?? 'necesidades'"
+                            (onChange)="cambiarDistribucion(linea, $any($event.value))"
+                            appendTo="body" styleClass="dd-dist" />
+              } @else {
+                <span class="tipo-no-aplica">—</span>
+              }
+            </td>
+            <td>
+              <span class="badge-tipo" [class.tipo-gasto]="linea.tipo === 'gasto'" [class.tipo-ingreso]="linea.tipo === 'ingreso'">
+                {{ linea.tipo === 'gasto' ? 'Gasto' : 'Ingreso' }}
+              </span>
             </td>
             <td>
               <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
@@ -106,15 +116,31 @@
     </table>
 
     <div class="settings-agregar">
+      <p-dropdown [options]="tipoCategoriaOptions"
+                  optionLabel="label" optionValue="value"
+                  [ngModel]="tipoCategoriaNueva()"
+                  (onChange)="tipoCategoriaNueva.set($event.value); categoriaNueva.set('')"
+                  appendTo="body" />
       <p-dropdown [options]="categoriasParaAgregar()"
                   optionLabel="nombre" optionValue="id"
                   [ngModel]="categoriaNueva()"
                   (onChange)="categoriaNueva.set($event.value)"
                   placeholder="Selecciona categoría para añadir"
                   appendTo="body" />
-      <p-button label="Añadir" icon="pi pi-plus"
+      <p-button label="Añadir existente" icon="pi pi-plus"
                 [disabled]="!categoriaNueva()"
-                (onClick)="agregarCategoria()" />
+                (onClick)="agregarCategoriaExistente()" />
+    </div>
+
+    <div class="settings-crear">
+      <input pInputText
+             [ngModel]="nombreCategoriaNueva()"
+             (ngModelChange)="nombreCategoriaNueva.set($event)"
+             placeholder="Nueva categoría de {{ tipoCategoriaNueva() === 'gasto' ? 'gasto' : 'ingreso' }}" />
+      <p-button label="Crear y añadir" icon="pi pi-plus"
+                [loading]="guardandoCategoriaNueva()"
+                [disabled]="!nombreCategoriaNueva().trim()"
+                (onClick)="crearCategoriaNueva()" />
     </div>
   </section>
 }
@@ -203,7 +229,7 @@
   <section class="comparativas">
     @for (bloque of [
       { titulo: 'Gastos', datos: datos.gastos },
-      { titulo: 'Ganancias', datos: datos.ingresos }
+      { titulo: 'Ingresos', datos: datos.ingresos }
     ]; track bloque.titulo) {
       <div class="comparativa">
         <h3>{{ bloque.titulo }}</h3>
@@ -227,16 +253,20 @@
     }
   </section>
 
-  <!-- Formulario de nuevo gasto + importación Excel -->
+  <!-- Formulario de nuevo gasto/ingreso + importación Excel -->
   @if (!modoDemo()) {
     <div class="nueva-transaccion">
-      @if (!mostrarFormGasto()) {
+      @if (!mostrarFormGasto() && !mostrarFormIngreso()) {
         <div class="acciones-gasto">
           <p-button label="Añadir gasto" icon="pi pi-plus" [text]="true"
+                    styleClass="boton-gasto"
                     (onClick)="abrirFormGasto()" />
+          <p-button label="Añadir ingreso" icon="pi pi-plus" [text]="true"
+                    styleClass="boton-ingreso"
+                    (onClick)="abrirFormIngreso()" />
           <app-importar-excel />
         </div>
-      } @else {
+      } @else if (mostrarFormGasto()) {
         <div class="form-gasto">
           <h4>Nuevo gasto</h4>
           <div class="form-campos">
@@ -269,6 +299,39 @@
                       (onClick)="cancelarGasto()" />
           </div>
         </div>
+      } @else if (mostrarFormIngreso()) {
+        <div class="form-ingreso">
+          <h4>Nuevo ingreso</h4>
+          <div class="form-campos">
+            <input pInputText
+                   [ngModel]="formIngresoNombre()"
+                   (ngModelChange)="formIngresoNombre.set($event)"
+                   placeholder="Nombre del ingreso" />
+            <input pInputText
+                   [ngModel]="formIngresoDesc()"
+                   (ngModelChange)="formIngresoDesc.set($event)"
+                   placeholder="Descripción (opcional)" />
+            <p-dropdown [options]="categoriasIngresoDisponibles()"
+                        optionLabel="nombre" optionValue="id"
+                        [ngModel]="formIngresoCategoriaId()"
+                        (onChange)="formIngresoCategoriaId.set($event.value)"
+                        placeholder="Categoría" appendTo="body" />
+            <p-inputNumber [ngModel]="formIngresoMonto()"
+                           (ngModelChange)="formIngresoMonto.set($event ?? 0)"
+                           mode="currency" [currency]="datos.moneda" locale="es-ES"
+                           placeholder="Importe" />
+            <input type="date" class="entrada-fecha"
+                   [ngModel]="formIngresoDate()"
+                   (ngModelChange)="formIngresoDate.set($event)" />
+          </div>
+          <div class="form-acciones">
+            <p-button label="Guardar" [loading]="guardandoIngreso()"
+                      [disabled]="!formIngresoCategoriaId() || !formIngresoNombre() || !(formIngresoMonto() > 0)"
+                      (onClick)="guardarIngreso()" />
+            <p-button label="Cancelar" severity="secondary" [text]="true"
+                      (onClick)="cancelarIngreso()" />
+          </div>
+        </div>
       }
     </div>
   }
@@ -277,7 +340,7 @@
   <section class="tablas">
     @for (bloque of [
       { titulo: 'Categorías', datos: datos.gastos },
-      { titulo: 'Ganancias', datos: datos.ingresos }
+      { titulo: 'Ingresos', datos: datos.ingresos }
     ]; track bloque.titulo) {
       <div class="tabla-bloque">
         <h3>{{ bloque.titulo }}</h3>
@@ -368,7 +431,7 @@
                   <td>
                     <select [ngModel]="editCategoriaId()" (ngModelChange)="editCategoriaId.set($event)" style="width:100%">
                       <option value="">Sin categoría</option>
-                      @for (c of categoriasDiponibles(); track c.id) {
+                      @for (c of tx.tipo === 'ingreso' ? categoriasIngresoDisponibles() : categoriasDiponibles(); track c.id) {
                         <option [value]="c.id">{{ c.nombre }}</option>
                       }
                     </select>
@@ -384,8 +447,10 @@
                   <td>{{ tx.name }}</td>
                   <td>{{ tx.descripcion }}</td>
                   <td class="num">{{ tx.monto | currency:datos.moneda:'symbol':'1.2-2' }}</td>
-                  <td>{{ tx.categoria }}</td>
-                  <td>
+                  <!-- Transacciones sin categoriaId fueron agrupadas por nombre; cat.nombre es correcto -->
+                  <!--<td>{{ tx.categoriaId ? tx.categoria : cat.nombre }}</td>-->
+                  <td>{{ cat.nombre }} </td>
+                  <td style="white-space:nowrap">
                     <p-button icon="pi pi-pencil" severity="info" size="small" [text]="true" (onClick)="editarGasto(tx)" pTooltip="Editar" tooltipPosition="top" />
                   </td>
                 </tr>

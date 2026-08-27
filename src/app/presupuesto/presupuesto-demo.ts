@@ -53,7 +53,8 @@ const construirBloque = (tipo: TipoMovimiento, filas: FilaDemo[]): BloqueResumen
     real,
     // Mismo criterio que la plantilla: positivo cuando la desviación es favorable.
     diferencia: redondear(tipo === 'ingreso' ? real - previsto : previsto - real),
-    presupuestada: previsto > 0
+    presupuestada: previsto > 0,
+    tipo
   }));
 
   const previstoTotal = redondear(lineas.reduce((total, linea) => total + linea.previsto, 0));

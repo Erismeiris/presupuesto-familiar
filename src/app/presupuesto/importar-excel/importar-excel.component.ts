@@ -55,6 +55,7 @@ export class ImportarExcelComponent implements OnInit {
   readonly filas             = signal<FilaImport[]>([]);
   readonly importando        = signal(false);
   readonly importados        = signal(0);
+  readonly importadosFallados = signal(0);
 
   mapa: MapaCampos = { fecha: '', descripcion: '', monto: '' };
 
@@ -131,13 +132,30 @@ export class ImportarExcelComponent implements OnInit {
     if (ddmmyyyy) return `${ddmmyyyy[3]}-${ddmmyyyy[2].padStart(2,'0')}-${ddmmyyyy[1].padStart(2,'0')}`;
     return valor;
   }
+  /** Parsea importes en formato español (1.657,28) o inglés (1,657.28). */
+  private parseMonto(valor: string): number {
+    const limpio = valor.replace(/\s/g, '').replace(/[€$]/g, '');
+    const tieneComa = limpio.includes(',');
+    const tienePunto = limpio.includes('.');
 
+    // Español: 1.657,28 o 1657,28
+    if (tieneComa && (!tienePunto || limpio.lastIndexOf(',') > limpio.lastIndexOf('.'))) {
+      return parseFloat(limpio.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    // Inglés: 1,657.28
+    if (tienePunto && tieneComa) {
+      return parseFloat(limpio.replace(/,/g, '')) || 0;
+    }
+
+    return parseFloat(limpio) || 0;
+  }
   /** Backend: reglas → OpenAI fallback → revisión (sin crear gastos) */
   clasificar(): void {
     const raw = this.filasRaw();
     // Signo del monto raw determina si es ingreso (positivo) o gasto (negativo/absoluto)
     const filasNormalizadas: FilaImport[] = raw.map(row => {
-      const montoRaw = parseFloat(String(row[this.mapa.monto] ?? '0').replace(',', '.')) || 0;
+      const montoRaw = this.parseMonto(String(row[this.mapa.monto] ?? '0'));
       return {
         descripcion: String(row[this.mapa.descripcion] ?? '').trim(),
         monto:       Math.abs(montoRaw),
@@ -149,32 +167,56 @@ export class ImportarExcelComponent implements OnInit {
     this.filas.set(filasNormalizadas);
     this.paso.set('clasificando');
 
-    // Solo clasificar los gastos con IA; los ingresos se dejan sin categoría para revisión manual
     const soloGastos = filasNormalizadas.filter(f => f.tipo === 'gasto');
-    if (!soloGastos.length) {
+    const soloIngresos = filasNormalizadas.filter(f => f.tipo === 'ingreso');
+
+    if (!soloGastos.length && !soloIngresos.length) {
       this.paso.set('revision');
       return;
     }
 
-    const peticiones = soloGastos.map(f =>
-      this.gastosService.clasificarGasto(f.descripcion, f.monto).pipe(
-        catchError(() => of({ categoriaClasificada: '', categoriaId: null }))
-      )
-    );
+    // Recargar categorías para incluir las creadas recientemente
+    forkJoin({
+      gastos: this.categoriaService.getCategoria().pipe(catchError(() => of([]))),
+      ingresos: this.categoriaIngresoService.getCategorias().pipe(catchError(() => of([])))
+    }).subscribe(({ gastos, ingresos }) => {
+      this.categorias.set(gastos);
+      this.categoriasIngreso.set(ingresos);
 
-    forkJoin(peticiones).subscribe(resultados => {
-      const cats = this.categorias();
-      let gastoIdx = 0;
-      const clasificadas = filasNormalizadas.map(f => {
-        if (f.tipo === 'ingreso') return f;
-        const { categoriaClasificada, categoriaId } = resultados[gastoIdx++];
-        const catId = categoriaId ?? cats.find(c =>
-          c.nombre.toLowerCase() === (categoriaClasificada ?? '').toLowerCase()
-        )?.id;
-        return { ...f, categoriaId: catId, categoriaNombre: categoriaClasificada };
+      const peticionesGastos = soloGastos.map(f =>
+        this.gastosService.clasificarGasto(f.descripcion, f.monto).pipe(
+          catchError(() => of({ categoriaClasificada: '', categoriaId: null }))
+        )
+      );
+
+      const peticionesIngresos = soloIngresos.map(f =>
+        this.categoriaIngresoService.clasificarIngreso(f.descripcion, f.monto).pipe(
+          catchError(() => of({ categoriaClasificada: '', categoriaId: null }))
+        )
+      );
+
+      forkJoin([...peticionesGastos, ...peticionesIngresos]).subscribe(resultados => {
+        const cats = this.categorias();
+        const catsIngreso = this.categoriasIngreso();
+        let gastoIdx = 0;
+        let ingresoIdx = 0;
+        const clasificadas = filasNormalizadas.map(f => {
+          if (f.tipo === 'gasto') {
+            const { categoriaClasificada, categoriaId } = resultados[peticionesGastos.length ? gastoIdx++ : 0];
+            const catId = categoriaId ?? cats.find(c =>
+              c.nombre.toLowerCase() === (categoriaClasificada ?? '').toLowerCase()
+            )?.id;
+            return { ...f, categoriaId: catId, categoriaNombre: categoriaClasificada };
+          }
+          const { categoriaClasificada, categoriaId } = resultados[peticionesIngresos.length ? soloGastos.length + ingresoIdx++ : 0];
+          const catId = categoriaId ?? catsIngreso.find(c =>
+            c.nombre.toLowerCase() === (categoriaClasificada ?? '').toLowerCase()
+          )?.id;
+          return { ...f, categoriaId: catId, categoriaNombre: categoriaClasificada };
+        });
+        this.filas.set(clasificadas);
+        this.paso.set('revision');
       });
-      this.filas.set(clasificadas);
-      this.paso.set('revision');
     });
   }
 
@@ -199,21 +241,32 @@ export class ImportarExcelComponent implements OnInit {
 
     this.importando.set(true);
     this.importados.set(0);
+    this.importadosFallados.set(0);
     this.paso.set('importando');
 
-    const filas = this.filas();
+    const filas = this.filas().filter(f => !!f.categoriaId);
+    const omitidos = this.filas().length - filas.length;
+
+    if (!filas.length) {
+      this.importadosFallados.set(omitidos);
+      this.importando.set(false);
+      return;
+    }
+
     const peticiones = filas.map(f =>
       this.presupuestoService.crearTransaccion(f.tipo, {
         descripcion: f.descripcion,
         monto:       f.monto,
         date:        f.date,
         name:        f.descripcion,
-        categoriaId: f.categoriaId ?? ''
+        categoriaId: f.categoriaId!
       }).pipe(catchError(() => of(null)))
     );
 
-    forkJoin(peticiones).subscribe(() => {
-      this.importados.set(filas.length);
+    forkJoin(peticiones).subscribe(resultados => {
+      const exitos = resultados.filter(r => r !== null).length;
+      this.importados.set(exitos);
+      this.importadosFallados.set(filas.length - exitos + omitidos);
       this.importando.set(false);
       this.presupuestoService.recargar();
       this.paso.set('idle');
