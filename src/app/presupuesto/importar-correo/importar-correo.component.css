@@ -1,0 +1,115 @@
+/* Mismo lenguaje visual que el importador de Excel: panel verde suave con
+   filo a la izquierda, tabla compacta y acciones al pie. */
+
+.panel-correo {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+
+.panel-correo h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-verde);
+}
+
+.muted {
+  font-size: 0.8rem;
+  color: var(--pf-texto-suave);
+  margin: 0 0 0.75rem;
+}
+
+.muted code {
+  background: color-mix(in srgb, var(--pf-verde) 12%, transparent);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  margin-right: 0.35rem;
+}
+
+.vacio {
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.resultado-ok {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--pf-verde);
+  margin: 0 0 1rem;
+}
+
+.aviso-error {
+  font-size: 0.8rem;
+  color: var(--pf-rojo);
+  margin: 0.5rem 0 0;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.tabla-correo {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 640px;
+}
+
+.tabla-correo th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 2px solid var(--pf-verde);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--pf-texto-suave);
+  white-space: nowrap;
+}
+
+.tabla-correo td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-verde) 20%, transparent);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* El concepto del banco es largo: es la única celda que puede recortarse. */
+.tabla-correo td.concepto {
+  max-width: 22rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tabla-correo .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla-correo tfoot td {
+  border-bottom: none;
+  border-top: 2px solid var(--pf-verde);
+  font-weight: 600;
+}
+
+.etiqueta-tipo {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: color-mix(in srgb, var(--pf-rojo) 15%, transparent);
+  color: var(--pf-rojo);
+}
+
+.etiqueta-tipo.ingreso {
+  background: color-mix(in srgb, var(--pf-verde) 18%, transparent);
+  color: var(--pf-verde);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

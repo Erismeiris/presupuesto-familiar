@@ -8,6 +8,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { ImportarExcelComponent } from '../importar-excel/importar-excel.component';
+import { ImportarCorreoComponent } from '../importar-correo/importar-correo.component';
+import { ConfigCorreoComponent } from '../config-correo/config-correo.component';
 
 import { forkJoin } from 'rxjs';
 import { Categoria } from '../../interface/categoria';
@@ -26,7 +28,7 @@ import {
 @Component({
   selector: 'app-resumen',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, DropdownModule, InputNumberModule, InputTextModule, ImportarExcelComponent], // importar-excel incluido
+  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, DropdownModule, InputNumberModule, InputTextModule, ImportarExcelComponent, ImportarCorreoComponent, ConfigCorreoComponent], // importar-excel, importar-correo y su configuracion
   templateUrl: './resumen.component.html',
   styleUrl: './resumen.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

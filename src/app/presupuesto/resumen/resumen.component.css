@@ -406,6 +406,12 @@
   background: var(--pf-verde);
 }
 
+/* Saldo en negativo. La altura de la barra se calcula en valor absoluto, así
+   que sin este color un saldo final malo se vería como la barra más grande. */
+.barra.negativa {
+  background: var(--pf-rojo);
+}
+
 .etiquetas-barras {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -608,6 +614,13 @@ tbody td {
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  /* Con dos decimales fijos las columnas son mas anchas: se les da el ancho que
+     necesitan de una pieza para que no partan el nombre de la categoria. */
+  white-space: nowrap;
+}
+
+.fila-categoria th[scope='row'] {
+  white-space: nowrap;
 }
 
 tbody tr:nth-child(even) {

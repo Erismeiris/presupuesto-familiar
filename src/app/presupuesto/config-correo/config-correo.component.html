@@ -1,0 +1,125 @@
+<p-button icon="pi pi-cog" [text]="true" severity="secondary" size="small"
+          [class.activo]="abierto()"
+          (onClick)="alternar()"
+          ariaLabel="Configurar la importación desde correo"
+          pTooltip="Asuntos y remitentes del correo" tooltipPosition="top" />
+
+@if (abierto()) {
+  <div class="panel-config">
+    <h4>Configuración del correo</h4>
+    <p class="ayuda">
+      La importación busca en el buzón los correos cuyo asunto coincida con alguno de los
+      activos. Si además hay remitentes activos, solo mira los que vengan de ellos.
+    </p>
+
+    @if (cargando()) {
+      <p class="ayuda">Cargando…</p>
+    }
+
+    <!-- Asuntos -->
+    <h5>Asuntos que se buscan</h5>
+
+    @if (!cargando() && !asuntos().length) {
+      <p class="ayuda vacio">
+        Sin asuntos dados de alta, el servidor usa el suyo por defecto
+        (<code>¡Pago realizado con tu tarjeta!</code>).
+      </p>
+    }
+
+    @if (asuntos().length) {
+      <ul class="lista">
+        @for (a of asuntos(); track a.id) {
+          <li [class.inactivo]="!a.activo">
+            <span class="texto" [title]="a.descripcion || a.asunto">{{ a.asunto }}</span>
+
+            <p-dropdown [options]="opcionesTipo" optionLabel="label" optionValue="value"
+                        [ngModel]="a.tipo"
+                        (onChange)="cambiarTipo(a.id, $any($event.value))"
+                        [disabled]="guardando()"
+                        appendTo="body" styleClass="dd-tipo" />
+
+            <p-button [icon]="a.activo ? 'pi pi-eye' : 'pi pi-eye-slash'"
+                      [text]="true" size="small" severity="secondary"
+                      [disabled]="guardando()"
+                      (onClick)="alternarAsunto(a.id, a.activo)"
+                      [pTooltip]="a.activo ? 'Dejar de buscarlo' : 'Volver a buscarlo'"
+                      tooltipPosition="top"
+                      [ariaLabel]="a.activo ? 'Desactivar el asunto' : 'Activar el asunto'" />
+
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                      [disabled]="guardando()"
+                      (onClick)="borrarAsunto(a.id)"
+                      ariaLabel="Borrar el asunto" />
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="alta">
+      <input pInputText type="text" [ngModel]="nuevoAsunto()"
+             (ngModelChange)="nuevoAsunto.set($event)"
+             (keyup.enter)="agregarAsunto()"
+             placeholder="Ej.: Compra realizada con tu tarjeta"
+             aria-label="Nuevo asunto" />
+      <p-dropdown [options]="opcionesTipo" optionLabel="label" optionValue="value"
+                  [ngModel]="nuevoTipo()"
+                  (onChange)="nuevoTipo.set($any($event.value))"
+                  appendTo="body" styleClass="dd-tipo" />
+      <p-button label="Añadir asunto" icon="pi pi-plus" size="small"
+                [loading]="guardando()" [disabled]="!nuevoAsunto().trim()"
+                (onClick)="agregarAsunto()" />
+    </div>
+
+    <!-- Remitentes -->
+    <h5>Remitentes (opcional)</h5>
+
+    @if (!cargando() && !remitentes().length) {
+      <p class="ayuda vacio">
+        Sin remitentes, se acepta cualquiera y el filtro es solo por asunto.
+      </p>
+    }
+
+    @if (remitentes().length) {
+      <ul class="lista">
+        @for (r of remitentes(); track r.id) {
+          <li [class.inactivo]="!r.activo">
+            <span class="texto" [title]="r.descripcion || r.remitente">{{ r.remitente }}</span>
+
+            <p-button [icon]="r.activo ? 'pi pi-eye' : 'pi pi-eye-slash'"
+                      [text]="true" size="small" severity="secondary"
+                      [disabled]="guardando()"
+                      (onClick)="alternarRemitente(r.id, r.activo)"
+                      [pTooltip]="r.activo ? 'Dejar de filtrar por él' : 'Volver a filtrar por él'"
+                      tooltipPosition="top"
+                      [ariaLabel]="r.activo ? 'Desactivar el remitente' : 'Activar el remitente'" />
+
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                      [disabled]="guardando()"
+                      (onClick)="borrarRemitente(r.id)"
+                      ariaLabel="Borrar el remitente" />
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="alta">
+      <input pInputText type="email" [ngModel]="nuevoRemitente()"
+             (ngModelChange)="nuevoRemitente.set($event)"
+             (keyup.enter)="agregarRemitente()"
+             placeholder="Ej.: avisos@tubanco.es"
+             aria-label="Nuevo remitente" />
+      <p-button label="Añadir remitente" icon="pi pi-plus" size="small"
+                [loading]="guardando()" [disabled]="!nuevoRemitente().trim()"
+                (onClick)="agregarRemitente()" />
+    </div>
+
+    @if (error()) {
+      <p class="aviso-error">{{ error() }}</p>
+    }
+
+    <div class="cierre">
+      <p-button label="Cerrar" severity="secondary" [text]="true" size="small"
+                (onClick)="alternar()" />
+    </div>
+  </div>
+}

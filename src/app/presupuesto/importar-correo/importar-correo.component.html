@@ -1,0 +1,115 @@
+<!-- Botón disparador -->
+@if (paso() === 'idle') {
+  <p-button label="Importar desde correo" icon="pi pi-envelope" [text]="true"
+            severity="secondary" (onClick)="buscar()" />
+}
+
+@if (paso() === 'buscando') {
+  <p-button label="Buscando en el buzón…" icon="pi pi-spin pi-spinner" [text]="true"
+            severity="secondary" [disabled]="true" />
+}
+
+@if (error()) {
+  <p class="aviso-error">{{ error() }}</p>
+}
+
+<!-- Revisión: lo encontrado, todavía sin crear nada -->
+@if (paso() === 'revision' || paso() === 'importando') {
+  <div class="panel-correo">
+    <h4>Movimientos encontrados en el correo</h4>
+
+    <p class="muted">
+      Todavía no se ha creado nada. Se han buscado los asuntos:
+      @for (asunto of asuntosUsados(); track asunto) {
+        <code>{{ asunto }}</code>
+      }
+    </p>
+
+    @if (!aprovechables().length) {
+      <p class="vacio">
+        No se ha encontrado ningún movimiento nuevo.
+        @if (ilegibles().length) {
+          Hay {{ ilegibles().length }} correo(s) que casan con el asunto pero de los que no se
+          han podido extraer los datos.
+        }
+      </p>
+      <div class="acciones">
+        <p-button label="Cerrar" severity="secondary" [text]="true" (onClick)="cancelar()" />
+      </div>
+    } @else {
+      <div class="tabla-scroll">
+        <table class="tabla-correo">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Concepto</th>
+              <th>Tipo</th>
+              <th class="num">Importe</th>
+              <th>Categoría propuesta</th>
+              <th>Tarjeta</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (mov of aprovechables(); track mov.uid) {
+              <tr>
+                <td>{{ mov.fecha }}</td>
+                <td class="concepto">{{ mov.descripcion }}</td>
+                <td>
+                  <span class="etiqueta-tipo" [class.ingreso]="mov.tipo === 'ingreso'">
+                    {{ mov.tipo === 'ingreso' ? 'Ingreso' : 'Gasto' }}
+                  </span>
+                </td>
+                <td class="num">{{ mov.monto | currency:'EUR':'symbol':'1.2-2' }}</td>
+                <td>{{ mov.categoria || '—' }}</td>
+                <td>{{ mov.tarjeta || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3">Totales</td>
+              <td class="num">
+                {{ totalGastos() | currency:'EUR':'symbol':'1.2-2' }} en gastos
+              </td>
+              <td colspan="2">
+                {{ totalIngresos() | currency:'EUR':'symbol':'1.2-2' }} en ingresos
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      @if (ilegibles().length) {
+        <p class="muted">
+          {{ ilegibles().length }} correo(s) casan con el asunto pero no se han podido leer; se
+          quedarán sin importar y sin marcar como leídos.
+        </p>
+      }
+
+      <p class="muted">
+        Al importar se vuelve a leer el buzón, se crean los movimientos y esos correos se marcan
+        como leídos para no repetirlos.
+      </p>
+
+      <div class="acciones">
+        <p-button label="Importar {{ aprovechables().length }} movimiento(s)" icon="pi pi-check"
+                  [loading]="paso() === 'importando'" (onClick)="importar()" />
+        <p-button label="Cancelar" severity="secondary" [text]="true"
+                  [disabled]="paso() === 'importando'" (onClick)="cancelar()" />
+      </div>
+    }
+  </div>
+}
+
+<!-- Resultado -->
+@if (paso() === 'resultado') {
+  <div class="panel-correo">
+    <h4>Importación terminada</h4>
+    <p class="resultado-ok">
+      Se han creado {{ importados() }} movimiento(s) a partir del correo.
+    </p>
+    <div class="acciones">
+      <p-button label="Cerrar" severity="secondary" [text]="true" (onClick)="cancelar()" />
+    </div>
+  </div>
+}

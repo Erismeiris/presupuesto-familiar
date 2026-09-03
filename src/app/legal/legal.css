@@ -1,0 +1,133 @@
+/* Estilos compartidos por las páginas legales. Se apoyan en la paleta de
+   `styles.css` para que términos y privacidad se lean como el resto del
+   presupuesto: papel claro, verdes y ancho de lectura cómodo. */
+
+.legal {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  color: var(--pf-texto);
+  line-height: 1.65;
+}
+
+.legal-cabecera {
+  border-bottom: 1px solid var(--pf-borde);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.legal-cabecera h1 {
+  font-size: 1.9rem;
+  color: var(--pf-verde);
+  margin: 0 0 0.4rem;
+}
+
+.legal-fecha {
+  color: var(--pf-texto-suave);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.legal-aviso {
+  background-color: #fdf3f2;
+  border: 1px solid var(--pf-rojo);
+  border-radius: var(--pf-radio);
+  color: var(--pf-rojo);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.legal-destacado {
+  background-color: var(--pf-verde-suave);
+  border-left: 4px solid var(--pf-verde-medio);
+  border-radius: var(--pf-radio);
+  padding: 0.9rem 1.1rem;
+  margin: 1.25rem 0;
+}
+
+.legal-destacado p {
+  margin: 0;
+}
+
+.legal section {
+  margin-bottom: 1.75rem;
+}
+
+.legal h2 {
+  font-size: 1.15rem;
+  color: var(--pf-verde);
+  margin: 0 0 0.5rem;
+}
+
+.legal h3 {
+  font-size: 1rem;
+  margin: 1rem 0 0.35rem;
+}
+
+.legal p,
+.legal li {
+  font-size: 0.95rem;
+}
+
+.legal ul {
+  padding-left: 1.25rem;
+}
+
+.legal li {
+  margin-bottom: 0.35rem;
+}
+
+.legal-datos {
+  list-style: none;
+  padding: 0;
+  background-color: var(--pf-papel);
+  border: 1px solid var(--pf-borde);
+  border-radius: var(--pf-radio);
+  padding: 0.9rem 1.1rem;
+}
+
+.legal-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.legal-tabla th,
+.legal-tabla td {
+  border: 1px solid var(--pf-borde);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-tabla th {
+  background-color: var(--pf-verde-suave);
+  color: var(--pf-verde);
+}
+
+.legal-navegacion {
+  border-top: 1px solid var(--pf-borde);
+  padding-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.legal a {
+  color: var(--pf-verde);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .legal-cabecera h1 {
+    font-size: 1.5rem;
+  }
+
+  /* En móvil la tabla se desborda: se deja desplazar en su propio contenedor. */
+  .legal-tabla-scroll {
+    overflow-x: auto;
+  }
+}

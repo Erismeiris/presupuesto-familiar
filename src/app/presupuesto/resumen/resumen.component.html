@@ -54,7 +54,7 @@
       <span class="etiqueta">Saldo inicial:</span>
       @if (modoDemo()) {
         <span class="valor-fijo">
-          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}
+          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.2-2' }}
         </span>
       } @else {
         <p-inputNumber [ngModel]="saldoEnEdicion() ?? datos.saldoInicial" 
@@ -158,20 +158,26 @@
     <div class="grafico-saldos">
       <div class="barras">
         <div class="columna">
-          <div class="barra barra-inicial" [style.height.%]="alturaBarras().inicial"></div>
+          <div class="barra barra-inicial"
+               [class.negativa]="datos.saldoInicial < 0"
+               [style.height.%]="alturaBarras().inicial"></div>
         </div>
         <div class="columna">
-          <div class="barra barra-final" [style.height.%]="alturaBarras().final"></div>
+          <!-- La altura va en valor absoluto, así que un saldo negativo puede
+               dar la barra más alta: el color es lo que distingue el signo. -->
+          <div class="barra barra-final"
+               [class.negativa]="datos.saldoFinal < 0"
+               [style.height.%]="alturaBarras().final"></div>
         </div>
       </div>
       <div class="etiquetas-barras">
         <div class="columna">
           <span class="nombre">SALDO INICIAL</span>
-          <span class="importe">{{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="importe">{{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.2-2' }}</span>
         </div>
         <div class="columna destacada">
           <span class="nombre">SALDO FINAL</span>
-          <span class="importe">{{ datos.saldoFinal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="importe">{{ datos.saldoFinal | currency:datos.moneda:'symbol':'1.2-2' }}</span>
         </div>
       </div>
     </div>
@@ -185,12 +191,15 @@
             {{ datos.variacionAhorroPct > 0 ? '+' : '' }}{{ datos.variacionAhorroPct | number:'1.0-1' }} %
           }
         </span>
-        <span class="leyenda">aumento del ahorro total</span>
+        <span class="leyenda">ahorro del mes sobre el saldo inicial</span>
       </div>
       <hr />
       <div class="dato">
+        <!-- El importe va en valor absoluto: el signo lo dice la leyenda, y el
+             rojo lo remarca. Con el menos delante se leía "-1.182,88 € de más
+             gastado", que es un doble negativo. -->
         <span class="cifra" [class.negativa]="datos.ahorroMes < 0">
-          {{ datos.ahorroMes | currency:datos.moneda:'symbol':'1.0-2' }}
+          {{ (datos.ahorroMes < 0 ? -datos.ahorroMes : datos.ahorroMes) | currency:datos.moneda:'symbol':'1.2-2' }}
         </span>
         <span class="leyenda">
           {{ datos.ahorroMes < 0 ? 'de más gastado este mes' : 'ahorrados este mes' }}
@@ -235,7 +244,7 @@
         <h3>{{ bloque.titulo }}</h3>
         <div class="fila-barra">
           <span class="concepto">Previsto</span>
-          <span class="importe">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="importe">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.2-2' }}</span>
           <div class="pista">
             <div class="relleno relleno-previsto"
                  [style.width.%]="anchoBarra(bloque.datos.previstoTotal, bloque.datos)"></div>
@@ -243,7 +252,7 @@
         </div>
         <div class="fila-barra">
           <span class="concepto">Real</span>
-          <span class="importe">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="importe">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.2-2' }}</span>
           <div class="pista">
             <div class="relleno relleno-real"
                  [style.width.%]="anchoBarra(bloque.datos.realTotal, bloque.datos)"></div>
@@ -265,6 +274,8 @@
                     styleClass="boton-ingreso"
                     (onClick)="abrirFormIngreso()" />
           <app-importar-excel />
+          <app-importar-correo />
+          <app-config-correo />
         </div>
       } @else if (mostrarFormGasto()) {
         <div class="form-gasto">
@@ -356,10 +367,10 @@
           <tbody>
             <tr class="totales">
               <th scope="row">Totales</th>
-              <td class="num">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.0-2' }}</td>
-              <td class="num">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+              <td class="num">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.2-2' }}</td>
+              <td class="num">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.2-2' }}</td>
               <td class="num" [class.negativo]="bloque.datos.diferenciaTotal < 0">
-                {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.0-2' }}
+                {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.2-2' }}
               </td>
             </tr>
             @for (linea of lineasConPresupuesto(bloque.datos.lineas); track linea.lineaId ?? linea.nombre) {
@@ -372,7 +383,7 @@
                 </th>
                 <td class="num">
                   @if (modoDemo() || !linea.lineaId) {
-                    {{ linea.previsto | currency:datos.moneda:'symbol':'1.0-2' }}
+                    {{ linea.previsto | currency:datos.moneda:'symbol':'1.2-2' }}
                   } @else {
                     <div style="display: flex; align-items: center; gap: 0.25rem; justify-content: flex-end;">
                       <p-inputNumber [ngModel]="obtenerPrevisto(linea)"
@@ -390,9 +401,9 @@
                     </div>
                   }
                 </td>
-                <td class="num">{{ linea.real | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+                <td class="num">{{ linea.real | currency:datos.moneda:'symbol':'1.2-2' }}</td>
                 <td class="num" [class.negativo]="linea.diferencia < 0">
-                  {{ linea.diferencia | currency:datos.moneda:'symbol':'1.0-2' }}
+                  {{ linea.diferencia | currency:datos.moneda:'symbol':'1.2-2' }}
                 </td>
               </tr>
             }

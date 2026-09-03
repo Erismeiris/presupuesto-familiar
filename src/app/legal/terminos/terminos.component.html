@@ -1,0 +1,214 @@
+<app-header />
+
+<main class="legal">
+  <header class="legal-cabecera">
+    <h1>Términos de Servicio</h1>
+    <p class="legal-fecha">Última actualización: {{ datos.ultimaActualizacion }}</p>
+  </header>
+
+  <p *ngIf="datosPendientes" class="legal-aviso">
+    Documento pendiente de completar: faltan los datos identificativos del titular
+    del servicio. Revísalos en <code>src/app/legal/datos-legales.ts</code> antes de
+    publicar la aplicación.
+  </p>
+
+  <section>
+    <h2>1. Quién presta el servicio</h2>
+    <p>
+      {{ datos.nombreApp }} (en adelante, «la aplicación») es un servicio prestado por
+      {{ datos.titular }}, con NIF {{ datos.nif }} y domicilio en {{ datos.domicilio }}.
+      Puedes escribirnos en cualquier momento a {{ datos.emailContacto }}.
+    </p>
+  </section>
+
+  <section>
+    <h2>2. Aceptación de estos términos</h2>
+    <p>
+      Al crear una cuenta o utilizar la aplicación aceptas estos Términos de Servicio y la
+      <a routerLink="/privacidad">Política de Privacidad</a>, que forma parte inseparable de
+      ellos. Si no estás de acuerdo con alguno de sus puntos, no utilices la aplicación.
+    </p>
+  </section>
+
+  <section>
+    <h2>3. Qué hace (y qué no hace) la aplicación</h2>
+    <p>
+      La aplicación es una herramienta de uso personal para registrar ingresos y gastos,
+      organizarlos por categorías, importarlos desde una hoja de cálculo y visualizar un
+      resumen mensual del presupuesto familiar, incluida la referencia de reparto 50/30/20.
+    </p>
+    <div class="legal-destacado">
+      <p>
+        <strong>No es asesoramiento financiero, fiscal ni contable.</strong> Los cálculos,
+        porcentajes, resúmenes y recomendaciones que muestra la aplicación son orientativos
+        y no sustituyen la opinión de un profesional. Las decisiones económicas que tomes a
+        partir de ellos son exclusivamente tuyas.
+      </p>
+    </div>
+    <p>
+      La aplicación tampoco se conecta a tus cuentas bancarias ni realiza pagos,
+      transferencias ni ninguna otra operación financiera: sólo trata la información que tú
+      introduces o importas.
+    </p>
+  </section>
+
+  <section>
+    <h2>4. Tu cuenta</h2>
+    <ul>
+      <li>
+        Debes ser mayor de 18 años, o contar con la autorización de quien ejerza tu tutela
+        legal, para crear una cuenta.
+      </li>
+      <li>
+        Los datos de registro (nombre de usuario y correo electrónico) deben ser veraces y
+        mantenerse actualizados.
+      </li>
+      <li>
+        Eres responsable de tu contraseña y de todo lo que ocurra en tu cuenta. Elige una
+        contraseña que no uses en otros servicios y no la compartas con nadie.
+      </li>
+      <li>
+        Si sospechas que alguien ha accedido a tu cuenta, cambia la contraseña y avísanos en
+        {{ datos.emailContacto }} lo antes posible.
+      </li>
+      <li>
+        Si accedes con tu cuenta de Google, se aplican además las condiciones de ese
+        proveedor de identidad al proceso de autenticación.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. Uso aceptable</h2>
+    <p>Al usar la aplicación te comprometes a no:</p>
+    <ul>
+      <li>Introducir datos financieros de terceros sin su conocimiento y consentimiento.</li>
+      <li>Suplantar la identidad de otra persona ni usar una cuenta que no sea tuya.</li>
+      <li>
+        Intentar acceder a datos de otros usuarios, ni sondear, escanear o alterar la
+        seguridad del servicio o de su infraestructura.
+      </li>
+      <li>
+        Automatizar el uso del servicio de forma que degrade su funcionamiento para el resto
+        de usuarios.
+      </li>
+      <li>Utilizar la aplicación para actividades ilícitas o para blanquear capitales.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6. Tus datos y tus contenidos</h2>
+    <p>
+      La información económica que registras o importas sigue siendo tuya. No la vendemos, no
+      la cedemos con fines comerciales y no la usamos para publicidad. La tratamos únicamente
+      para prestarte el servicio, en los términos descritos en la
+      <a routerLink="/privacidad">Política de Privacidad</a>.
+    </p>
+    <p>
+      Al subir un fichero para importar movimientos nos autorizas a procesar su contenido con
+      la finalidad exclusiva de incorporar esos movimientos a tu presupuesto.
+    </p>
+  </section>
+
+  <section>
+    <h2>7. Gastos compartidos e invitaciones</h2>
+    <p>La aplicación permite invitar a otras personas a compartir gastos. Ten en cuenta que:</p>
+    <ul>
+      <li>
+        Cuando aceptas o envías una invitación, los gastos incluidos en el ámbito compartido
+        pasan a ser visibles para la otra persona.
+      </li>
+      <li>
+        Al invitar a alguien nos facilitas su correo electrónico; debes contar con su
+        consentimiento para hacerlo.
+      </li>
+      <li>
+        Compartir es una decisión tuya y revocable, pero no podemos controlar lo que la otra
+        persona haga con la información que ya ha visto.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>8. Disponibilidad del servicio</h2>
+    <p>
+      Trabajamos para que la aplicación esté disponible y funcione correctamente, pero se
+      presta «tal cual», sin garantía de disponibilidad ininterrumpida ni de ausencia de
+      errores. Podemos realizar tareas de mantenimiento, actualizar funcionalidades o
+      retirarlas cuando sea necesario, avisando con antelación razonable si el cambio es
+      relevante.
+    </p>
+    <div class="legal-destacado">
+      <p>
+        <strong>Conserva tus propias copias.</strong> Aunque se realizan copias de seguridad
+        del servicio, te recomendamos exportar o guardar aparte la información económica que
+        te resulte crítica.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>9. Limitación de responsabilidad</h2>
+    <p>
+      En la medida permitida por la ley, no respondemos de los daños derivados de decisiones
+      económicas tomadas a partir de la información mostrada en la aplicación, de la pérdida
+      de datos cuando exista una copia razonablemente recuperable por tu parte, del uso que
+      hagan terceros con quienes hayas compartido tus gastos, ni del acceso no autorizado a
+      tu cuenta provocado por una gestión descuidada de tus credenciales.
+    </p>
+    <p>
+      Nada de lo anterior excluye la responsabilidad que no pueda limitarse legalmente, en
+      particular la derivada de dolo o negligencia grave y la que corresponda frente a
+      personas consumidoras conforme a la normativa aplicable.
+    </p>
+  </section>
+
+  <section>
+    <h2>10. Propiedad intelectual</h2>
+    <p>
+      El código, el diseño y los elementos gráficos de la aplicación pertenecen a su titular y
+      no se ceden con el uso del servicio. Se te concede únicamente un derecho de uso personal,
+      no exclusivo y revocable.
+    </p>
+  </section>
+
+  <section>
+    <h2>11. Baja y cancelación</h2>
+    <p>
+      Puedes dejar de usar la aplicación y solicitar la eliminación de tu cuenta y de tus datos
+      escribiendo a {{ datos.emailPrivacidad }}. Podemos suspender o cerrar una cuenta que
+      incumpla gravemente estos términos o que se utilice de forma fraudulenta, informando del
+      motivo salvo que una obligación legal lo impida.
+    </p>
+    <p>
+      Los plazos de conservación tras la baja se detallan en la
+      <a routerLink="/privacidad">Política de Privacidad</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2>12. Cambios en estos términos</h2>
+    <p>
+      Podemos actualizar estos términos para reflejar cambios en la aplicación o en la
+      normativa. La versión vigente es siempre la publicada en esta página, con su fecha de
+      última actualización. Si el cambio afecta de forma sustancial a tus derechos, te
+      avisaremos por un medio visible antes de que sea efectivo.
+    </p>
+  </section>
+
+  <section>
+    <h2>13. Ley aplicable y resolución de conflictos</h2>
+    <p>
+      Estos términos se rigen por la legislación de {{ datos.jurisdiccion }}. Para cualquier
+      controversia serán competentes los juzgados y tribunales que correspondan conforme a la
+      normativa aplicable, sin perjuicio del derecho de las personas consumidoras a acudir a
+      los de su domicilio.
+    </p>
+  </section>
+
+  <nav class="legal-navegacion">
+    <a routerLink="/privacidad">Política de Privacidad</a>
+    <a routerLink="/register">Volver al registro</a>
+    <a routerLink="/login">Iniciar sesión</a>
+  </nav>
+</main>
