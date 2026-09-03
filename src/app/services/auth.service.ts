@@ -18,7 +18,6 @@ import { docData } from '@angular/fire/firestore';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
-var baseURL = 'http://localhost:3000'
 @Injectable({
   providedIn: 'root',
 })
@@ -27,7 +26,7 @@ export class AuthService {
   private userSubject = new BehaviorSubject<any>(null);
   public user$ = this.userSubject.asObservable();
   readonly user = signal<{ uid: string; email: string | null; name: string | null } | null>(null); 
-  private apiUrl = `${baseURL}/api/auth/login`;  
+  private apiUrl = `${environment.apiUrl}/auth/login`;  
   private accessTokenSubject = new BehaviorSubject<string | null>(null);
   public accessToken$ = this.accessTokenSubject.asObservable();
 
@@ -71,7 +70,7 @@ export class AuthService {
   }
 
   async register(email: string, password: string, name: string) {
-    return this.http.post(`${baseURL}/api/user`, { email, password, name }, { withCredentials: true });
+    return this.http.post(`${environment.apiUrl}/user`, { email, password, name }, { withCredentials: true });
   }
 
   loginUser(name: string, password: string): Observable<any> {
@@ -129,7 +128,7 @@ export class AuthService {
 
   refreshToken(): Observable<any> {
     console.log('Attempting to refresh token...');
-    return this.http.post<any>(`${baseURL}/api/auth/refresh`, {}, 
+    return this.http.post<any>(`${environment.apiUrl}/auth/refresh`, {}, 
       { withCredentials: true }
     ).pipe(
       tap(response => {
@@ -166,7 +165,7 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${baseURL}/api/auth/logout`, {}, 
+    return this.http.post(`${environment.apiUrl}/auth/logout`, {}, 
       { withCredentials: true }
     ).pipe(
       tap(() => this.clearUserSession()),
@@ -179,7 +178,7 @@ export class AuthService {
   }
 
   registerUser(name: string, email: string, password: string): Observable<any> {
-    return this.http.post(`${baseURL}/api/users/register`, { name, email, password }).pipe(
+    return this.http.post(`${environment.apiUrl}/users/register`, { name, email, password }).pipe(
       tap((response: any) => {
         // Si el registro incluye login automático
         if (response && response.success && response.user) {

@@ -1,3 +1,21 @@
 :host {
   display: block;
 }
+
+/* Marca de la aplicación: única vía de vuelta a la pantalla de entrada, ya que
+   el menú sólo contiene opciones de perfil. Se pinta como texto, no como botón. */
+.marca {
+  background: none;
+  border: none;
+  padding: 0 .75rem 0 .25rem;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.marca:hover,
+.marca:focus-visible {
+  text-decoration: underline;
+}

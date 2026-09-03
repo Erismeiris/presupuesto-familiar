@@ -1,3 +1,9 @@
 <div class="card">
-    <p-menubar [model]="items" class="pi" />
+    <p-menubar [model]="items" class="pi">
+        <ng-template pTemplate="start">
+            <button type="button" class="marca" (click)="irAPresupuesto()">
+                {{ title }}
+            </button>
+        </ng-template>
+    </p-menubar>
 </div>
