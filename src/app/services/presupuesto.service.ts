@@ -4,8 +4,9 @@ import { Observable, tap, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-import { resumenDemo } from '../presupuesto/presupuesto-demo';
+import { evolucionDemo, resumenDemo } from '../presupuesto/presupuesto-demo';
 import {
+  Evolucion,
   LineaPresupuesto,
   NuevaTransaccion,
   ResumenMensual,
@@ -52,6 +53,19 @@ export class PresupuestoService {
 
   /** true cuando lo que se ve es el presupuesto de ejemplo y no una cuenta real. */
   readonly modoDemo = signal<boolean>(false);
+
+  /** Ventana de meses que pide el gráfico de evolución. */
+  readonly VENTANA_MESES = 12;
+
+  readonly evolucion = signal<Evolucion | null>(null);
+  readonly cargandoEvolucion = signal<boolean>(false);
+
+  /**
+   * Ventana ya cargada, para no volver a pedirla. El endpoint devuelve **todas**
+   * las categorías de una vez, así que abrir una segunda categoría del mismo mes
+   * no dispara ninguna petición.
+   */
+  private ventanaCargada: string | null = null;
 
   private get userId(): string | null {
     return this.authService.user()?.uid ?? this.authService.getCurrentUser()?.uid ?? null;
@@ -113,6 +127,42 @@ export class PresupuestoService {
     return this.http.get<Transaccion[]>(`${this.baseUrl}/transacciones`, {
       params: { userId: this.userId ?? '', mes }
     });
+  }
+
+  /**
+   * Carga la ventana de evolución que acaba en el mes indicado, si no está ya
+   * cargada. En modo demo no llama al backend: el presupuesto de ejemplo no
+   * tiene histórico que enseñar.
+   */
+  cargarEvolucion(hasta: string = this.mes()): void {
+    // El visitante sin cuenta tambien ve el grafico, con la serie de ejemplo:
+    // la pantalla del presupuesto tiene que verse entera sin sesion.
+    if (this.modoDemo() || !this.userId) {
+      this.evolucion.set(evolucionDemo(hasta));
+      this.ventanaCargada = hasta;
+      return;
+    }
+    if (this.ventanaCargada === hasta) return;
+
+    this.cargandoEvolucion.set(true);
+    this.http
+      .get<Evolucion>(`${this.baseUrl}/evolucion`, {
+        params: { userId: this.userId, hasta, meses: this.VENTANA_MESES }
+      })
+      .subscribe({
+        next: (evolucion) => {
+          this.evolucion.set(evolucion);
+          this.ventanaCargada = hasta;
+          this.cargandoEvolucion.set(false);
+        },
+        // Sin evolución la pestaña muestra su aviso; el resto de la pantalla
+        // sigue funcionando, así que no se toca la señal de error general.
+        error: () => {
+          this.evolucion.set(null);
+          this.ventanaCargada = null;
+          this.cargandoEvolucion.set(false);
+        }
+      });
   }
 
   /** Guarda el saldo inicial del mes y refresca el resumen con la respuesta. */

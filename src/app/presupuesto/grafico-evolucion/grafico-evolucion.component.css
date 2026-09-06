@@ -1,0 +1,150 @@
+/* Los mismos tokens que el resto de la pantalla: el color sigue significando el
+   signo del dinero y la estructura la llevan las bandas del papel. */
+:host {
+  display: block;
+  color: var(--pf-tinta);
+}
+
+.sin-serie {
+  margin: 0;
+  padding: 1.5rem 0;
+  max-width: 52ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--pf-tinta-suave);
+}
+
+.grafico {
+  margin: 0;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.eje {
+  stroke: var(--pf-tinta);
+  stroke-width: 1;
+}
+
+.rejilla {
+  stroke: var(--pf-filete);
+  stroke-width: 1;
+}
+
+/* El mes que se está viendo en la otra pestaña: ata las dos vistas del panel. */
+.marca-mes {
+  stroke: var(--pf-banda-fuerte);
+  stroke-width: 12;
+  stroke-linecap: butt;
+}
+
+.linea-real {
+  fill: none;
+  stroke: var(--pf-verde-2);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.linea-previsto {
+  fill: none;
+  stroke: var(--pf-tinta-suave);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+/* Más fina y discontinua que la serie: es una lectura, no un dato medido. */
+.linea-tendencia {
+  stroke: var(--pf-rojo-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+  opacity: 0.85;
+}
+
+.punto {
+  fill: var(--pf-verde-2);
+}
+
+/* Un mes a cero es un dato, pero hueco: no pesa lo mismo que uno con importe. */
+.punto-cero {
+  fill: var(--pf-papel-2);
+  stroke: var(--pf-verde-2);
+  stroke-width: 1.5;
+}
+
+.etiqueta-eje,
+.etiqueta-mes,
+.etiqueta-anio {
+  fill: var(--pf-tinta-suave);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.etiqueta-anio {
+  font-size: 9px;
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.5rem;
+  margin: 0.9rem 0 0;
+  font-size: 0.85rem;
+  color: var(--pf-tinta-suave);
+}
+
+.pie strong {
+  color: var(--pf-tinta);
+  font-weight: 700;
+}
+
+.lectura {
+  margin: 0.45rem 0 0;
+  font-family: var(--pf-fuente-voz);
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--pf-tinta);
+}
+
+.lectura strong {
+  font-weight: 700;
+}
+
+.leyenda {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pf-tinta-suave);
+}
+
+.muestra {
+  display: inline-block;
+  width: 1.1rem;
+  height: 0;
+  margin-left: 0.5rem;
+  border-top: 2px solid var(--pf-verde-2);
+}
+
+.muestra-previsto {
+  border-top-style: dashed;
+  border-top-color: var(--pf-tinta-suave);
+}
+
+.muestra-tendencia {
+  border-top-style: dotted;
+  border-top-color: var(--pf-rojo-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linea-real,
+  .linea-previsto,
+  .linea-tendencia {
+    transition: none;
+  }
+}

@@ -19,6 +19,19 @@ import { ResumenComponent } from './resumen/resumen.component';
   `,
   styles: [
     `
+      /* El papel a sangre completa cuelga del :host, no del <main>, para que el
+         tono llegue a los bordes de la ventana y no quede una franja blanca
+         debajo del contenido. La tipografia se aplica aqui y no en :root para
+         no arrastrar al resto de la aplicacion, que sigue con la pila del
+         sistema: esta direccion visual esta acotada al presupuesto. */
+      :host {
+        display: block;
+        min-height: 100vh;
+        background: var(--pf-papel-2);
+        font-family: var(--pf-fuente-texto);
+        color: var(--pf-tinta);
+      }
+
       .pagina-presupuesto {
         max-width: 1100px;
         margin: 0 auto;

@@ -1,5 +1,8 @@
 import {
+  BloqueEvolucion,
   BloqueResumen,
+  CategoriaEvolucion,
+  Evolucion,
   LineaResumen,
   ResumenMensual,
   TipoMovimiento
@@ -100,5 +103,115 @@ export const resumenDemo = (mes: string): ResumenMensual => {
     porcentajeNecesidades: redondear((necesidades / totalGastos) * 100),
     porcentajeDeseos: redondear((deseos / totalGastos) * 100),
     porcentajeAhorro: redondear((ahorro / totalGastos) * 100)
+  };
+};
+
+/* --- Evolución de ejemplo -------------------------------------------------
+ *
+ * El visitante sin cuenta tiene que poder abrir la pestaña de evolución y ver
+ * el gráfico funcionando, igual que ve el resto de la pantalla: mandarlo a
+ * "crea una cuenta" justo ahí sería un callejón sin salida en la única pantalla
+ * pensada para engancharlo.
+ *
+ * La serie se deriva del importe real de cada categoría con una oscilación
+ * determinista, así que el ejemplo es siempre el mismo y cuadra con las cifras
+ * del mes que se ve arriba.
+ */
+
+/** Ventana de ejemplo: los doce meses que acaban en el mes que se está viendo. */
+const ventanaDemo = (hasta: string, cuantos = 12): string[] => {
+  const [anio, mes] = hasta.split('-').map(Number);
+  return Array.from({ length: cuantos }, (_, i) => {
+    const fecha = new Date(Date.UTC(anio, mes - 1 - (cuantos - 1 - i), 1));
+    return `${fecha.getUTCFullYear()}-${String(fecha.getUTCMonth() + 1).padStart(2, '0')}`;
+  });
+};
+
+/**
+ * Oscilación estable alrededor del importe real, entre el 55 % y el 145 %.
+ * Sin `Math.random()`: el ejemplo no puede cambiar entre dos recargas ni entre
+ * dos visitantes, o la captura de pantalla de ayer dejaría de coincidir.
+ */
+const importeDelMes = (base: number, indice: number, semilla: number): number => {
+  if (base === 0) return 0;
+  const onda = Math.sin((indice + semilla) * 1.1) * 0.35 + Math.cos((indice + semilla) * 0.7) * 0.1;
+  // Una ligera pendiente ascendente para que la tendencia tenga algo que decir.
+  return redondear(base * (1 + onda) * (1 + indice * 0.012));
+};
+
+const construirBloqueEvolucion = (
+  tipo: TipoMovimiento,
+  filas: FilaDemo[],
+  meses: string[]
+): BloqueEvolucion => {
+  const categorias: CategoriaEvolucion[] = filas.map(([nombre, previsto, real], indice) => {
+    const porMes = meses.map((_, i) => importeDelMes(real, i, indice * 2.3));
+    const previstoPorMes = meses.map(() => previsto);
+
+    const total = redondear(porMes.reduce((acc, v) => acc + v, 0));
+    const previstoTotal = redondear(previstoPorMes.reduce((acc, v) => acc + v, 0));
+    const conImporte = porMes.filter((v) => v !== 0).length;
+
+    let mesMaximo: { mes: string; importe: number } | null = null;
+    porMes.forEach((importe, i) => {
+      if (importe !== 0 && (mesMaximo === null || importe > mesMaximo.importe)) {
+        mesMaximo = { mes: meses[i], importe };
+      }
+    });
+
+    return {
+      categoriaId: null,
+      nombre,
+      tipo,
+      porMes,
+      previstoPorMes,
+      total,
+      previstoTotal,
+      diferenciaTotal: redondear(tipo === 'ingreso' ? total - previstoTotal : previstoTotal - total),
+      media: conImporte > 0 ? redondear(total / conImporte) : 0,
+      mesesConImporte: conImporte,
+      mesMaximo,
+      presupuestada: previsto > 0
+    };
+  });
+
+  const sumarColumnas = (campo: 'porMes' | 'previstoPorMes') =>
+    meses.map((_, i) => redondear(categorias.reduce((acc, c) => acc + c[campo][i], 0)));
+
+  const porMes = sumarColumnas('porMes');
+  const previstoPorMes = sumarColumnas('previstoPorMes');
+  const total = redondear(porMes.reduce((acc, v) => acc + v, 0));
+  const previstoTotal = redondear(previstoPorMes.reduce((acc, v) => acc + v, 0));
+
+  return {
+    total,
+    previstoTotal,
+    diferenciaTotal: redondear(tipo === 'ingreso' ? total - previstoTotal : previstoTotal - total),
+    porMes,
+    previstoPorMes,
+    categorias
+  };
+};
+
+/** Evolución de ejemplo de los doce meses que acaban en el mes indicado. */
+export const evolucionDemo = (hasta: string): Evolucion => {
+  const meses = ventanaDemo(hasta);
+  const gastos = construirBloqueEvolucion('gasto', GASTOS_DEMO, meses);
+  const ingresos = construirBloqueEvolucion('ingreso', INGRESOS_DEMO, meses);
+
+  return {
+    desde: meses[0],
+    hasta,
+    moneda: 'EUR',
+    meses,
+    // El ejemplo tiene los doce meses completos: es lo que hace que se vea el
+    // gráfico lleno y con tendencia.
+    primerMesConDatos: meses[0],
+    mesesConPresupuesto: meses,
+    gastos,
+    ingresos,
+    ahorroPorMes: meses.map((_, i) => redondear(ingresos.porMes[i] - gastos.porMes[i])),
+    ahorroTotal: redondear(ingresos.total - gastos.total),
+    ahorroPrevisto: redondear(ingresos.previstoTotal - gastos.previstoTotal)
   };
 };
