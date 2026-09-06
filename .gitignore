@@ -51,3 +51,10 @@ Thumbs.db
 /android/key.properties
 *.keystore
 *.jks
+
+# Skills de agentes
+# La fuente es .agents/skills/ + skills-lock.json, que si se versionan.
+# .claude/skills/ es un enlace por maquina que crea `npx skills add`, y en
+# Windows es una union con ruta absoluta: git la recorre y duplicaria los
+# ficheros de la skill dentro del repo.
+.claude/skills/
