@@ -14,11 +14,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "INSTRUCCIONES_APK_ANDROID.md",
+              "DocumentMoniker": "C:\\Users\\erismeiris.hidalgo\\Documents\\presupuesto-familiar\\INSTRUCCIONES_APK_ANDROID.md",
+              "RelativeDocumentMoniker": "INSTRUCCIONES_APK_ANDROID.md",
+              "ToolTip": "C:\\Users\\erismeiris.hidalgo\\Documents\\presupuesto-familiar\\INSTRUCCIONES_APK_ANDROID.md",
+              "RelativeToolTip": "INSTRUCCIONES_APK_ANDROID.md",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-01T13:40:33.346Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
@@ -43,19 +56,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "INSTRUCCIONES_APK_ANDROID.md",
-              "DocumentMoniker": "C:\\Users\\erismeiris.hidalgo\\Documents\\presupuesto-familiar\\INSTRUCCIONES_APK_ANDROID.md",
-              "RelativeDocumentMoniker": "INSTRUCCIONES_APK_ANDROID.md",
-              "ToolTip": "C:\\Users\\erismeiris.hidalgo\\Documents\\presupuesto-familiar\\INSTRUCCIONES_APK_ANDROID.md",
-              "RelativeToolTip": "INSTRUCCIONES_APK_ANDROID.md",
-              "ViewState": "AgIAAEgAAAAAAAAAAAAAAFYAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2026-09-01T13:40:33.346Z",
-              "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
