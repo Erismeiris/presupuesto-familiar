@@ -11,21 +11,18 @@
   </section>
 }
 
-<!-- Banda de instrucciones, como la cabecera de la plantilla -->
+<!-- Cómo funciona la pantalla. Sin los rótulos "INSTRUCCIONES" y "NOTA": eran
+     etiquetas que sólo anunciaban el párrafo que venía justo debajo. -->
 <section class="instrucciones">
-  <div>
-    <h4>INSTRUCCIONES</h4>
-    <p>
-      Introduce tu saldo inicial y el gasto estimado de cada categoría en
-      "Ajustes". El resumen se actualiza solo a medida que registras
-      transacciones.
-    </p>
-  </div>
-  <div>
-    <h4>NOTA</h4>
-    <p class="nota-destacada">Solo se editan el saldo inicial y los importes previstos.</p>
-    <p>El resto de cifras se calculan a partir de tus transacciones.</p>
-  </div>
+  <p>
+    Escribe tu saldo inicial arriba y lo que esperas gastar en cada categoría,
+    en la columna Previsto. El resumen se recalcula a medida que registras
+    movimientos.
+  </p>
+  <p>
+    Las categorías se añaden y se clasifican en Ajustes. El resto de las cifras
+    salen de tus movimientos, así que no se editan a mano.
+  </p>
 </section>
 
 <header class="cabecera">
@@ -54,7 +51,7 @@
       <span class="etiqueta">Saldo inicial:</span>
       @if (modoDemo()) {
         <span class="valor-fijo">
-          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}
+          {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.2-2' }}
         </span>
       } @else {
         <p-inputNumber [ngModel]="saldoEnEdicion() ?? datos.saldoInicial" 
@@ -153,74 +150,108 @@
 
 @if (datosVisibles(); as datos) {
 
-  <!-- Saldo inicial vs final + ahorro del mes -->
+  <!-- El cierre del mes, en una frase. Antes el dato principal era el
+       porcentaje de variación, que es el que menos dice: quien abre esto una
+       vez al mes quiere saber si el mes cierra en negro o en rojo. Son los
+       mismos cuatro datos de siempre (saldo inicial, saldo final, ahorro del
+       mes y su variación), leídos en otro orden. -->
   <section class="panel-superior">
+    <div class="cierre">
+      <p class="cierre-cifra" [class.rojo]="datos.saldoFinal < 0">
+        {{ datos.saldoFinal | currency:datos.moneda:'symbol':'1.2-2' }}
+        <span class="cierre-estado">{{ datos.saldoFinal < 0 ? 'en rojo' : 'en negro' }}</span>
+      </p>
+      <!-- Dos frases cerradas en lugar de una con cláusula añadida: cada rama
+           termina con su punto dentro del bloque. Con la puntuación fuera,
+           Angular deja el espacio del salto de línea y salía «arrancaste .» -->
+      <p class="cierre-frase">
+        @if (datos.ahorroMes > 0) {
+          Cierras el mes con
+          <strong>{{ datos.ahorroMes | currency:datos.moneda:'symbol':'1.2-2' }}</strong>
+          más de lo que tenías al empezar.
+        } @else if (datos.ahorroMes < 0) {
+          Cierras el mes con
+          <strong class="rojo">{{ -datos.ahorroMes | currency:datos.moneda:'symbol':'1.2-2' }}</strong>
+          menos de lo que tenías al empezar.
+        } @else {
+          El mes queda igual que empezó: ingresos y gastos se compensan.
+        }
+        @if (datos.variacionAhorroPct !== null && datos.ahorroMes !== 0) {
+          Equivale a un
+          {{ (datos.variacionAhorroPct < 0 ? -datos.variacionAhorroPct : datos.variacionAhorroPct)
+             | number:'1.0-1' }} % del saldo inicial.
+        }
+      </p>
+    </div>
+
     <div class="grafico-saldos">
       <div class="barras">
         <div class="columna">
-          <div class="barra barra-inicial" [style.height.%]="alturaBarras().inicial"></div>
+          <div class="barra barra-inicial"
+               [class.negativa]="datos.saldoInicial < 0"
+               [style.height.%]="alturaBarras().inicial"></div>
         </div>
         <div class="columna">
-          <div class="barra barra-final" [style.height.%]="alturaBarras().final"></div>
+          <!-- La altura va en valor absoluto, así que un saldo negativo puede
+               dar la barra más alta: el color es lo que distingue el signo. -->
+          <div class="barra barra-final"
+               [class.negativa]="datos.saldoFinal < 0"
+               [style.height.%]="alturaBarras().final"></div>
         </div>
       </div>
       <div class="etiquetas-barras">
         <div class="columna">
-          <span class="nombre">SALDO INICIAL</span>
-          <span class="importe">{{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="nombre">Saldo inicial</span>
+          <span class="importe">{{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.2-2' }}</span>
         </div>
         <div class="columna destacada">
-          <span class="nombre">SALDO FINAL</span>
-          <span class="importe">{{ datos.saldoFinal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="nombre">Saldo final</span>
+          <span class="importe">{{ datos.saldoFinal | currency:datos.moneda:'symbol':'1.2-2' }}</span>
         </div>
-      </div>
-    </div>
-
-    <div class="tarjeta-ahorro">
-      <div class="dato">
-        <span class="cifra" [class.negativa]="(datos.variacionAhorroPct ?? 0) < 0">
-          @if (datos.variacionAhorroPct === null) {
-            —
-          } @else {
-            {{ datos.variacionAhorroPct > 0 ? '+' : '' }}{{ datos.variacionAhorroPct | number:'1.0-1' }} %
-          }
-        </span>
-        <span class="leyenda">aumento del ahorro total</span>
-      </div>
-      <hr />
-      <div class="dato">
-        <span class="cifra" [class.negativa]="datos.ahorroMes < 0">
-          {{ datos.ahorroMes | currency:datos.moneda:'symbol':'1.0-2' }}
-        </span>
-        <span class="leyenda">
-          {{ datos.ahorroMes < 0 ? 'de más gastado este mes' : 'ahorrados este mes' }}
-        </span>
       </div>
     </div>
   </section>
+<!-- Antes esto eran tres porcentajes grandes con el objetivo entre paréntesis
+     en la etiqueta, así que la distancia al objetivo —lo único que hace
+     accionable la regla— había que calcularla mentalmente. Ahora la barra la
+     dibuja: la muesca es el objetivo, y el relleno se pone en rojo cuando el
+     reparto se ha ido del lado malo. -->
 <section class="bloque-503020">
   <h3>Distribución 50/30/20</h3>
 
   <div class="fila-503020">
     <div class="item">
-      <span class="titulo">Necesidades (50%)</span>
-      <span class="valor">
-        {{ (datos.porcentajeNecesidades ?? 0) | number:'1.0-1' }} %
-      </span>
+      <span class="titulo">Necesidades</span>
+      <span class="valor">{{ (datos.porcentajeNecesidades ?? 0) | number:'1.0-1' }} %</span>
+      <div class="pista-obj">
+        <div class="relleno-obj" [class.desviado]="(datos.porcentajeNecesidades ?? 0) > 50"
+             [style.width.%]="datos.porcentajeNecesidades ?? 0"></div>
+        <div class="marca-obj" [style.left.%]="50"></div>
+      </div>
+      <span class="objetivo">objetivo 50 %</span>
     </div>
 
     <div class="item">
-      <span class="titulo">Deseos (30%)</span>
-      <span class="valor">
-        {{ (datos.porcentajeDeseos ?? 0) | number:'1.0-1' }} %
-      </span>
+      <span class="titulo">Deseos</span>
+      <span class="valor">{{ (datos.porcentajeDeseos ?? 0) | number:'1.0-1' }} %</span>
+      <div class="pista-obj">
+        <div class="relleno-obj" [class.desviado]="(datos.porcentajeDeseos ?? 0) > 30"
+             [style.width.%]="datos.porcentajeDeseos ?? 0"></div>
+        <div class="marca-obj" [style.left.%]="30"></div>
+      </div>
+      <span class="objetivo">objetivo 30 %</span>
     </div>
 
     <div class="item">
-      <span class="titulo">Ahorro (20%)</span>
-      <span class="valor">
-        {{ (datos.porcentajeAhorro ?? 0) | number:'1.0-1' }} %
-      </span>
+      <span class="titulo">Ahorro</span>
+      <span class="valor">{{ (datos.porcentajeAhorro ?? 0) | number:'1.0-1' }} %</span>
+      <div class="pista-obj">
+        <!-- Aquí el lado malo es el contrario: quedarse corto de ahorro. -->
+        <div class="relleno-obj" [class.desviado]="(datos.porcentajeAhorro ?? 0) < 20"
+             [style.width.%]="datos.porcentajeAhorro ?? 0"></div>
+        <div class="marca-obj" [style.left.%]="20"></div>
+      </div>
+      <span class="objetivo">objetivo 20 %</span>
     </div>
   </div>
 </section>
@@ -235,7 +266,7 @@
         <h3>{{ bloque.titulo }}</h3>
         <div class="fila-barra">
           <span class="concepto">Previsto</span>
-          <span class="importe">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="importe">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.2-2' }}</span>
           <div class="pista">
             <div class="relleno relleno-previsto"
                  [style.width.%]="anchoBarra(bloque.datos.previstoTotal, bloque.datos)"></div>
@@ -243,7 +274,7 @@
         </div>
         <div class="fila-barra">
           <span class="concepto">Real</span>
-          <span class="importe">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.0-2' }}</span>
+          <span class="importe">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.2-2' }}</span>
           <div class="pista">
             <div class="relleno relleno-real"
                  [style.width.%]="anchoBarra(bloque.datos.realTotal, bloque.datos)"></div>
@@ -265,6 +296,8 @@
                     styleClass="boton-ingreso"
                     (onClick)="abrirFormIngreso()" />
           <app-importar-excel />
+          <app-importar-correo />
+          <app-config-correo />
         </div>
       } @else if (mostrarFormGasto()) {
         <div class="form-gasto">
@@ -350,16 +383,16 @@
               <th scope="col"></th>
               <th scope="col" class="num">Previsto</th>
               <th scope="col" class="num">Real</th>
-              <th scope="col" class="num">Difer.</th>
+              <th scope="col" class="num">Diferencia</th>
             </tr>
           </thead>
           <tbody>
             <tr class="totales">
               <th scope="row">Totales</th>
-              <td class="num">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.0-2' }}</td>
-              <td class="num">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+              <td class="num">{{ bloque.datos.previstoTotal | currency:datos.moneda:'symbol':'1.2-2' }}</td>
+              <td class="num">{{ bloque.datos.realTotal | currency:datos.moneda:'symbol':'1.2-2' }}</td>
               <td class="num" [class.negativo]="bloque.datos.diferenciaTotal < 0">
-                {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.0-2' }}
+                {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.2-2' }}
               </td>
             </tr>
             @for (linea of lineasConPresupuesto(bloque.datos.lineas); track linea.lineaId ?? linea.nombre) {
@@ -372,7 +405,7 @@
                 </th>
                 <td class="num">
                   @if (modoDemo() || !linea.lineaId) {
-                    {{ linea.previsto | currency:datos.moneda:'symbol':'1.0-2' }}
+                    {{ linea.previsto | currency:datos.moneda:'symbol':'1.2-2' }}
                   } @else {
                     <div style="display: flex; align-items: center; gap: 0.25rem; justify-content: flex-end;">
                       <p-inputNumber [ngModel]="obtenerPrevisto(linea)"
@@ -390,9 +423,9 @@
                     </div>
                   }
                 </td>
-                <td class="num">{{ linea.real | currency:datos.moneda:'symbol':'1.0-2' }}</td>
+                <td class="num">{{ linea.real | currency:datos.moneda:'symbol':'1.2-2' }}</td>
                 <td class="num" [class.negativo]="linea.diferencia < 0">
-                  {{ linea.diferencia | currency:datos.moneda:'symbol':'1.0-2' }}
+                  {{ linea.diferencia | currency:datos.moneda:'symbol':'1.2-2' }}
                 </td>
               </tr>
             }
@@ -402,11 +435,52 @@
     }
   </section>
 
-  <!-- Detalle de gastos de la categoría seleccionada -->
+  <!-- Detalle de la categoría seleccionada: movimientos del mes o evolución.
+       Dos pestañas y no dos bloques apilados porque cambian de escala: la tabla
+       es del mes y el gráfico son los últimos doce, y ese salto tiene que ser un
+       gesto y no un descubrimiento al hacer scroll. -->
   @if (categoriaSeleccionada(); as cat) {
     <section class="detalle-gastos">
-      <h3>Gastos — {{ cat.nombre }}</h3>
-      @if (cargandoTx()) {
+      <!-- El título decía siempre "Gastos", también al abrir una fila de la
+           tabla de ingresos. -->
+      <h3>{{ cat.tipo === 'ingreso' ? 'Ingresos' : 'Gastos' }} — {{ cat.nombre }}</h3>
+
+      <div class="pestanas" role="tablist">
+        <button type="button" role="tab" class="pestana"
+                [class.activa]="pestanaDetalle() === 'movimientos'"
+                [attr.aria-selected]="pestanaDetalle() === 'movimientos'"
+                (click)="verMovimientos()">
+          Movimientos del mes
+        </button>
+        <button type="button" role="tab" class="pestana"
+                [class.activa]="pestanaDetalle() === 'evolucion'"
+                [attr.aria-selected]="pestanaDetalle() === 'evolucion'"
+                (click)="verEvolucion()">
+          <!-- `aria-hidden`: el icono repite lo que ya dice la palabra de al
+               lado, así que un lector de pantalla no debe anunciarlo dos veces. -->
+          <i class="pi pi-chart-line" aria-hidden="true"></i>
+          Evolución
+        </button>
+      </div>
+
+      @if (pestanaDetalle() === 'evolucion') {
+        @if (cargandoEvolucion()) {
+          <p class="aviso">Cargando la evolución…</p>
+        } @else {
+          <!-- Anidado y no `@else if (evolucion(); as evo)`: Angular sólo admite
+               `as` en el @if principal de la cadena (NG5002). -->
+          @if (evolucion(); as evo) {
+            <app-grafico-evolucion
+              [categoria]="evolucionDeCategoria()"
+              [meses]="evo.meses"
+              [primerMesConDatos]="evo.primerMesConDatos"
+              [mesEnPantalla]="mes()"
+              [moneda]="evo.moneda" />
+          } @else {
+            <p class="aviso">No se ha podido cargar la evolución. Vuelve a intentarlo.</p>
+          }
+        }
+      } @else if (cargandoTx()) {
         <p class="aviso">Cargando gastos…</p>
       } @else {
         <table>

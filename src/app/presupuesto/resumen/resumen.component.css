@@ -1,21 +1,21 @@
 :host {
   display: block;
-  color: var(--pf-texto);
+  color: var(--pf-tinta);
 }
 
 /* --- Panel settings --- */
 .panel-settings {
   margin-bottom: 1.5rem;
   padding: 1.25rem;
-  background: var(--pf-verde-suave);
-  border-radius: var(--pf-radio);
-  border-left: 3px solid var(--pf-verde);
+  background: var(--pf-banda-clara);
+  border-radius: 4px;
+  border-top: 2px solid var(--pf-tinta);
 }
 .panel-settings h4 {
   margin: 0 0 1rem;
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  color: var(--pf-verde);
+  font-family: var(--pf-fuente-voz);
+  font-size: 1rem;
+  color: var(--pf-tinta);
 }
 .tabla-settings {
   width: 100%;
@@ -28,8 +28,8 @@
   padding: 0.4rem 0.5rem;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  color: var(--pf-texto-suave);
-  border-bottom: 1px solid color-mix(in srgb, var(--pf-verde) 30%, transparent);
+  color: var(--pf-tinta-suave);
+  border-bottom: 1px solid var(--pf-tinta);
 }
 .tabla-settings td {
   padding: 0.4rem 0.5rem;
@@ -64,11 +64,15 @@
   transition: background 0.15s;
 }
 .fila-categoria:hover {
-  background: var(--pf-verde-suave);
+  background: var(--pf-banda);
 }
-.fila-seleccionada {
-  background: var(--pf-verde-suave);
-  font-weight: 600;
+/* Doble clase a proposito: `.fila-seleccionada` sola (0,1,0) perdia contra
+   `tbody tr:nth-child(odd)` (0,1,2), asi que en las filas impares la seleccion
+   no se veia. Con `.fila-categoria.fila-seleccionada` (0,2,0) gana. */
+.fila-categoria.fila-seleccionada {
+  background: var(--pf-banda);
+  box-shadow: inset 3px 0 0 var(--pf-tinta);
+  font-weight: 700;
 }
 .icono-expand {
   margin-left: 0.4rem;
@@ -80,35 +84,71 @@
 .detalle-gastos {
   margin-top: 2rem;
   padding: 1.25rem;
-  background: var(--pf-verde-suave);
-  border-radius: var(--pf-radio);
-  border-left: 3px solid var(--pf-verde);
-}
-.detalle-gastos h3 {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  color: var(--pf-verde);
+  background: var(--pf-banda-clara);
+  border-radius: 4px;
+  border-top: 2px solid var(--pf-tinta);
 }
 .detalle-gastos table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
 }
+/* Pestanas del panel de detalle. Botones y no enlaces: no cambian de sitio, sólo
+   de vista, y asi entran en el orden de tabulacion con su foco visible. */
+.pestanas {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--pf-filete);
+}
+
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--pf-tinta-suave);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.pestana:hover {
+  color: var(--pf-tinta);
+}
+
+/* Un punto por debajo del texto: acompana a la palabra, no compite con ella. */
+.pestana .pi {
+  font-size: 0.85em;
+}
+
+.pestana.activa {
+  color: var(--pf-tinta);
+  font-weight: 700;
+  border-bottom-color: var(--pf-tinta);
+}
+
 .detalle-gastos th {
   text-align: left;
   padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid var(--pf-verde);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  color: var(--pf-texto-suave);
+  border-bottom: 2px solid var(--pf-tinta);
+  font-size: 0.8rem;
+  color: var(--pf-tinta);
+  background: none;
 }
 .detalle-gastos td {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--pf-verde) 20%, transparent);
+}
+.detalle-gastos tbody tr:nth-child(odd) {
+  background: color-mix(in srgb, var(--pf-banda) 60%, transparent);
 }
 .sin-datos {
   text-align: center;
-  color: var(--pf-texto-suave);
+  color: var(--pf-tinta-suave);
   padding: 1.5rem !important;
 }
 
@@ -124,54 +164,43 @@
   flex-wrap: wrap;
 }
 
-:host ::ng-deep .boton-gasto {
-  color: #F97316;
-  border-color: #F97316;
+/* Los dos botones iban en naranja y verde lima, un sistema de color propio que
+   no significaba nada dentro de esta pantalla. Anadir un gasto no es un numero
+   negativo, asi que van los dos en tinta: lo que distingue uno de otro es la
+   palabra, que es explicita. El verde solo reaparece en el formulario de
+   ingreso, porque ahi si hay dinero entrando. */
+:host ::ng-deep .boton-gasto,
+:host ::ng-deep .boton-ingreso {
+  color: var(--pf-tinta);
+  border-color: var(--pf-tinta-suave);
 }
 :host ::ng-deep .boton-gasto:hover,
-:host ::ng-deep .boton-gasto:focus {
-  background: rgba(249, 115, 22, 0.08);
-  border-color: #F97316;
-  color: #F97316;
-}
-
-:host ::ng-deep .boton-ingreso {
-  color: #22C55E;
-  border-color: #22C55E;
-}
+:host ::ng-deep .boton-gasto:focus,
 :host ::ng-deep .boton-ingreso:hover,
 :host ::ng-deep .boton-ingreso:focus {
-  background: rgba(34, 197, 94, 0.08);
-  border-color: #22C55E;
-  color: #22C55E;
+  background: var(--pf-banda);
+  border-color: var(--pf-tinta);
+  color: var(--pf-tinta);
 }
 
-.form-gasto {
+.form-gasto,
+.form-ingreso {
   padding: 1.25rem;
-  background: #FFF7ED;
-  border-radius: var(--pf-radio);
-  border-left: 3px solid #F97316;
-}
-
-.form-gasto h4 {
-  margin: 0 0 1rem;
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  color: #F97316;
+  background: var(--pf-banda-clara);
+  border-radius: 4px;
+  border-top: 2px solid var(--pf-tinta);
 }
 
 .form-ingreso {
-  padding: 1.25rem;
-  background: #F0FDF4;
-  border-radius: var(--pf-radio);
-  border-left: 3px solid #22C55E;
+  border-top-color: var(--pf-verde-2);
 }
 
+.form-gasto h4,
 .form-ingreso h4 {
   margin: 0 0 1rem;
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  color: #22C55E;
+  font-family: var(--pf-fuente-voz);
+  font-size: 1rem;
+  color: var(--pf-tinta);
 }
 
 .form-campos {
@@ -194,8 +223,8 @@
   border: 1px solid var(--p-inputtext-border-color, #d1d5db);
   border-radius: 6px;
   font-size: 0.875rem;
-  color: var(--pf-texto);
-  background: #fff;
+  color: var(--pf-tinta);
+  background: var(--pf-papel-2);
 }
 
 .form-acciones {
@@ -203,34 +232,25 @@
   gap: 0.5rem;
 }
 
-/* --- Banda de instrucciones --- */
+/* --- Como funciona: prosa, no tarjeta --- */
+/* Era un bloque verde con dos rotulos en versalitas que competia por atencion
+   con los datos. Ahora es texto pequeno con una regla debajo, que es toda la
+   jerarquia que necesita: se lee una vez y no vuelve a mirarse. */
 .instrucciones {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  padding: 1rem 1.25rem;
+  gap: 2rem;
+  padding: 0 0 1.1rem;
   margin-bottom: 1.5rem;
-  background: var(--pf-verde-suave);
-  border-radius: var(--pf-radio);
-}
-
-.instrucciones h4 {
-  margin: 0 0 0.35rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  color: var(--pf-verde);
+  border-bottom: 1px solid var(--pf-filete);
 }
 
 .instrucciones p {
-  margin: 0 0 0.25rem;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--pf-texto-suave);
-}
-
-.nota-destacada {
-  font-weight: 600;
-  color: var(--pf-texto);
+  margin: 0;
+  max-width: 46ch;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--pf-tinta-suave);
 }
 
 /* --- Cabecera con navegación de mes --- */
@@ -240,15 +260,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--pf-verde);
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid var(--pf-tinta);
 }
 
 .cabecera h2 {
   margin: 0;
-  font-size: 1.5rem;
-  color: var(--pf-verde);
+  font-family: var(--pf-fuente-voz);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--pf-tinta);
 }
 
 .navegacion-mes {
@@ -257,11 +280,18 @@
   gap: 0.25rem;
 }
 
+/* `text-transform: capitalize` ponia mayuscula en cada palabra y salia
+   "Septiembre De 2026". En espanol la preposicion va en minuscula, asi que se
+   toca solo la primera letra. */
 .navegacion-mes .mes {
   min-width: 10rem;
   text-align: center;
-  font-weight: 600;
-  text-transform: capitalize;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.navegacion-mes .mes::first-letter {
+  text-transform: uppercase;
 }
 
 .saldo-inicial {
@@ -271,40 +301,15 @@
 }
 
 .saldo-inicial .etiqueta {
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pf-texto-suave);
-}
-
-.valor-editable {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.7rem;
-  font: inherit;
-  font-weight: 700;
-  color: var(--pf-verde);
-  background: var(--pf-verde-suave);
-  border: 1px dashed var(--pf-borde);
-  border-radius: var(--pf-radio);
-  cursor: pointer;
-}
-
-.valor-editable:hover {
-  border-color: var(--pf-verde-medio);
-}
-
-.valor-editable i {
-  font-size: 0.75rem;
-  color: var(--pf-texto-suave);
+  font-size: 0.86rem;
+  color: var(--pf-tinta-suave);
 }
 
 /* Saldo del ejemplo: se ve igual de destacado, pero no invita a pulsarlo. */
 .valor-fijo {
   padding: 0.35rem 0.7rem;
   font-weight: 700;
-  color: var(--pf-verde);
+  color: var(--pf-tinta);
 }
 
 /* --- Banda del presupuesto de ejemplo --- */
@@ -314,14 +319,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.8rem 1.25rem;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-  color: var(--pf-texto);
-  background: var(--pf-papel);
-  border: 1px solid var(--pf-verde-medio);
-  border-left: 4px solid var(--pf-verde-medio);
-  border-radius: var(--pf-radio);
+  padding: 0.8rem 1.1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--pf-tinta);
+  background: var(--pf-banda);
+  border-radius: 4px;
 }
 
 .acciones-demo {
@@ -331,57 +334,91 @@
 
 .enlace-demo {
   padding: 0.35rem 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
-  color: #fff;
-  background: var(--pf-verde);
-  border: 1px solid var(--pf-verde);
-  border-radius: var(--pf-radio);
+  color: var(--pf-papel-2);
+  background: var(--pf-tinta);
+  border: 1px solid var(--pf-tinta);
+  border-radius: 4px;
   white-space: nowrap;
 }
 
 .enlace-demo-secundario {
-  color: var(--pf-verde);
+  color: var(--pf-tinta);
   background: transparent;
 }
 
 .enlace-demo:hover {
-  border-color: var(--pf-verde-medio);
+  background: var(--pf-verde-2);
+  border-color: var(--pf-verde-2);
+  color: var(--pf-papel-2);
 }
 
 .aviso {
   padding: 2rem 0;
   text-align: center;
-  color: var(--pf-texto-suave);
+  color: var(--pf-tinta-suave);
 }
 
 .aviso-error {
-  color: var(--pf-rojo);
+  color: var(--pf-rojo-2);
 }
 
-/* --- Saldos y ahorro --- */
+/* --- El cierre del mes --- */
+/* Aqui se gasta toda la audacia de la pantalla: una sola linea grande, en la
+   familia de la voz, del color que dice el signo. Todo lo demas se mantiene
+   callado a proposito. El color tinge la linea entera y no una palabra suelta:
+   destacar una palabra del titular es el tic mas reconocible de una pagina
+   generada, y ademas el signo no se apoya solo en el color, tambien lo dicen
+   las palabras "en negro" / "en rojo". */
 .panel-superior {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  padding-bottom: 1.75rem;
+  margin-bottom: 2.25rem;
+  border-bottom: 1px solid var(--pf-filete);
 }
 
-.grafico-saldos,
-.tarjeta-ahorro {
-  padding: 1.25rem;
-  background: var(--pf-papel);
-  border: 1px solid var(--pf-borde);
-  border-radius: var(--pf-radio);
+.cierre-cifra {
+  margin: 0;
+  font-family: var(--pf-fuente-voz);
+  font-size: clamp(1.9rem, 4.4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--pf-verde-2);
+}
+
+.cierre-cifra.rojo {
+  color: var(--pf-rojo-2);
+}
+
+.cierre-frase {
+  margin: 0.6rem 0 0;
+  max-width: 38ch;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--pf-tinta-suave);
+}
+
+.cierre-frase strong {
+  font-weight: 700;
+  color: var(--pf-tinta);
+}
+
+.cierre-frase .rojo {
+  color: var(--pf-rojo-2);
 }
 
 .barras {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  gap: 2.5rem;
   align-items: end;
-  height: 9rem;
-  padding: 0 2rem;
+  height: 7rem;
+  padding: 0 1.5rem;
 }
 
 .barras .columna {
@@ -393,25 +430,33 @@
 
 .barra {
   width: 100%;
-  max-width: 5rem;
-  border-radius: 4px 4px 0 0;
+  max-width: 4.5rem;
+  border-radius: 2px 2px 0 0;
   transition: height 0.25s ease;
 }
 
+/* El punto de partida va en el tono del papel y el cierre en tinta verde: la
+   comparacion se lee por contraste, no por dos verdes distintos. */
 .barra-inicial {
-  background: var(--pf-verde-medio);
+  background: var(--pf-banda-fuerte);
 }
 
 .barra-final {
-  background: var(--pf-verde);
+  background: var(--pf-verde-2);
+}
+
+/* Saldo en negativo. La altura de la barra se calcula en valor absoluto, así
+   que sin este color un saldo final malo se vería como la barra más grande. */
+.barra.negativa {
+  background: var(--pf-rojo-2);
 }
 
 .etiquetas-barras {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  padding: 0.6rem 2rem 0;
-  border-top: 1px solid var(--pf-borde);
+  gap: 2.5rem;
+  padding: 0.6rem 1.5rem 0;
+  border-top: 1px solid var(--pf-tinta);
 }
 
 .etiquetas-barras .columna {
@@ -422,99 +467,89 @@
 }
 
 .etiquetas-barras .nombre {
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  color: var(--pf-texto-suave);
+  font-size: 0.78rem;
+  color: var(--pf-tinta-suave);
 }
 
 .etiquetas-barras .importe {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.etiquetas-barras .destacada .importe {
-  color: var(--pf-verde);
-}
-
-.tarjeta-ahorro {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.75rem;
-  text-align: center;
-}
-
-.tarjeta-ahorro hr {
-  width: 60%;
-  margin: 0 auto;
-  border: none;
-  border-top: 1px solid var(--pf-borde);
-}
-
-.tarjeta-ahorro .dato {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.tarjeta-ahorro .cifra {
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--pf-verde);
 }
 
-.tarjeta-ahorro .cifra.negativa {
-  color: var(--pf-rojo);
-}
-
-.tarjeta-ahorro .leyenda {
-  font-size: 0.75rem;
-  color: var(--pf-texto-suave);
-}
+/* Las reglas de `.tarjeta-ahorro` se han ido con la tarjeta: el ahorro del mes
+   y su variacion ahora se leen dentro de la frase del cierre. */
 
 /* --- Distribución 50/30/20 --- */
 .bloque-503020 {
-  margin-bottom: 2rem;
-  padding: 1.25rem;
-  background: var(--pf-papel);
-  border: 1px solid var(--pf-borde);
-  border-radius: var(--pf-radio);
-}
-
-.bloque-503020 h3 {
-  margin: 0 0 1rem;
-  font-size: 1.1rem;
-  color: var(--pf-verde);
+  padding-bottom: 1.75rem;
+  margin-bottom: 2.25rem;
+  border-bottom: 1px solid var(--pf-filete);
 }
 
 .fila-503020 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
+/* Alineado a la izquierda, no centrado: las tres columnas se comparan entre si
+   y el ojo necesita un borde comun del que arrancar. */
 .fila-503020 .item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  text-align: center;
-  background: #fff;
-  border: 1px solid var(--pf-borde);
-  border-radius: var(--pf-radio);
+  align-items: stretch;
+  gap: 0.3rem;
 }
 
 .fila-503020 .titulo {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--pf-texto-suave);
+  font-size: 0.86rem;
+  color: var(--pf-tinta-suave);
 }
 
 .fila-503020 .valor {
-  font-size: 1.8rem;
+  font-family: var(--pf-fuente-voz);
+  font-size: 1.55rem;
   font-weight: 700;
-  color: var(--pf-verde);
+  line-height: 1.1;
+  color: var(--pf-tinta);
+}
+
+/* La pista no lleva `overflow: hidden`: la muesca del objetivo sobresale por
+   arriba y por abajo, y recortarla la haria desaparecer. Al relleno se le pone
+   `max-width` para que un 120 % no se salga de la pista. */
+.pista-obj {
+  position: relative;
+  height: 0.55rem;
+  margin-top: 0.25rem;
+  background: var(--pf-banda);
+  border-radius: 2px;
+}
+
+.relleno-obj {
+  height: 100%;
+  max-width: 100%;
+  background: var(--pf-verde-2);
+  border-radius: 2px;
+  transition: width 0.25s ease;
+}
+
+/* Rojo cuando el reparto se ha ido del lado malo, que en necesidades y deseos
+   es pasarse y en ahorro es quedarse corto. */
+.relleno-obj.desviado {
+  background: var(--pf-rojo-2);
+}
+
+.marca-obj {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--pf-tinta);
+}
+
+.objetivo {
+  font-size: 0.76rem;
+  color: var(--pf-tinta-suave);
 }
 
 /* --- Barras Previsto vs Real --- */
@@ -529,13 +564,18 @@
   margin-bottom: 2rem;
 }
 
+/* Sin `text-transform: uppercase`: rotular en versalitas es el tic tipografico
+   mas comun de una interfaz generada, y aqui ademas partia palabras largas. */
+.bloque-503020 h3,
 .comparativa h3,
-.tabla-bloque h3 {
+.tabla-bloque h3,
+.detalle-gastos h3 {
   margin: 0 0 0.75rem;
-  font-size: 1rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pf-verde);
+  font-family: var(--pf-fuente-voz);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--pf-tinta);
 }
 
 .fila-barra {
@@ -547,8 +587,8 @@
 }
 
 .fila-barra .concepto {
-  font-size: 0.8rem;
-  color: var(--pf-texto-suave);
+  font-size: 0.85rem;
+  color: var(--pf-tinta-suave);
 }
 
 .fila-barra .importe {
@@ -558,24 +598,26 @@
 }
 
 .pista {
-  height: 0.85rem;
-  background: var(--pf-verde-suave);
-  border-radius: 999px;
+  height: 0.7rem;
+  background: var(--pf-banda);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .relleno {
   height: 100%;
-  border-radius: 999px;
+  border-radius: 2px;
   transition: width 0.25s ease;
 }
 
+/* Previsto es el plan y va en el tono del papel; real es lo que ha pasado y va
+   en tinta. Mismo criterio que en las barras de saldo. */
 .relleno-previsto {
-  background: var(--pf-verde-medio);
+  background: var(--pf-banda-fuerte);
 }
 
 .relleno-real {
-  background: var(--pf-verde);
+  background: var(--pf-verde-2);
 }
 
 /* --- Tablas de detalle --- */
@@ -585,13 +627,15 @@ table {
   font-size: 0.86rem;
 }
 
+/* La cabecera deja de ser una franja verde con texto blanco: al invertirla
+   pesaba mas que los propios importes. Ahora es la banda del papel, mas oscura,
+   con la misma tinta que el resto. */
 thead th {
   padding: 0.5rem 0.6rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--pf-verde);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--pf-tinta);
+  background: var(--pf-banda-fuerte);
   text-align: left;
 }
 
@@ -608,74 +652,90 @@ tbody td {
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  /* Con dos decimales fijos las columnas son mas anchas: se les da el ancho que
+     necesitan de una pieza para que no partan el nombre de la categoria. */
+  white-space: nowrap;
 }
 
-tbody tr:nth-child(even) {
-  background: var(--pf-papel);
+.fila-categoria th[scope='row'] {
+  white-space: nowrap;
+}
+
+/* Bandas alternas, como el papel continuo de contabilidad. Es lo que sustituye
+   a las tarjetas: aqui la banda si codifica algo —es una fila de datos— y
+   ademas guia el ojo a lo largo de una linea de cuatro columnas. */
+tbody tr:nth-child(odd) {
+  background: var(--pf-banda-clara);
 }
 
 tr.totales {
-  background: var(--pf-verde-suave) !important;
+  background: var(--pf-banda-fuerte) !important;
   font-weight: 700;
 }
 
 tr.sin-presupuesto th {
-  color: var(--pf-texto-suave);
+  color: var(--pf-tinta-suave);
 }
 
 .marca {
   margin-left: 0.4rem;
   padding: 0.05rem 0.35rem;
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--pf-rojo);
+  font-size: 0.7rem;
+  color: var(--pf-rojo-2);
   border: 1px solid currentColor;
-  border-radius: 999px;
+  border-radius: 3px;
 }
 
 .negativo {
-  color: var(--pf-rojo);
+  color: var(--pf-rojo-2);
 }
 
 /* --- Inputs editables en tablas --- */
+/* El previsto es lo unico que se escribe dentro de la tabla, asi que se marca
+   con un subrayado en lugar de una caja: una caja por fila devolveria a la
+   pantalla el aspecto de formulario del que se esta saliendo. */
 ::ng-deep .entrada-previsto .p-inputnumber-input {
   width: 7rem;
   padding: 0.25rem 0.4rem;
   font-size: 0.86rem;
   text-align: right;
-  border: 1px solid var(--pf-borde);
-  border-radius: 4px;
-  transition: border-color 0.2s;
+  color: var(--pf-tinta);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 1px solid var(--pf-tinta-suave);
+  border-radius: 2px;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 ::ng-deep .entrada-previsto .p-inputnumber-input:hover {
-  border-color: var(--pf-verde-medio);
+  background: var(--pf-papel-2);
+  border-color: var(--pf-tinta-suave);
 }
 
 ::ng-deep .entrada-previsto .p-inputnumber-input:focus {
-  border-color: var(--pf-verde);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.1);
+  background: var(--pf-papel-2);
+  border-color: var(--pf-tinta);
+  outline: 2px solid var(--pf-tinta);
+  outline-offset: 1px;
 }
 
 ::ng-deep .entrada-saldo .p-inputnumber-input {
   padding: 0.35rem 0.7rem;
   font-weight: 700;
-  color: var(--pf-verde);
-  background: var(--pf-verde-suave);
-  border: 1px dashed var(--pf-borde);
-  border-radius: var(--pf-radio);
+  color: var(--pf-tinta);
+  background: var(--pf-banda);
+  border: 1px solid transparent;
+  border-bottom: 1px solid var(--pf-tinta);
+  border-radius: 3px;
 }
 
 ::ng-deep .entrada-saldo .p-inputnumber-input:hover {
-  border-color: var(--pf-verde-medio);
+  background: var(--pf-banda-fuerte);
 }
 
 ::ng-deep .entrada-saldo .p-inputnumber-input:focus {
-  border-color: var(--pf-verde);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.1);
+  outline: 2px solid var(--pf-tinta);
+  outline-offset: 1px;
 }
 
 @media (max-width: 900px) {
@@ -685,5 +745,71 @@ tr.sin-presupuesto th {
   .tablas,
   .fila-503020 {
     grid-template-columns: 1fr;
+  }
+
+  /* Cuatro columnas de importe con dos decimales y `white-space: nowrap` piden
+     460 px, asi que en un movil de 390 px arrastraban la pagina entera de lado:
+     el titular y el texto se salian de la pantalla al desplazarse. Cada tabla
+     se desplaza ahora dentro de su propio marco y el cuerpo no se mueve. */
+  .tabla-bloque,
+  .detalle-gastos,
+  .panel-settings {
+    overflow-x: auto;
+  }
+
+  .tabla-bloque table,
+  .detalle-gastos table {
+    min-width: 26rem;
+  }
+}
+
+/* --- Botones de PrimeNG --- */
+/* Las flechas del mes, el engranaje y los botones de guardar seguian pintados
+   con el verde menta del tema Aura, ajeno a esta paleta. Se traen a la tinta de
+   la pantalla; `::ng-deep` alcanza tambien a los botones de los componentes
+   hijos de importacion, que es justo lo que hace falta para que la fila de
+   acciones no vaya a dos colores. */
+:host ::ng-deep .p-button.p-button-text,
+:host ::ng-deep .p-button.p-button-link {
+  color: var(--pf-tinta);
+}
+
+:host ::ng-deep .p-button.p-button-text:not(:disabled):hover {
+  background: var(--pf-banda);
+  color: var(--pf-tinta);
+}
+
+:host ::ng-deep .p-button:not(.p-button-text):not(.p-button-link):not(.p-button-outlined) {
+  background: var(--pf-tinta);
+  border-color: var(--pf-tinta);
+  color: var(--pf-papel-2);
+}
+
+:host ::ng-deep .p-button:not(.p-button-text):not(.p-button-link):not(.p-button-outlined):not(:disabled):hover {
+  background: var(--pf-verde-2);
+  border-color: var(--pf-verde-2);
+}
+
+/* --- Suelo de calidad --- */
+/* Foco visible con teclado en todo lo que se puede recorrer con el tabulador.
+   PrimeNG pinta el suyo, pero los enlaces y los inputs nativos de esta pantalla
+   se quedaban con el del navegador, que sobre la banda verde apenas se ve. */
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+:host ::ng-deep .p-button:focus-visible {
+  outline: 2px solid var(--pf-tinta);
+  outline-offset: 2px;
+}
+
+/* Las tres transiciones de la pantalla animan cambios de dato (una barra que
+   crece, una fila que se selecciona). Quien pide menos movimiento las pierde
+   sin perder informacion, porque el numero sigue escrito al lado. */
+@media (prefers-reduced-motion: reduce) {
+  .barra,
+  .relleno,
+  .relleno-obj,
+  .fila-categoria {
+    transition: none;
   }
 }

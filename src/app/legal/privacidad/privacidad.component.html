@@ -1,0 +1,267 @@
+<app-header />
+
+<main class="legal">
+  <header class="legal-cabecera">
+    <h1>Política de Privacidad</h1>
+    <p class="legal-fecha">Última actualización: {{ datos.ultimaActualizacion }}</p>
+  </header>
+
+  <p *ngIf="datosPendientes" class="legal-aviso">
+    Documento pendiente de completar: faltan los datos del responsable del tratamiento.
+    Revísalos en <code>src/app/legal/datos-legales.ts</code> antes de publicar la aplicación.
+  </p>
+
+  <div class="legal-destacado">
+    <p>
+      En {{ datos.nombreApp }} tratamos información sobre tus finanzas personales: cuánto
+      ingresas, en qué gastas y cómo reparte el dinero tu familia. Es información sensible,
+      así que la regla es simple: <strong>sólo se usa para que la aplicación funcione para
+      ti</strong>. No se vende, no se cede con fines comerciales, no se usa para publicidad y
+      no se emplea para elaborar perfiles ni para tomar decisiones automatizadas sobre ti.
+    </p>
+  </div>
+
+  <section>
+    <h2>1. Responsable del tratamiento</h2>
+    <ul class="legal-datos">
+      <li><strong>Responsable:</strong> {{ datos.titular }}</li>
+      <li><strong>NIF:</strong> {{ datos.nif }}</li>
+      <li><strong>Domicilio:</strong> {{ datos.domicilio }}</li>
+      <li><strong>Contacto general:</strong> {{ datos.emailContacto }}</li>
+      <li><strong>Privacidad y ejercicio de derechos:</strong> {{ datos.emailPrivacidad }}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>2. Qué datos tratamos</h2>
+
+    <h3>Datos de cuenta e identificación</h3>
+    <ul>
+      <li>Nombre de usuario y nombre que decidas mostrar.</li>
+      <li>Correo electrónico.</li>
+      <li>
+        Contraseña, que se guarda protegida mediante técnicas de hash y nunca en texto claro.
+      </li>
+      <li>
+        Si accedes con Google: el identificador de usuario, el correo y el nombre que ese
+        servicio nos devuelve tras la autenticación.
+      </li>
+    </ul>
+
+    <h3>Datos de perfil</h3>
+    <ul>
+      <li>Fotografía de perfil, si decides subir una.</li>
+      <li>Preferencias como el color del perfil y la moneda.</li>
+      <li>
+        Si compartes gastos: con qué usuarios los compartes y el estado de las invitaciones
+        enviadas o recibidas.
+      </li>
+    </ul>
+
+    <h3>Datos económicos</h3>
+    <ul>
+      <li>
+        Movimientos que registras o importas: fecha, concepto o descripción, importe,
+        categoría y tipo (ingreso o gasto).
+      </li>
+      <li>Presupuestos por categoría y periodo, y las reglas de reparto que configures.</li>
+      <li>Los resúmenes y agregados que la aplicación calcula a partir de lo anterior.</li>
+    </ul>
+
+    <h3>Datos técnicos</h3>
+    <ul>
+      <li>
+        Una cookie de sesión estrictamente necesaria para mantenerte identificado, marcada
+        como <code>httpOnly</code> para que no sea accesible desde el código de la página.
+      </li>
+      <li>
+        Registros técnicos del servidor (fecha y hora de las peticiones, dirección IP,
+        tipo de dispositivo o navegador) generados al usar el servicio.
+      </li>
+    </ul>
+
+    <div class="legal-destacado">
+      <p>
+        <strong>Importación desde Excel:</strong> el fichero que seleccionas se lee dentro de
+        tu propio navegador. No se sube a ningún servidor: sólo se envían los movimientos que
+        confirmas tras revisar la correspondencia de columnas. El resto del contenido del
+        fichero (otras hojas, columnas que no mapees) nunca sale de tu dispositivo.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Para qué los usamos y con qué base legal</h2>
+    <div class="legal-tabla-scroll">
+      <table class="legal-tabla">
+        <thead>
+          <tr>
+            <th>Finalidad</th>
+            <th>Datos implicados</th>
+            <th>Base jurídica (RGPD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Crear y gestionar tu cuenta, y permitirte iniciar sesión</td>
+            <td>Cuenta, identificación, cookie de sesión</td>
+            <td>Ejecución del contrato (art. 6.1.b)</td>
+          </tr>
+          <tr>
+            <td>Guardar y mostrar tu presupuesto, movimientos y resúmenes</td>
+            <td>Datos económicos y de perfil</td>
+            <td>Ejecución del contrato (art. 6.1.b)</td>
+          </tr>
+          <tr>
+            <td>Compartir gastos con las personas que tú decidas e invitarlas</td>
+            <td>Perfil, movimientos compartidos, correo de la persona invitada</td>
+            <td>Consentimiento (art. 6.1.a), retirable en cualquier momento</td>
+          </tr>
+          <tr>
+            <td>Mantener la seguridad del servicio y prevenir accesos no autorizados</td>
+            <td>Datos técnicos y registros de acceso</td>
+            <td>Interés legítimo en la seguridad (art. 6.1.f)</td>
+          </tr>
+          <tr>
+            <td>Atender tus consultas y solicitudes de derechos</td>
+            <td>Contacto e identificación</td>
+            <td>Obligación legal (art. 6.1.c)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      No usamos tus datos económicos con ninguna otra finalidad. Si en el futuro quisiéramos
+      hacerlo, te lo pediríamos antes de forma expresa.
+    </p>
+  </section>
+
+  <section>
+    <h2>4. Quién puede acceder a tus datos</h2>
+    <ul>
+      <li>
+        <strong>Tú</strong>, y las personas con quienes hayas decidido compartir gastos, en el
+        ámbito de lo compartido.
+      </li>
+      <li>
+        <strong>Proveedores tecnológicos</strong> que actúan como encargados del tratamiento y
+        sólo tratan los datos siguiendo nuestras instrucciones: el proveedor de alojamiento y
+        base de datos del servicio, y Google (Firebase Authentication) cuando eliges iniciar
+        sesión con tu cuenta de Google.
+      </li>
+      <li>
+        <strong>Autoridades públicas</strong>, únicamente cuando exista una obligación legal
+        que nos obligue a facilitar la información.
+      </li>
+    </ul>
+    <p>
+      No hay cesiones a terceros con fines publicitarios ni de análisis comercial. La
+      aplicación no incorpora cookies de analítica ni de publicidad.
+    </p>
+    <p>
+      Cuando alguno de estos proveedores trate datos fuera del Espacio Económico Europeo, la
+      transferencia se ampara en las decisiones de adecuación de la Comisión Europea o en
+      cláusulas contractuales tipo, con las garantías adicionales que resulten exigibles.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. Cuánto tiempo los conservamos</h2>
+    <ul>
+      <li>
+        <strong>Cuenta y datos económicos:</strong> mientras mantengas la cuenta activa. Si
+        solicitas la baja, se eliminan o se anonimizan en un plazo máximo de 30 días.
+      </li>
+      <li>
+        <strong>Registros técnicos de seguridad:</strong> hasta 12 meses desde su generación.
+      </li>
+      <li>
+        <strong>Datos necesarios para cumplir obligaciones legales o atender reclamaciones:</strong>
+        durante los plazos de prescripción que fije la normativa aplicable, bloqueados y sin
+        uso para ninguna otra finalidad.
+      </li>
+      <li>
+        <strong>Gastos compartidos:</strong> los movimientos que hayas compartido pueden
+        permanecer visibles para la otra parte mientras esa relación siga activa; al revocarla
+        dejan de mostrarse.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6. Cómo protegemos la información</h2>
+    <p>
+      Aplicamos medidas técnicas y organizativas adecuadas al carácter sensible de los datos
+      financieros, entre ellas:
+    </p>
+    <ul>
+      <li>Cifrado de las comunicaciones entre tu dispositivo y el servidor (HTTPS).</li>
+      <li>Contraseñas almacenadas con funciones de hash, nunca en texto claro.</li>
+      <li>
+        Sesión mantenida con una cookie <code>httpOnly</code>, que reduce el riesgo de robo de
+        sesión desde el navegador.
+      </li>
+      <li>Control de acceso: cada usuario sólo puede consultar sus propios datos.</li>
+      <li>Copias de seguridad y registro de accesos al servicio.</li>
+    </ul>
+    <p>
+      Ningún sistema es infalible. Si se produjera una brecha de seguridad que pudiera suponer
+      un riesgo para tus derechos, te informaremos y lo notificaremos a la autoridad de control
+      en los plazos previstos por el RGPD.
+    </p>
+  </section>
+
+  <section>
+    <h2>7. Tus derechos</h2>
+    <p>Puedes ejercer en cualquier momento los siguientes derechos:</p>
+    <ul>
+      <li><strong>Acceso:</strong> saber qué datos tenemos sobre ti.</li>
+      <li><strong>Rectificación:</strong> corregir los que sean inexactos.</li>
+      <li><strong>Supresión:</strong> pedir que se eliminen tus datos y tu cuenta.</li>
+      <li><strong>Oposición y limitación:</strong> oponerte a un tratamiento o restringirlo.</li>
+      <li>
+        <strong>Portabilidad:</strong> recibir tus datos en un formato estructurado y de uso
+        común.
+      </li>
+      <li>
+        <strong>Retirar el consentimiento</strong> que hubieras dado, por ejemplo para compartir
+        gastos, sin que ello afecte a la licitud del tratamiento anterior.
+      </li>
+    </ul>
+    <p>
+      Escribe a {{ datos.emailPrivacidad }} indicando qué derecho quieres ejercer.
+      Responderemos en el plazo de un mes; si la solicitud es compleja podremos ampliarlo dos
+      meses más, avisándote antes.
+    </p>
+    <p>
+      Si consideras que no hemos atendido tu solicitud correctamente, puedes reclamar ante la
+      autoridad de control competente. En España es la Agencia Española de Protección de Datos
+      (<a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">www.aepd.es</a>).
+    </p>
+  </section>
+
+  <section>
+    <h2>8. Menores de edad</h2>
+    <p>
+      La aplicación está dirigida a personas mayores de 18 años. No recogemos de forma
+      intencionada datos de menores; si detectamos una cuenta creada por un menor sin la
+      autorización de quien ejerza su tutela legal, la eliminaremos junto con sus datos.
+    </p>
+  </section>
+
+  <section>
+    <h2>9. Cambios en esta política</h2>
+    <p>
+      Si modificamos la forma en que tratamos tus datos, actualizaremos esta página y su fecha
+      de última actualización. Cuando el cambio sea sustancial —una finalidad nueva, un
+      destinatario nuevo— te lo comunicaremos antes de aplicarlo y, si la base legal lo exige,
+      te pediremos consentimiento.
+    </p>
+  </section>
+
+  <nav class="legal-navegacion">
+    <a routerLink="/terminos">Términos de Servicio</a>
+    <a routerLink="/register">Volver al registro</a>
+    <a routerLink="/login">Iniciar sesión</a>
+  </nav>
+</main>

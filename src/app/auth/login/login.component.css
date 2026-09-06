@@ -113,3 +113,17 @@
       padding: 30px;
     }
   }
+  /* Enlaces legales del pie: presentes pero discretos, sin competir con el
+     enlace de registro. */
+  .legal-enlaces {
+    margin-top: 8px;
+    font-size: 13px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .legal-enlaces span {
+    color: #777;
+  }

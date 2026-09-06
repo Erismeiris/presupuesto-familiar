@@ -13,7 +13,7 @@ import { catchError } from 'rxjs/operators';
 import { Categoria } from '../../interface/categoria';
 import { CategoriaService } from '../../services/categoria.service';
 import { CategoriaIngreso, CategoriaIngresoService } from '../../services/categoria-ingreso.service';
-import { FilaExcel } from '../../services/openai.service';
+import { FilaExcel } from '../../interface/fila-excel.interface';
 import { GastosService } from '../../services/gastos.service';
 import { AuthService } from '../../services/auth.service';
 import { PresupuestoService } from '../../services/presupuesto.service';

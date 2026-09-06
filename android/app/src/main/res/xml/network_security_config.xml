@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Excepción de tráfico en claro SOLO para el backend de desarrollo en la LAN.
+  Android 9+ bloquea HTTP sin cifrar por defecto y aquí el API de pruebas va por
+  http://192.168.160.62:3000. Todo lo demás sigue exigiendo HTTPS.
+  En producción, cuando el API esté tras HTTPS, esta excepción debe desaparecer.
+-->
+<network-security-config>
+  <domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="false">192.168.160.62</domain>
+  </domain-config>
+</network-security-config>

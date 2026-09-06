@@ -8,10 +8,13 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { ImportarExcelComponent } from '../importar-excel/importar-excel.component';
+import { ImportarCorreoComponent } from '../importar-correo/importar-correo.component';
+import { ConfigCorreoComponent } from '../config-correo/config-correo.component';
+import { GraficoEvolucionComponent } from '../grafico-evolucion/grafico-evolucion.component';
 
 import { forkJoin } from 'rxjs';
 import { Categoria } from '../../interface/categoria';
-import { BloqueResumen, LineaResumen, NuevaTransaccion, TipoCategoria503020, Transaccion } from '../../interface/presupuesto.interface';
+import { BloqueResumen, CategoriaEvolucion, LineaResumen, NuevaTransaccion, TipoCategoria503020, Transaccion } from '../../interface/presupuesto.interface';
 import { CategoriaService } from '../../services/categoria.service';
 import { CategoriaIngreso, CategoriaIngresoService } from '../../services/categoria-ingreso.service';
 import { GastosService } from '../../services/gastos.service';
@@ -26,7 +29,7 @@ import {
 @Component({
   selector: 'app-resumen',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, DropdownModule, InputNumberModule, InputTextModule, ImportarExcelComponent], // importar-excel incluido
+  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, DropdownModule, InputNumberModule, InputTextModule, ImportarExcelComponent, ImportarCorreoComponent, ConfigCorreoComponent, GraficoEvolucionComponent], // importar-excel, importar-correo y su configuracion
   templateUrl: './resumen.component.html',
   styleUrl: './resumen.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -80,6 +83,30 @@ export class ResumenComponent implements OnInit {
   readonly categoriaSeleccionada = signal<LineaResumen | null>(null);
   readonly transacciones = signal<Transaccion[]>([]);
   readonly cargandoTx = signal(false);
+
+  /** Pestana abierta dentro del panel de detalle de una categoria. */
+  readonly pestanaDetalle = signal<'movimientos' | 'evolucion'>('movimientos');
+
+  readonly evolucion = this.presupuestoService.evolucion;
+  readonly cargandoEvolucion = this.presupuestoService.cargandoEvolucion;
+
+  /**
+   * La categoria seleccionada, buscada dentro de la ventana de evolucion.
+   *
+   * El emparejamiento sigue el mismo criterio que el backend: primero por
+   * categoria y, para las lineas que no tienen categoria asociada, por nombre.
+   * Devuelve null cuando la categoria no movio nada en la ventana, que es un
+   * caso legitimo y el grafico lo pinta como vacio.
+   */
+  readonly evolucionDeCategoria = computed<CategoriaEvolucion | null>(() => {
+    const linea = this.categoriaSeleccionada();
+    const evolucion = this.evolucion();
+    if (!linea || !evolucion) return null;
+
+    const bloque = linea.tipo === 'ingreso' ? evolucion.ingresos : evolucion.gastos;
+    return bloque.categorias.find((c) =>
+      (linea.categoriaId && c.categoriaId === linea.categoriaId) || c.nombre === linea.nombre) ?? null;
+  });
 
   readonly mostrarSettings = signal(false);
   readonly categoriaNueva = signal('');
@@ -340,6 +367,8 @@ export class ResumenComponent implements OnInit {
       return;
     }
     this.categoriaSeleccionada.set(linea);
+    // Cada categoria se abre por sus movimientos: es la pregunta inmediata.
+    this.pestanaDetalle.set('movimientos');
     this.cargandoTx.set(true);
     this.presupuestoService.getTransacciones().subscribe({
       next: txs => {
@@ -348,6 +377,20 @@ export class ResumenComponent implements OnInit {
       },
       error: () => this.cargandoTx.set(false)
     });
+  }
+
+  /**
+   * La ventana de evolucion se pide al abrir la pestana por primera vez, no al
+   * cargar la pantalla: la mayoria de las visitas no llegan a mirarla, y el
+   * servicio cachea por ventana, asi que abrir otra categoria no repite nada.
+   */
+  verEvolucion(): void {
+    this.pestanaDetalle.set('evolucion');
+    this.presupuestoService.cargarEvolucion();
+  }
+
+  verMovimientos(): void {
+    this.pestanaDetalle.set('movimientos');
   }
 
   abrirFormGasto(): void {

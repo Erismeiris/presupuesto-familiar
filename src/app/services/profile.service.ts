@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 import { UserProfile } from '../interface/user.interface';
 import { BehaviorSubject, from, map, Observable, catchError, of } from 'rxjs';
@@ -8,7 +9,7 @@ import { BehaviorSubject, from, map, Observable, catchError, of } from 'rxjs';
   providedIn: 'root',
 })
 export class ProfileService {
-  private userprofileURL = `http://localhost:3000/api/userprofiles/user/${'userId'}`;
+  private userprofileURL = `${environment.apiUrl}/userprofiles/user/${'userId'}`;
   private defaultProfileImagePath = 'profile_images/user_profile.png';
   private profileSubject = new BehaviorSubject<UserProfile | null>(null);
   public profile$ = this.profileSubject.asObservable();
@@ -57,7 +58,7 @@ export class ProfileService {
     formData.append('image', file);
 
     try {
-      const url = `http://localhost:3000/api/userprofiles/${userId}/upload-image`;
+      const url = `${environment.apiUrl}/userprofiles/${userId}/upload-image`;
       const response = await this.http.post<any>(url, formData).toPromise();
       
       // Extraer la URL de la imagen de la respuesta del backend
@@ -87,7 +88,7 @@ export class ProfileService {
   ): Promise<UserProfile | null> {
     try {
       const response = await this.http.put<UserProfile>(
-        `http://localhost:3000/api/userprofiles/${profileId}`, 
+        `${environment.apiUrl}/userprofiles/${profileId}`, 
         profileData
       ).toPromise();
 

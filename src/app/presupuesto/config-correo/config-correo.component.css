@@ -1,0 +1,108 @@
+/* El engranaje va en la fila de acciones, así que el panel se despliega debajo
+   ocupando el ancho completo de esa fila. */
+:host {
+  display: contents;
+}
+
+.panel-config {
+  flex-basis: 100%;
+  margin: 0.5rem 0 1rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+
+.panel-config h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-verde);
+}
+
+.panel-config h5 {
+  margin: 1.1rem 0 0.4rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-texto-suave);
+}
+
+.ayuda {
+  font-size: 0.8rem;
+  color: var(--pf-texto-suave);
+  margin: 0 0 0.6rem;
+}
+
+.ayuda code {
+  background: color-mix(in srgb, var(--pf-verde) 12%, transparent);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
+
+.lista {
+  list-style: none;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--pf-papel);
+  border: 1px solid var(--pf-borde);
+  border-radius: var(--pf-radio);
+  padding: 0.3rem 0.35rem 0.3rem 0.7rem;
+}
+
+/* Un asunto inactivo sigue a la vista, pero apagado: se ve que no se busca. */
+.lista li.inactivo {
+  opacity: 0.55;
+}
+
+.lista li.inactivo .texto {
+  text-decoration: line-through;
+}
+
+.lista .texto {
+  flex: 1 1 auto;
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.alta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.alta input {
+  flex: 1 1 18rem;
+  font-size: 0.82rem;
+}
+
+:host ::ng-deep .dd-tipo {
+  font-size: 0.78rem;
+  min-width: 9.5rem;
+}
+
+.aviso-error {
+  font-size: 0.8rem;
+  color: var(--pf-rojo);
+  margin: 0.75rem 0 0;
+}
+
+.cierre {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 560px) {
+  .alta input {
+    flex-basis: 100%;
+  }
+}

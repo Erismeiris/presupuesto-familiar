@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { PrimeIcons, MenuItem } from 'primeng/api';
+import { MenuItem, PrimeTemplate } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
 import { AuthService } from '../../../services/auth.service';
 import swal from 'sweetalert';
@@ -14,8 +14,8 @@ import { MessageService } from 'primeng/api';
     imports: [
         Menubar,
         CommonModule,
-        RouterModule     
-        
+        RouterModule,
+        PrimeTemplate
     ],
     templateUrl: './header.component.html',
     styleUrl: './header.component.css',
@@ -31,103 +31,45 @@ export class HeaderComponent implements OnInit{
 
   public authService = inject(AuthService)
 
+  /**
+   * El menú se limita a las opciones de perfil. La navegación a la pantalla de
+   * entrada se hace pulsando la marca de la aplicación (plantilla `start`).
+   */
   ngOnInit(): void {
     this.items = [
-      {
-          label: 'Inicio',
-          icon: 'pi pi-home',
-         command: () => {
-            this.router.navigate(['dashboard']);
-        }
-      },
-      {
-          label: 'Presupuesto',
-          icon: 'pi pi-wallet',
-          command: () => {
-            this.router.navigate(['presupuesto']);
-        }
-      },
-      {
-          label: 'Documentación',
-          icon: 'pi pi-info',
-          route: 'documentation'
-      },
-      {
-          label: 'Planes',
-          icon: 'pi pi-search',
-          items: [
-              {
-                  label: 'Components',
-                  icon: 'pi pi-bolt'
-              },
-              {
-                  label: 'Blocks',
-                  icon: 'pi pi-server'
-              },
-              {
-                  label: 'UI Kit',
-                  icon: 'pi pi-pencil'
-              },
-              {
-                  label: 'Templates',
-                  icon: 'pi pi-palette',
-                  items: [
-                      {
-                          label: 'Apollo',
-                          icon: 'pi pi-palette'
-                      },
-                      {
-                          label: 'Ultima',
-                          icon: 'pi pi-palette'
-                      }
-                  ]
-              }
-          ]
-      },
-      {
-          label: 'Contact',
-          icon: 'pi pi-envelope',
-         route: 'contact'
-      },
         {
             label: 'Sesión',
             icon: 'pi pi-user',
             items: [
-                {
-                    label: 'Cerrar Sesión',
-                    icon: 'pi pi-sign-out',
-                    command: () => {
-                        this.logout(); // Call logout method
-                    }
-                },
                 {
                     label: 'Perfil',
                     icon: 'pi pi-user-edit',
                     command: () => {
                         this.router.navigate(['user-profile']);
                     }
-                    
                 },
                 {
                     label: 'Login',
-                    icon: 'pi pi-user-edit',
+                    icon: 'pi pi-sign-in',
                     command: () => {
                         this.router.navigate(['login']);
                     }
-                    
                 },
-
-            ]
-                
-        },
-        {
-          label: 'Notificaciones',
-          icon: 'pi pi-bell',
-         command: () => {
-                        this.router.navigate(['invitations']);
+                {
+                    label: 'Cerrar Sesión',
+                    icon: 'pi pi-sign-out',
+                    command: () => {
+                        this.logout();
                     }
-      },
-  ]
+                }
+            ]
+        }
+    ]
+}
+
+/** Vuelve a la pantalla de entrada de la aplicación. */
+irAPresupuesto() {
+    this.router.navigate(['/presupuesto']);
 }
 
 logout() {
@@ -140,12 +82,13 @@ logout() {
     })
     .then((willLogout) => {
         if (willLogout) {
+        // Al presupuesto, no al login: es la pantalla de entrada y funciona sin
+        // sesión mostrando el presupuesto de ejemplo.
         this.authService.logoutUser().then(() => {
-            this.router.navigate(['/login']);
+            this.router.navigate(['/presupuesto']);
         });
         }
     });
 }
     
 }
-

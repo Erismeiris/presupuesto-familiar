@@ -80,3 +80,56 @@ export interface LineaPresupuesto {
   previsto: number;
   orden: number;
 }
+
+/**
+ * Evolución de una categoría a lo largo de una ventana de meses.
+ * Los arrays `porMes` y `previstoPorMes` están alineados posición a posición
+ * con `Evolucion.meses`.
+ */
+export interface CategoriaEvolucion {
+  categoriaId: string | null;
+  nombre: string;
+  tipo: TipoMovimiento;
+  porMes: number[];
+  previstoPorMes: number[];
+  total: number;
+  previstoTotal: number;
+  diferenciaTotal: number;
+  /** Media de los meses con movimiento, no de toda la ventana. */
+  media: number;
+  mesesConImporte: number;
+  /** null cuando la categoría no tiene ningún movimiento en la ventana. */
+  mesMaximo: { mes: string; importe: number } | null;
+  presupuestada: boolean;
+  tipo503020?: TipoCategoria503020;
+}
+
+export interface BloqueEvolucion {
+  total: number;
+  previstoTotal: number;
+  diferenciaTotal: number;
+  porMes: number[];
+  previstoPorMes: number[];
+  categorias: CategoriaEvolucion[];
+}
+
+/** Respuesta de GET /presupuestos/evolucion. */
+export interface Evolucion {
+  desde: string;
+  hasta: string;
+  moneda: string;
+  /** La ventana, en orden cronológico, formato YYYY-MM. */
+  meses: string[];
+  /**
+   * Mes del primer movimiento del usuario en toda su historia, no sólo en esta
+   * ventana. Los meses anteriores a él no son ceros: son meses en los que no
+   * había datos, y pintarlos como ceros se inventa una tendencia.
+   */
+  primerMesConDatos: string | null;
+  mesesConPresupuesto: string[];
+  gastos: BloqueEvolucion;
+  ingresos: BloqueEvolucion;
+  ahorroPorMes: number[];
+  ahorroTotal: number;
+  ahorroPrevisto: number;
+}

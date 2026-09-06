@@ -1,9 +1,17 @@
 {
   "ExpandedNodes": [
     "",
-    "\\src",
+    "\\android\\app\\src\\androidTest\\java",
+    "\\android\\app\\src\\androidTest\\java\\com",
+    "\\android\\app\\src\\androidTest\\java\\com\\getcapacitor",
+    "\\android\\app\\src\\androidTest\\java\\com\\getcapacitor\\myapp",
+    "\\android\\app\\src\\main",
+    "\\android\\app\\src\\main\\assets",
+    "\\android\\app\\src\\main\\java\\es",
+    "\\android\\app\\src\\main\\java\\es\\winfor",
+    "\\android\\app\\src\\main\\java\\es\\winfor\\presupuestofamiliar",
+    "\\dist\\presupuesto_familiar",
     "\\src\\app"
   ],
-  "SelectedNode": "\\INSTRUCCIONES_APK_ANDROID.md",
   "PreviewInSolutionExplorer": false
 }

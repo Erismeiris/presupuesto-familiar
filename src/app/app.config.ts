@@ -1,4 +1,6 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { provideRouter } from '@angular/router';
@@ -18,9 +20,14 @@ import { MessageService } from 'primeng/api';
 
 
 
+// Sin esto los importes se formatean en en-US ("€1,657.28" en vez de
+// "1.657,28 €"), que es como se venían viendo las cifras del presupuesto.
+registerLocaleData(localeEs);
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }), 
+    { provide: LOCALE_ID, useValue: 'es-ES' },
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(

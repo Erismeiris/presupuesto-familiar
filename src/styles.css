@@ -13,4 +13,97 @@
   --pf-borde: #d7e3df;
   --pf-rojo: #c0392b;
   --pf-radio: 10px;
+
+  /* Pila del sistema: cada plataforma resuelve a la suya (Segoe UI en Windows,
+     Roboto en Android, San Francisco en iOS/macOS), todas con cifras tabulares.
+     Sin descarga, sin depender de la red al arrancar dentro del WebView de la
+     APK, y sin peticiones a Google Fonts, que en la UE implica ceder la IP del
+     visitante a un tercero justo cuando la app ya publica politica de privacidad.
+     Los nombres entrecomillados y `sans-serif` al final cubren los WebView
+     antiguos que no entienden `system-ui`. */
+  --pf-fuente: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif;
+
+  /* --- Paleta del presupuesto, segunda version ---------------------------
+     El verde de arriba era a la vez marca, total, positivo y borde de panel,
+     asi que habia dejado de significar nada. Aqui el color codifica una sola
+     cosa: el signo del dinero. La estructura la llevan las bandas del papel
+     pautado de contabilidad, que es de donde sale el verde ahora.
+     Convive con la paleta anterior porque `legal.css` sigue usandola; cuando
+     esta direccion se apruebe, se extiende al resto y se retira la de arriba. */
+  --pf-papel-2: #fcfbf7;      /* blanco de papel, no crema */
+  --pf-banda: #e4ebdf;        /* la banda verde del papel pautado */
+  --pf-banda-clara: #eef3eb;  /* la misma banda, atenuada para filas alternas */
+  --pf-banda-fuerte: #d3ded0; /* la misma banda, para totales y cabeceras */
+  --pf-tinta: #2c2e27;        /* tinta calida: negro con clorofila, no un gris azulado */
+  /* Oscurecida desde #6f7368: en el texto pequeno de 12 px de los objetivos
+     quedaba en 4,6:1 sobre el papel, justo en el limite de AA. Asi sube a 5,4:1. */
+  --pf-tinta-suave: #63675c;
+  --pf-filete: #ddd9cb;       /* solo para separar bloques, nunca fila a fila */
+  --pf-rojo-2: #a6382c;       /* SOLO un negativo o un mes que cierra en rojo */
+  --pf-verde-2: #3f6b4a;      /* SOLO dinero que entra o un mes que cierra en negro */
+
+  /* Dos familias, servidas desde `public/fonts/`. Zilla Slab es la voz: un
+     slab, porque la referencia es la libreta pautada y escrita a maquina que
+     esto sustituye, no una portada de revista. Source Sans 3 es el caballo de
+     tiro, elegida porque **sus cifras son tabulares de fabrica** (medido: 198,8
+     px tanto diez unos como diez ceros), asi que las columnas de importes
+     cuadran aunque la webfont no llegue a cargar. */
+  --pf-fuente-voz: 'Zilla Slab', Rockwell, 'Roboto Slab', Georgia, serif;
+  --pf-fuente-texto: 'Source Sans 3', var(--pf-fuente);
+}
+
+/* Autoalojadas: ni una peticion a Google en tiempo de ejecucion (la IP del
+   visitante no sale a un tercero) y funcionan sin red dentro del WebView de la
+   APK. `public/` se copia tal cual al build, asi que no toca el lockfile.
+   Subconjunto latino: cubre U+0000-00FF, o sea acentos, enye y el simbolo del
+   euro, que es todo lo que esta pantalla escribe. */
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('/fonts/source-sans-3-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('/fonts/source-sans-3-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Zilla Slab';
+  src: url('/fonts/zilla-slab-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Hasta ahora no habia ninguna declaracion de fuente en el proyecto, asi que
+   todo se pintaba con la serif por defecto del navegador. */
+html {
+  font-family: var(--pf-fuente);
+}
+
+body {
+  font-family: inherit;
+  /* Cifras de ancho fijo en toda la aplicacion: las columnas de importes de las
+     tablas quedan alineadas y un numero no baila al cambiar de valor. Es lo que
+     ya se pedia a mano en `.num`, pero sin fuente declarada no llegaba a
+     aplicarse en ningun sitio. */
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Los controles nativos no heredan la fuente del documento: sin esto los
+   `input` y `select` de login, registro y perfil se quedan en la del sistema.
+   Los componentes de PrimeNG ya declaran `font-family: inherit`, asi que con
+   esto quedan todos igualados. */
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
 }

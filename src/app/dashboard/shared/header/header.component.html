@@ -1,3 +1,13 @@
 <div class="card">
-    <p-menubar [model]="items" class="pi" />
+    <!-- Sin `class="pi"`: esa es la clase base de los iconos y ponia la fuente
+         `primeicons` a todo el menu. Como esa fuente solo tiene glifos de
+         iconos, el texto de la barra caia a la fuente por defecto del
+         navegador y se pintaba en serif. -->
+    <p-menubar [model]="items">
+        <ng-template pTemplate="start">
+            <button type="button" class="marca" (click)="irAPresupuesto()">
+                {{ title }}
+            </button>
+        </ng-template>
+    </p-menubar>
 </div>

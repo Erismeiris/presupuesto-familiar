@@ -7,6 +7,8 @@ import { authGuard } from './guards/auth.guard';
 import { SendInvitationComponent } from './dashboard/send-invitation-component/send-invitation-component';
 import { InvitationsListComponent } from './dashboard/invitations-list/invitations-list.component';
 import { PresupuestoPageComponent } from './presupuesto/presupuesto-page.component';
+import { TerminosComponent } from './legal/terminos/terminos.component';
+import { PrivacidadComponent } from './legal/privacidad/privacidad.component';
 
 export const routes: Routes = [
     {path: 'dashboard',  component: DashboardComponent, data: {title: 'Dashboard'}},
@@ -15,6 +17,10 @@ export const routes: Routes = [
     {path: 'presupuesto', component: PresupuestoPageComponent, data: {title: 'Presupuesto mensual'}},
     {path: 'login', component: LoginComponent, data: {title: 'Login'}},
     {path:'register', component: RegisterComponent, data: {title: 'Register'}},
+    // Páginas legales públicas: se enlazan desde el registro y el login, así que
+    // deben ser accesibles sin sesión.
+    {path: 'terminos', component: TerminosComponent, data: {title: 'Términos de Servicio'}},
+    {path: 'privacidad', component: PrivacidadComponent, data: {title: 'Política de Privacidad'}},
     {path:'user-profile', component: UserProfileComponent, canActivate: [authGuard], data: {title: 'User Profile'}},    
     {
         path: 'invitations',

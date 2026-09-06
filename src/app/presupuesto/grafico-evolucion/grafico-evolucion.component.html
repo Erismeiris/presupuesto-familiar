@@ -1,0 +1,109 @@
+@if (!categoria() || puntos().length === 0) {
+  <!-- Vacío con dirección, no un lienzo en blanco. -->
+  <p class="sin-serie">
+    @if (!primerMesConDatos()) {
+      Todavía no hay movimientos registrados. En cuanto importes o des de alta el
+      primero, aquí verás su evolución mes a mes.
+    } @else {
+      Sin movimientos en esta categoría durante los últimos {{ meses().length }} meses.
+    }
+  </p>
+} @else {
+  <figure class="grafico">
+    <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" role="img"
+         [attr.aria-label]="'Evolución de ' + categoria()!.nombre + ': ' + categoria()!.mesesConImporte
+           + ' meses con movimiento, media de ' + (categoria()!.media | currency:moneda():'symbol':'1.2-2')">
+
+      <!-- Rejilla: sólo suelo y techo. Más líneas no añadirían información. -->
+      <line class="eje" [attr.x1]="izquierda" [attr.y1]="baseY" [attr.x2]="derecha" [attr.y2]="baseY" />
+      <line class="rejilla" [attr.x1]="izquierda" [attr.y1]="topeY" [attr.x2]="derecha" [attr.y2]="topeY" />
+      <text class="etiqueta-eje" [attr.x]="izquierda - 8" [attr.y]="topeY + 4" text-anchor="end">
+        {{ techo() | currency:moneda():'symbol':'1.0-0' }}
+      </text>
+      <text class="etiqueta-eje" [attr.x]="izquierda - 8" [attr.y]="baseY + 4" text-anchor="end">0</text>
+
+      <!-- El mes que se está viendo en la pestaña de al lado. -->
+      @if (puntoDelMesEnPantalla(); as actual) {
+        <line class="marca-mes" [attr.x1]="actual.x" [attr.y1]="topeY" [attr.x2]="actual.x" [attr.y2]="baseY" />
+      }
+
+      @if (hayPrevisto()) {
+        <polyline class="linea-previsto" [attr.points]="lineaPrevisto()" />
+      }
+
+      @if (tendencia(); as t) {
+        <line class="linea-tendencia" [attr.x1]="t.x1" [attr.y1]="t.y1" [attr.x2]="t.x2" [attr.y2]="t.y2" />
+      }
+
+      <polyline class="linea-real" [attr.points]="lineaReal()" />
+
+      @for (punto of puntos(); track punto.mes) {
+        <circle class="punto" [class.punto-cero]="punto.real === 0"
+                [attr.cx]="punto.x" [attr.cy]="punto.y" r="3.5">
+          <title>{{ enPalabras(punto.mes) }}: {{ punto.real | currency:moneda():'symbol':'1.2-2' }}</title>
+        </circle>
+        <text class="etiqueta-mes" [attr.x]="punto.x" [attr.y]="baseY + 15" text-anchor="middle">
+          {{ inicialDelMes(punto.mes) }}
+        </text>
+        @if (esEnero(punto.mes)) {
+          <text class="etiqueta-anio" [attr.x]="punto.x" [attr.y]="baseY + 24" text-anchor="middle">
+            {{ anioDe(punto.mes) }}
+          </text>
+        }
+      }
+    </svg>
+
+    <figcaption class="pie">
+      <span>
+        Media de los meses con movimiento
+        <strong>{{ categoria()!.media | currency:moneda():'symbol':'1.2-2' }}</strong>
+      </span>
+      @if (categoria()!.mesMaximo; as maximo) {
+        <span>
+          Mes más alto
+          <strong>{{ maximo.importe | currency:moneda():'symbol':'1.2-2' }}</strong>
+          en {{ enPalabras(maximo.mes) }}
+        </span>
+      }
+      <span>
+        Total de la ventana
+        <strong>{{ categoria()!.total | currency:moneda():'symbol':'1.2-2' }}</strong>
+      </span>
+    </figcaption>
+
+    <!-- La pendiente en palabras: es lo que se lee de verdad, la recta sólo lo
+         ilustra. Y cuando no hay meses suficientes se dice por qué, en lugar de
+         dibujar una tendencia que no significa nada. -->
+    <p class="lectura" [class.lectura-sube]="subiendo()" [class.lectura-baja]="!subiendo()">
+      @if (tendenciaEnPalabras(); as lectura) {
+        @if (lectura.estable) {
+          Se mantiene estable mes a mes.
+        } @else if (subiendo()) {
+          Sube unos
+          <strong>{{ lectura.importe | number:'1.0-0' }} {{ moneda() === 'EUR' ? '€' : moneda() }}</strong>
+          cada mes.
+        } @else {
+          Baja unos
+          <strong>{{ lectura.importe | number:'1.0-0' }} {{ moneda() === 'EUR' ? '€' : moneda() }}</strong>
+          cada mes.
+        }
+      } @else {
+        Con {{ mesesConImporte() }}
+        {{ mesesConImporte() === 1 ? 'mes' : 'meses' }} de movimiento todavía no se
+        puede hablar de tendencia: hacen falta {{ minimoParaTendencia }}.
+      }
+    </p>
+
+    @if (hayPrevisto() || tendencia()) {
+      <p class="leyenda">
+        <span class="muestra muestra-real"></span> gastado
+        @if (hayPrevisto()) {
+          <span class="muestra muestra-previsto"></span> previsto
+        }
+        @if (tendencia()) {
+          <span class="muestra muestra-tendencia"></span> tendencia
+        }
+      </p>
+    }
+  </figure>
+}
