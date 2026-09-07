@@ -69,10 +69,6 @@ export class AuthService {
     localStorage.removeItem('user');
   }
 
-  async register(email: string, password: string, name: string) {
-    return this.http.post(`${environment.apiUrl}/user`, { email, password, name }, { withCredentials: true });
-  }
-
   loginUser(name: string, password: string): Observable<any> {
     console.log('LoginUser called with:', { name });
     return this.http.post(this.apiUrl, { name, password }, { withCredentials: true }).pipe(
@@ -178,7 +174,11 @@ export class AuthService {
   }
 
   registerUser(name: string, email: string, password: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/users/register`, { name, email, password }).pipe(
+    // `withCredentials` es imprescindible: /users/register responde con la cookie
+    // httpOnly del refresh igual que el login, y sin esto el navegador la
+    // descarta, asi que la sesion recien creada no se puede renovar.
+    return this.http.post(`${environment.apiUrl}/users/register`,
+      { name, email, password }, { withCredentials: true }).pipe(
       tap((response: any) => {
         // Si el registro incluye login automático
         if (response && response.success && response.user) {
