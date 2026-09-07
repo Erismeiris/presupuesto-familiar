@@ -1,0 +1,58 @@
+# Angular servido por Apache en el webspace de IONOS.
+#
+# Se sube al directorio del subdominio RENOMBRADO a `.htaccess` (con punto
+# delante). En el repositorio se guarda sin punto para que no quede oculto.
+#
+# Está basado en el que ya funciona en `X:\erismeiris_porfolio\.htaccess`, el del
+# portfolio: mismo hosting, mismas reglas probadas. Sólo se le añaden las dos
+# últimas secciones.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Lo que existe de verdad en disco se sirve tal cual.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Un fichero que no existe pero tiene extensión debe responder 404, no caer en
+  # la aplicación. Sin esto, una ruta de imagen mal escrita devuelve 200 con el
+  # index.html dentro: el navegador muestra la imagen rota y la URL parece
+  # correcta al comprobarla. Es la regla que más cuesta descubrir y viene del
+  # .htaccess del portfolio, donde ya costó una tarde.
+  RewriteCond %{REQUEST_URI} \.[a-zA-Z0-9]{2,5}$
+  RewriteRule ^ - [L,R=404]
+
+  # Todo lo demás es una ruta de Angular: /presupuesto, /login,
+  # /legal/privacidad… no son ficheros en disco, los resuelve el router.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Los bundles llevan hash y son inmutables; index.html no puede cachearse
+  # nunca, o un despliegue deja a los navegadores cargando los chunks del build
+  # anterior.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "DENY"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# --- Añadidos para esta aplicación -----------------------------------------
+
+# Nada de hojas de cálculo ni volcados servidos al público. En este repositorio
+# ya había un .xls con datos reales dentro de `public/`, que se habría publicado.
+<FilesMatch "\.(xls|xlsx|csv|txt|log|bak|env)$">
+  Require all denied
+</FilesMatch>
+
+# HTTPS obligatorio. Descomentar SÓLO cuando el certificado del subdominio esté
+# emitido; antes de eso, deja el sitio inaccesible.
+# <IfModule mod_rewrite.c>
+#   RewriteCond %{HTTPS} off
+#   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>

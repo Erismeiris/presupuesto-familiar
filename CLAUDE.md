@@ -47,11 +47,32 @@ la configuración de build, y lo único que cambia es `apiUrl`:
 | Configuración | Fichero | `apiUrl` | Por qué |
 |---|---|---|---|
 | `development` (`ng serve`) | `environment.ts` | `/api` | Relativa; `proxy.conf.json` la reenvía a `localhost:3000`. Mismo origen → sin CORS y las cookies funcionan |
-| `production` | `environment.prod.ts` | `/api` | Reverse proxy sirve API y front bajo el mismo dominio |
-| `mobile` | `environment.mobile.ts` | `http://192.168.160.62:3000/api` | **Debe ser absoluta**: en el WebView de Capacitor el origen es `https://localhost`, que es el propio teléfono |
+| `production` | `environment.prod.ts` | `https://api.presupuesto.aresolutions.es/api` | La API vive en su propio subdominio, en el VPS |
+| `mobile` | `environment.mobile.ts` | `https://api.presupuesto.aresolutions.es/api` | **Debe ser absoluta**: en el WebView de Capacitor el origen es `https://localhost`, que es el propio teléfono |
 
-La IP de `environment.mobile.ts` está fijada a la máquina de desarrollo actual y
-hay que actualizarla si cambia la red.
+**El prefijo `/api` es obligatorio** en la URL del VPS: la raíz responde, pero
+`/presupuestos/resumen` sin `/api` devuelve 404.
+
+Desarrollo sigue apuntando al backend local a propósito: contra el VPS se
+escribiría en los datos de verdad. Para apuntar ahí puntualmente se cambia el
+`target` de `proxy.conf.json` y se añade `"changeOrigin": true` — mejor por el
+proxy que cambiando `apiUrl`, porque así el navegador sigue viendo un solo origen
+y la cookie del refresh sigue siendo de primera parte.
+
+### La cookie del refresh y el cambio de origen
+
+En producción la llamada es **cross-origin pero same-site**: `SameSite` se
+calcula sobre el dominio registrable, `aresolutions.es`, que comparten el
+frontend y la API. Por eso la cookie httpOnly del refresh se sigue enviando con
+`SameSite=Lax` sin tocar nada. Lo que hace falta es CORS con
+`Access-Control-Allow-Credentials: true` y el origen en lista blanca, y el VPS ya
+lo tiene: admite `presupuesto.aresolutions.es` y `localhost:4200`, y rechaza el
+resto —incluido `gastosdb-2f9d2.web.app`, o sea que **Firebase Hosting no sirve
+para alojar el frontend** sin tocar antes la lista del servidor—.
+
+Si algún día el frontend se sirviera desde un dominio distinto de
+`aresolutions.es`, la cookie pasaría a ser de terceros y el refresh se rompería
+en los navegadores que ya las bloquean: haría falta `SameSite=None; Secure`.
 
 ### Autenticación: JWT propio, no Firebase
 
@@ -159,6 +180,10 @@ usuario y las variables van a `HKCU\Environment`. Detalles en
 - `ENCARGO_BACKEND_SALDO_INICIAL.md` — especificación para implementar **en el
   backend** el arrastre del saldo inicial: regla del ancla, recálculo en lectura y
   los cinco campos nuevos del resumen que este frontend consumirá.
+- `deploy/DESPLIEGUE.md` — cómo subir la web a `presupuesto.aresolutions.es`, con
+  el estado real del DNS, las dos opciones de alojamiento y por qué el dominio
+  tiene que ser el mismo que el de la API. Incluye `nginx-presupuesto.conf` y un
+  `.htaccess` para IONOS.
 - `IMPLEMENTACION_50-30-20.md` — **obsoleto**: describe trabajo ya hecho en el
   backend. No lo uses como referencia.
 
