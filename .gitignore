@@ -58,3 +58,12 @@ Thumbs.db
 # Windows es una union con ruta absoluta: git la recorre y duplicaria los
 # ficheros de la skill dentro del repo.
 .claude/skills/
+
+# Volcados y hojas de calculo de pruebas
+# Se borraron `resultado.txt` (movimientos del banco, con un numero de tarjeta) y
+# `public/Gastos_enero_agosto_2026.xls` (nombre y gastos reales) porque el repo es
+# publico y `public/` ademas se publica en la web. Que no vuelvan por descuido.
+resultado.txt
+*.xls
+*.xlsx
+*.csv
