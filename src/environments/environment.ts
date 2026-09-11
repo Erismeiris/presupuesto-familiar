@@ -14,5 +14,5 @@
 // backend la marque SameSite=None.
 export const environment = {
   production: false,
-  apiUrl: '/api'
+  apiUrl: 'http://192.168.0.46:3000/api'
 };
