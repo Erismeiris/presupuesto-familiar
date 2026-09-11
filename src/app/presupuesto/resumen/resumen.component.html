@@ -83,7 +83,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (linea of lineasTodasCategorias(); track linea.lineaId) {
+        @for (linea of lineasTodasCategorias(); track claveDe(linea)) {
           <tr>
             <td>{{ linea.nombre }}</td>
             <td>
@@ -103,9 +103,16 @@
               </span>
             </td>
             <td>
-              <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
-                        (onClick)="quitarCategoria(linea.lineaId!)"
-                        pTooltip="Quitar del presupuesto" tooltipPosition="left" />
+              <!-- Sin línea no hay nada que quitar del presupuesto: la categoría
+                   aparece igual todos los meses. Borrarla es otra cosa, y vive
+                   en la pantalla de categorías. -->
+              @if (linea.lineaId) {
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                          (onClick)="quitarCategoria(linea.lineaId!)"
+                          pTooltip="Quitar del presupuesto" tooltipPosition="left" />
+              } @else {
+                <span class="sin-linea" pTooltip="Aún no tiene importe previsto" tooltipPosition="left">—</span>
+              }
             </td>
           </tr>
         }
@@ -395,30 +402,31 @@
                 {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.2-2' }}
               </td>
             </tr>
-            @for (linea of lineasConPresupuesto(bloque.datos.lineas); track linea.lineaId ?? linea.nombre) {
+            @for (linea of lineasConPresupuesto(bloque.datos.lineas); track claveDe(linea)) {
               <tr class="fila-categoria"
-                  [class.fila-seleccionada]="categoriaSeleccionada()?.lineaId === linea.lineaId"
+                  [class.fila-sin-datos]="!linea.presupuestada && linea.real === 0 && linea.previsto === 0"
+                  [class.fila-seleccionada]="categoriaSeleccionada() && claveDe(categoriaSeleccionada()!) === claveDe(linea)"
                   (click)="seleccionarCategoria(linea)">
                 <th scope="row">
                   {{ linea.nombre }}
-                  <span class="icono-expand">{{ categoriaSeleccionada()?.lineaId === linea.lineaId ? '▲' : '▼' }}</span>
+                  <span class="icono-expand">{{ categoriaSeleccionada() && claveDe(categoriaSeleccionada()!) === claveDe(linea) ? '▲' : '▼' }}</span>
                 </th>
                 <td class="num">
-                  @if (modoDemo() || !linea.lineaId) {
+                  @if (modoDemo()) {
                     {{ linea.previsto | currency:datos.moneda:'symbol':'1.2-2' }}
                   } @else {
                     <div style="display: flex; align-items: center; gap: 0.25rem; justify-content: flex-end;">
                       <p-inputNumber [ngModel]="obtenerPrevisto(linea)"
-                                     (ngModelChange)="actualizarPrevisto(linea.lineaId, $event)"
+                                     (ngModelChange)="actualizarPrevisto(linea, $event)"
                                      mode="currency" [currency]="datos.moneda" locale="es-ES"
                                      [showButtons]="false" [minFractionDigits]="0" [maxFractionDigits]="2"
                                      styleClass="entrada-previsto" />
-                      @if (estaEditando(linea.lineaId)) {
+                      @if (estaEditando(linea)) {
                         <p-button icon="pi pi-check" size="small" [text]="true"
-                                  [loading]="estaGuardando(linea.lineaId)"
-                                  (onClick)="guardarPrevisto(linea.lineaId)" ariaLabel="Guardar" />
+                                  [loading]="estaGuardando(linea)"
+                                  (onClick)="guardarPrevisto(linea)" ariaLabel="Guardar" />
                         <p-button icon="pi pi-times" size="small" severity="secondary" [text]="true"
-                                  (onClick)="cancelarEdicionPrevisto(linea.lineaId)" ariaLabel="Cancelar" />
+                                  (onClick)="cancelarEdicionPrevisto(linea)" ariaLabel="Cancelar" />
                       }
                     </div>
                   }

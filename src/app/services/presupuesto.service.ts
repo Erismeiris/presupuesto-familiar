@@ -184,6 +184,26 @@ export class PresupuestoService {
     return this.http.put<LineaPresupuesto>(`${this.baseUrl}/lineas/${lineaId}`, { previsto });
   }
 
+  /**
+   * Fija el previsto de una categoría, tenga línea de presupuesto o no.
+   *
+   * El resumen lista todas las categorías del usuario, así que la pantalla no
+   * sabe -- ni tiene por qué saber -- si detrás de una fila hay una línea. El
+   * backend la crea o la actualiza según haga falta.
+   */
+  guardarPrevistoDeCategoria(
+    presupuestoId: string,
+    categoriaId: string | null,
+    tipo: TipoMovimiento,
+    nombre: string,
+    previsto: number
+  ): Observable<LineaPresupuesto> {
+    return this.http.put<LineaPresupuesto>(
+      `${this.baseUrl}/${presupuestoId}/lineas/por-categoria`,
+      { categoriaId, tipo, nombre, previsto }
+    );
+  }
+
   vincularCategoria(lineaId: string, categoriaId: string): Observable<LineaPresupuesto> {
     return this.http.put<LineaPresupuesto>(`${this.baseUrl}/lineas/${lineaId}`, { categoriaId });
   }

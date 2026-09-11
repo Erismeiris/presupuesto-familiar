@@ -245,53 +245,75 @@ export class ResumenComponent implements OnInit {
     return maximo === 0 ? 0 : (valor / maximo) * 100;
   }
 
-  /** Actualiza el valor previsto en edición para una línea. */
-  actualizarPrevisto(lineaId: string | null, valor: number | null): void {
-    if (!lineaId) return;
-    
+  /**
+   * Identifica una fila del resumen.
+   *
+   * No vale `lineaId`: el backend manda TODAS las categorías del usuario, y las
+   * que aún no tienen importe previsto vienen sin línea. La categoría sí está
+   * siempre, y el nombre queda de reserva para las líneas antiguas que no tienen
+   * categoría asociada. Se le añade el tipo porque «Otros» existe en gastos y en
+   * ingresos, y sin él serían la misma fila.
+   */
+  claveDe(linea: LineaResumen): string {
+    return linea.categoriaId ?? `nombre:${linea.tipo}:${linea.nombre}`;
+  }
+
+  /** Actualiza el valor previsto en edición para una fila. */
+  actualizarPrevisto(linea: LineaResumen, valor: number | null): void {
+    const clave = this.claveDe(linea);
     const mapa = new Map(this.previstoEnEdicion());
     if (valor === null) {
-      mapa.delete(lineaId);
+      mapa.delete(clave);
     } else {
-      mapa.set(lineaId, valor);
+      mapa.set(clave, valor);
     }
     this.previstoEnEdicion.set(mapa);
   }
 
   /** Obtiene el valor previsto en edición o el valor original. */
-  obtenerPrevisto(linea: any): number {
-    if (linea.lineaId) {
-      return this.previstoEnEdicion().get(linea.lineaId) ?? linea.previsto;
-    }
-    return linea.previsto;
+  obtenerPrevisto(linea: LineaResumen): number {
+    return this.previstoEnEdicion().get(this.claveDe(linea)) ?? linea.previsto;
   }
 
-  /** Verifica si una línea está en edición. */
-  estaEditando(lineaId: string | null): boolean {
-    return lineaId ? this.previstoEnEdicion().has(lineaId) : false;
+  /** Verifica si una fila está en edición. */
+  estaEditando(linea: LineaResumen): boolean {
+    return this.previstoEnEdicion().has(this.claveDe(linea));
   }
 
-  /** Verifica si se está guardando una línea específica. */
-  estaGuardando(lineaId: string | null): boolean {
-    return lineaId ? this.guardandoPrevisto().has(lineaId) : false;
+  /** Verifica si se está guardando una fila. */
+  estaGuardando(linea: LineaResumen): boolean {
+    return this.guardandoPrevisto().has(this.claveDe(linea));
   }
 
-  /** Cancela la edición de una línea. */
-  cancelarEdicionPrevisto(lineaId: string | null): void {
-    if (!lineaId) return;
+  /** Cancela la edición de una fila. */
+  cancelarEdicionPrevisto(linea: LineaResumen): void {
     const mapa = new Map(this.previstoEnEdicion());
-    mapa.delete(lineaId);
+    mapa.delete(this.claveDe(linea));
     this.previstoEnEdicion.set(mapa);
   }
 
+  /**
+   * Las categorías del usuario valen para todos los meses, así que se pintan
+   * todas. Antes se filtraba por `presupuestada`, y el resultado era que un mes
+   * al que no se le hubiera montado el presupuesto a mano salía vacío aunque
+   * tuviera gasto real.
+   *
+   * Primero las que tienen algo -- importe previsto o movimientos --, y después
+   * las vacías por orden alfabético, para que lo que ya está en marcha no quede
+   * sepultado entre categorías a cero.
+   */
   lineasConPresupuesto(lineas: LineaResumen[]): LineaResumen[] {
-    return lineas.filter(l => l.presupuestada);
+    const conDatos = lineas.filter(l => l.presupuestada || l.real !== 0 || l.previsto !== 0);
+    const vacias = lineas
+      .filter(l => !(l.presupuestada || l.real !== 0 || l.previsto !== 0))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    return [...conDatos, ...vacias];
   }
 
   lineasTodasCategorias(): LineaResumen[] {
     const gastos = this.resumen()?.gastos?.lineas ?? [];
     const ingresos = this.resumen()?.ingresos?.lineas ?? [];
-    return [...gastos, ...ingresos].filter(l => l.presupuestada);
+    return [...gastos, ...ingresos];
   }
 
   cambiarDistribucion(linea: LineaResumen, tipo: TipoCategoria503020): void {
@@ -362,7 +384,8 @@ export class ResumenComponent implements OnInit {
   }
 
   seleccionarCategoria(linea: LineaResumen): void {
-    if (this.categoriaSeleccionada()?.lineaId === linea.lineaId) {
+    const abierta = this.categoriaSeleccionada();
+    if (abierta && this.claveDe(abierta) === this.claveDe(linea)) {
       this.categoriaSeleccionada.set(null);
       return;
     }
@@ -533,37 +556,42 @@ export class ResumenComponent implements OnInit {
     });
   }
 
-  /** Guarda el valor previsto de una línea. */
-  guardarPrevisto(lineaId: string | null): void {
-    if (!lineaId) return;
-    
-    const valor = this.previstoEnEdicion().get(lineaId);
+  /**
+   * Guarda el valor previsto de una fila.
+   *
+   * Va siempre por el endpoint por categoría, que crea la línea si no existía.
+   * La pantalla no tiene por qué saber si detrás de la fila hay una línea: eso
+   * es una interioridad del modelo, y la categoría es lo que ve el usuario.
+   */
+  guardarPrevisto(linea: LineaResumen): void {
+    const presupuestoId = this.resumen()?.presupuestoId;
+    if (!presupuestoId) return;
+
+    const clave = this.claveDe(linea);
+    const valor = this.previstoEnEdicion().get(clave);
     if (valor === undefined) return;
 
     const guardando = new Set(this.guardandoPrevisto());
-    guardando.add(lineaId);
+    guardando.add(clave);
     this.guardandoPrevisto.set(guardando);
 
-    this.presupuestoService.guardarPrevisto(lineaId, valor).subscribe({
-      next: () => {
-        // Remover de edición
-        const mapa = new Map(this.previstoEnEdicion());
-        mapa.delete(lineaId);
-        this.previstoEnEdicion.set(mapa);
-        
-        // Remover de guardando
-        const guardando = new Set(this.guardandoPrevisto());
-        guardando.delete(lineaId);
-        this.guardandoPrevisto.set(guardando);
-        
-        // Recargar el resumen
-        this.presupuestoService.cargarResumen(this.mes());
-      },
-      error: () => {
-        const guardando = new Set(this.guardandoPrevisto());
-        guardando.delete(lineaId);
-        this.guardandoPrevisto.set(guardando);
-      }
-    });
+    const soltar = () => {
+      const pendientes = new Set(this.guardandoPrevisto());
+      pendientes.delete(clave);
+      this.guardandoPrevisto.set(pendientes);
+    };
+
+    this.presupuestoService
+      .guardarPrevistoDeCategoria(presupuestoId, linea.categoriaId, linea.tipo, linea.nombre, valor)
+      .subscribe({
+        next: () => {
+          const mapa = new Map(this.previstoEnEdicion());
+          mapa.delete(clave);
+          this.previstoEnEdicion.set(mapa);
+          soltar();
+          this.presupuestoService.cargarResumen(this.mes());
+        },
+        error: () => soltar()
+      });
   }
 }

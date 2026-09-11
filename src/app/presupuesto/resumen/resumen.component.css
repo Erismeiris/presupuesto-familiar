@@ -813,3 +813,15 @@ select:focus-visible,
     transition: none;
   }
 }
+
+/* Categorías que aún no tienen ni importe previsto ni movimientos. Se pintan
+   igual que las demás, sólo que apagadas: están ahí para poder presupuestarlas,
+   no para competir con las que ya tienen datos. */
+.fila-categoria.fila-sin-datos th[scope="row"],
+.fila-categoria.fila-sin-datos td {
+  opacity: 0.62;
+}
+
+.sin-linea {
+  color: var(--text-color-secondary, #6c757d);
+}
