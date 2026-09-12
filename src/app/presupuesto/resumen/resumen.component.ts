@@ -14,7 +14,7 @@ import { GraficoEvolucionComponent } from '../grafico-evolucion/grafico-evolucio
 
 import { forkJoin } from 'rxjs';
 import { Categoria } from '../../interface/categoria';
-import { BloqueResumen, CategoriaEvolucion, LineaResumen, NuevaTransaccion, TipoCategoria503020, Transaccion } from '../../interface/presupuesto.interface';
+import { BloqueResumen, CategoriaEvolucion, LineaResumen, NuevaTransaccion, TipoCategoria503020, TipoMovimiento, Transaccion } from '../../interface/presupuesto.interface';
 import { CategoriaService } from '../../services/categoria.service';
 import { CategoriaIngreso, CategoriaIngresoService } from '../../services/categoria-ingreso.service';
 import { GastosService } from '../../services/gastos.service';
@@ -294,25 +294,65 @@ export class ResumenComponent implements OnInit {
 
   /**
    * Las categorías del usuario valen para todos los meses, así que se pintan
-   * todas. Antes se filtraba por `presupuestada`, y el resultado era que un mes
-   * al que no se le hubiera montado el presupuesto a mano salía vacío aunque
-   * tuviera gasto real.
+   * todas. Se combinan las líneas que devuelve el backend con todas las categorías
+   * disponibles del usuario (_categorias y _categoriasIngreso) para garantizar
+   * que aparezcan todas en cualquier entorno (web o APK).
    *
    * Primero las que tienen algo -- importe previsto o movimientos --, y después
    * las vacías por orden alfabético, para que lo que ya está en marcha no quede
    * sepultado entre categorías a cero.
    */
-  lineasConPresupuesto(lineas: LineaResumen[]): LineaResumen[] {
-    const conDatos = lineas.filter(l => l.presupuestada || l.real !== 0 || l.previsto !== 0);
-    const vacias = lineas
+  lineasConPresupuesto(lineas: LineaResumen[] = [], tipo?: TipoMovimiento | string): LineaResumen[] {
+    const lista = [...lineas];
+
+    if (tipo === 'gasto' && this._categorias().length > 0) {
+      const idsExistentes = new Set(lista.map(l => l.categoriaId).filter(Boolean));
+      const nombresExistentes = new Set(lista.map(l => l.nombre.toLowerCase()));
+
+      for (const cat of this._categorias()) {
+        if (!idsExistentes.has(cat.id) && !nombresExistentes.has(cat.nombre.toLowerCase())) {
+          lista.push({
+            lineaId: null,
+            categoriaId: cat.id,
+            nombre: cat.nombre,
+            previsto: 0,
+            real: 0,
+            diferencia: 0,
+            presupuestada: false,
+            tipo: 'gasto'
+          });
+        }
+      }
+    } else if (tipo === 'ingreso' && this._categoriasIngreso().length > 0) {
+      const idsExistentes = new Set(lista.map(l => l.categoriaId).filter(Boolean));
+      const nombresExistentes = new Set(lista.map(l => l.nombre.toLowerCase()));
+
+      for (const cat of this._categoriasIngreso()) {
+        if (!idsExistentes.has(cat.id) && !nombresExistentes.has(cat.nombre.toLowerCase())) {
+          lista.push({
+            lineaId: null,
+            categoriaId: cat.id,
+            nombre: cat.nombre,
+            previsto: 0,
+            real: 0,
+            diferencia: 0,
+            presupuestada: false,
+            tipo: 'ingreso'
+          });
+        }
+      }
+    }
+
+    const conDatos = lista.filter(l => l.presupuestada || l.real !== 0 || l.previsto !== 0);
+    const vacias = lista
       .filter(l => !(l.presupuestada || l.real !== 0 || l.previsto !== 0))
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
     return [...conDatos, ...vacias];
   }
 
   lineasTodasCategorias(): LineaResumen[] {
-    const gastos = this.resumen()?.gastos?.lineas ?? [];
-    const ingresos = this.resumen()?.ingresos?.lineas ?? [];
+    const gastos = this.lineasConPresupuesto(this.resumen()?.gastos?.lineas ?? [], 'gasto');
+    const ingresos = this.lineasConPresupuesto(this.resumen()?.ingresos?.lineas ?? [], 'ingreso');
     return [...gastos, ...ingresos];
   }
 

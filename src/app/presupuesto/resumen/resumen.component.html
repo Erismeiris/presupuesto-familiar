@@ -54,7 +54,7 @@
           {{ datos.saldoInicial | currency:datos.moneda:'symbol':'1.2-2' }}
         </span>
       } @else {
-        <p-inputNumber [ngModel]="saldoEnEdicion() ?? datos.saldoInicial" 
+        <p-inputNumber [ngModel]="saldoEnEdicion() ?? datos.saldoInicial"
                        (ngModelChange)="saldoEnEdicion.set($event)"
                        mode="currency" [currency]="datos.moneda" locale="es-ES"
                        [showButtons]="false" styleClass="entrada-saldo" />
@@ -78,7 +78,7 @@
         <tr>
           <th>Categoría</th>
           <th>Distribución</th>
-          <th>Tipo</th>          
+          <th>Tipo</th>
           <th></th>
         </tr>
       </thead>
@@ -379,8 +379,8 @@
   <!-- Tablas de categorías con presupuesto -->
   <section class="tablas">
     @for (bloque of [
-      { titulo: 'Categorías', datos: datos.gastos },
-      { titulo: 'Ingresos', datos: datos.ingresos }
+      { titulo: 'Categorías', datos: datos.gastos, tipo: 'gasto' },
+      { titulo: 'Ingresos', datos: datos.ingresos, tipo: 'ingreso' }
     ]; track bloque.titulo) {
       <div class="tabla-bloque">
         <h3>{{ bloque.titulo }}</h3>
@@ -402,7 +402,7 @@
                 {{ bloque.datos.diferenciaTotal | currency:datos.moneda:'symbol':'1.2-2' }}
               </td>
             </tr>
-            @for (linea of lineasConPresupuesto(bloque.datos.lineas); track claveDe(linea)) {
+            @for (linea of lineasConPresupuesto(bloque.datos.lineas, bloque.tipo); track claveDe(linea)) {
               <tr class="fila-categoria"
                   [class.fila-sin-datos]="!linea.presupuestada && linea.real === 0 && linea.previsto === 0"
                   [class.fila-seleccionada]="categoriaSeleccionada() && claveDe(categoriaSeleccionada()!) === claveDe(linea)"
@@ -420,7 +420,9 @@
                                      (ngModelChange)="actualizarPrevisto(linea, $event)"
                                      mode="currency" [currency]="datos.moneda" locale="es-ES"
                                      [showButtons]="false" [minFractionDigits]="0" [maxFractionDigits]="2"
-                                     styleClass="entrada-previsto" />
+                                     styleClass="entrada-previsto"
+                                     [style]="{ width: '4.5rem' }"
+                                     [inputStyle]="{ width: '4.5rem', padding: '0.25rem 0.4rem' }" />
                       @if (estaEditando(linea)) {
                         <p-button icon="pi pi-check" size="small" [text]="true"
                                   [loading]="estaGuardando(linea)"
@@ -508,7 +510,7 @@
                 <tr class="fila-editando">
                   <td><input pInputText type="date" [ngModel]="editFecha()" (ngModelChange)="editFecha.set($event)" style="width:100%" /></td>
                   <td><input pInputText type="text" [ngModel]="editNombre()" (ngModelChange)="editNombre.set($event)" style="width:100%" /></td>
-                  <td><input pInputText [ngModel]="editDescripcion()" (ngModelChange)="editDescripcion.set($event)" style="width:100%" /></td>                  
+                  <td><input pInputText [ngModel]="editDescripcion()" (ngModelChange)="editDescripcion.set($event)" style="width:100%" /></td>
                   <td class="num"><input pInputText type="number" [ngModel]="editMonto()" (ngModelChange)="editMonto.set(+$event)" style="width:80px;text-align:right" /></td>
                   <td>
                     <select [ngModel]="editCategoriaId()" (ngModelChange)="editCategoriaId.set($event)" style="width:100%">

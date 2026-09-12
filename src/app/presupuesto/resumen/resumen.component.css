@@ -657,8 +657,11 @@ tbody td {
   white-space: nowrap;
 }
 
-.fila-categoria th[scope='row'] {
-  white-space: nowrap;
+.tabla-bloque th[scope='row'] {
+  /* Permitimos que el nombre de la categoría envuelva en varias líneas si no hay espacio,
+     evitando que empuje o sea tapado por las columnas numéricas. */
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 /* Bandas alternas, como el papel continuo de contabilidad. Es lo que sustituye
@@ -694,8 +697,13 @@ tr.sin-presupuesto th {
 /* El previsto es lo unico que se escribe dentro de la tabla, asi que se marca
    con un subrayado en lugar de una caja: una caja por fila devolveria a la
    pantalla el aspecto de formulario del que se esta saliendo. */
+::ng-deep .entrada-previsto,
+::ng-deep .entrada-previsto .p-inputnumber,
 ::ng-deep .entrada-previsto .p-inputnumber-input {
-  width: 7rem;
+  /* El ancho base se controla ahora de forma más estricta para evitar solapamientos */
+}
+
+::ng-deep .entrada-previsto .p-inputnumber-input {
   padding: 0.25rem 0.4rem;
   font-size: 0.86rem;
   text-align: right;
@@ -747,10 +755,8 @@ tr.sin-presupuesto th {
     grid-template-columns: 1fr;
   }
 
-  /* Cuatro columnas de importe con dos decimales y `white-space: nowrap` piden
-     460 px, asi que en un movil de 390 px arrastraban la pagina entera de lado:
-     el titular y el texto se salian de la pantalla al desplazarse. Cada tabla
-     se desplaza ahora dentro de su propio marco y el cuerpo no se mueve. */
+  /* Cada tabla se desplaza dentro de su propio marco en pantallas intermedias
+     si fuera necesario, evitando mover el cuerpo completo de la pagina. */
   .tabla-bloque,
   .detalle-gastos,
   .panel-settings {
@@ -759,7 +765,53 @@ tr.sin-presupuesto th {
 
   .tabla-bloque table,
   .detalle-gastos table {
-    min-width: 26rem;
+    min-width: 22rem;
+  }
+}
+
+@media (max-width: 600px) {
+  /* En pantallas móviles ajustamos el ancho del input de la columna 'Previsto'
+     y los rellenos de la tabla para que quepan las 4 columnas de forma compacta. */
+  .tabla-bloque table {
+    min-width: 100%;
+  }
+
+  .tabla-bloque th,
+  .tabla-bloque td {
+    padding: 0.35rem 0.15rem;
+    font-size: 0.78rem;
+  }
+
+  /* Ajustamos las columnas para que la de categorías ocupe el espacio sobrante
+     y las numéricas tengan un ancho mínimo garantizado sin solapamientos. */
+  .tabla-bloque th:first-child,
+  .tabla-bloque td:first-child {
+    width: auto;
+    white-space: normal;
+  }
+
+  .tabla-bloque th:nth-child(n+2),
+  .tabla-bloque td:nth-child(n+2) {
+    width: 1%;
+    white-space: nowrap;
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+  }
+
+/* Forzamos el ancho del componente p-inputNumber y sus partes internas globalmente en esta tabla */
+.tabla-bloque ::ng-deep .entrada-previsto,
+.tabla-bloque ::ng-deep .entrada-previsto > span,
+.tabla-bloque ::ng-deep .entrada-previsto .p-inputnumber,
+.tabla-bloque ::ng-deep .entrada-previsto .p-inputnumber-input {
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
+}
+
+
+  ::ng-deep .entrada-previsto .p-inputnumber-input {
+    padding: 0.15rem 0.1rem;
+    font-size: 0.78rem;
   }
 }
 
