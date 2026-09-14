@@ -127,11 +127,6 @@
                             [disabled]="categoriaEliminando() !== null"
                             (onClick)="eliminarCategoria(linea)"
                             pTooltip="Eliminar categoría" tooltipPosition="left" />
-                  @if (linea.lineaId) {
-                    <p-button icon="pi pi-trash" severity="secondary" [text]="true" size="small"
-                          (onClick)="quitarCategoria(linea.lineaId!)"
-                          pTooltip="Quitar del presupuesto" tooltipPosition="left" />
-                  }
                 }
             </td>
           </tr>
@@ -559,17 +554,19 @@
                   <td>{{ cat.nombre }} </td>
                   <td style="white-space:nowrap">
                     <p-button icon="pi pi-pencil" severity="info" size="small" [text]="true" (onClick)="editarGasto(tx)" pTooltip="Editar" tooltipPosition="top" />
-                    @if (tx.tipo === 'gasto') {
-                      <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
-                                [loading]="gastoEliminandoId() === tx.id"
-                                [disabled]="gastoEliminandoId() !== null"
-                                (onClick)="eliminarGasto(tx)" pTooltip="Eliminar gasto" tooltipPosition="top" />
-                    }
+                    <!-- Sin `@if (tx.tipo === 'gasto')`: la papelera sólo salía en las
+                         categorías de gasto y en las de ingreso quedaba el lápiz suelto.
+                         El backend expone DELETE en /gastos y en /ingresos, y
+                         `borrarTransaccion` elige la ruta según `tx.tipo`. -->
+                    <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
+                              [loading]="gastoEliminandoId() === tx.id"
+                              [disabled]="gastoEliminandoId() !== null"
+                              (onClick)="eliminarGasto(tx)" pTooltip="Eliminar" tooltipPosition="top" />
                   </td>
                 </tr>
               }
             } @empty {
-              <tr><td colspan="5" class="sin-datos">Sin gastos registrados en esta categoría</td></tr>
+              <tr><td colspan="5" class="sin-datos">Sin {{ cat.tipo === 'ingreso' ? 'ingresos' : 'gastos' }} registrados en esta categoría</td></tr>
             }
           </tbody>
         </table>

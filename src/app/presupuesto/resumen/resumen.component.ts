@@ -452,11 +452,6 @@ export class ResumenComponent implements OnInit {
     return respuesta.error?.error ?? respuesta.error?.message ?? porDefecto;
   }
 
-  quitarCategoria(lineaId: string): void {
-    this.presupuestoService.borrarLinea(lineaId)
-      .subscribe({ next: () => this.presupuestoService.recargar(), error: () => {} });
-  }
-
   agregarCategoriaExistente(): void {
     const catId = this.categoriaNueva();
     const resumen = this.resumen();
@@ -638,11 +633,18 @@ export class ResumenComponent implements OnInit {
     this.gastoEditandoId.set(null);
   }
 
+  /**
+   * Sirve para las dos tablas. El tipo iba fijo a 'gasto' y la papelera estaba
+   * escondida tras un `@if` en la plantilla, así que los ingresos no se podían
+   * borrar desde el detalle; se toma de `tx.tipo`, igual que hace
+   * `guardarEdicionGasto`.
+   */
   eliminarGasto(tx: Transaccion): void {
-    if (!window.confirm(`¿Eliminar el gasto "${tx.name}"? Esta acción no se puede deshacer.`)) return;
+    const rotulo = tx.tipo === 'ingreso' ? 'el ingreso' : 'el gasto';
+    if (!window.confirm(`¿Eliminar ${rotulo} "${tx.name}"? Esta acción no se puede deshacer.`)) return;
 
     this.gastoEliminandoId.set(tx.id);
-    this.presupuestoService.borrarTransaccion('gasto', tx.id).subscribe({
+    this.presupuestoService.borrarTransaccion(tx.tipo, tx.id).subscribe({
       next: () => {
         this.transacciones.update(txs => txs.filter(t => t.id !== tx.id));
         this.gastoEliminandoId.set(null);
