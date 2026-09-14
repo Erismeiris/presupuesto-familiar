@@ -8,6 +8,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
 import { MenuModule } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import { RouterModule } from '@angular/router';
@@ -17,17 +18,18 @@ import { HeaderComponent } from '../../dashboard/shared/header/header.component'
   selector: 'app-login',
   standalone: true,
   imports: [
-    CardModule, 
+    CardModule,
     FormsModule,
     HeaderComponent,
     ReactiveFormsModule,
     ButtonModule,
     CommonModule,
     InputTextModule,
-    MenuModule,  
-    ButtonModule,    
+    PasswordModule,
+    MenuModule,
+    ButtonModule,
     RouterModule,
-    Message 
+    Message
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
@@ -44,7 +46,6 @@ export class LoginComponent {
   });
 
   public user: any = {};
-  hide = false;
 
   constructor(
     private auth:AuthService,
