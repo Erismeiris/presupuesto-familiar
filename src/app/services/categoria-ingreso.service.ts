@@ -37,6 +37,16 @@ export class CategoriaIngresoService {
     return this.http.post<CategoriaIngreso>(`${this.baseUrl}/categoriaingresos`, data);
   }
 
+  updateCategoria(id: string, data: Partial<CategoriaIngreso>): Observable<CategoriaIngreso> {
+    return this.http.put<CategoriaIngreso>(`${this.baseUrl}/categoriaingresos/${id}`, data);
+  }
+
+  eliminarCategoria(id: string, forzar = false): Observable<unknown> {
+    return this.http.delete(`${this.baseUrl}/categoriaingresos/${id}`, {
+      params: forzar ? { forzar: 'true' } : {}
+    });
+  }
+
   updateIngreso(id: string, data: Partial<CategoriaIngreso> & { date?: string; descripcion?: string; monto?: number; categoriaId?: string; name?: string; categoria?: string }): Observable<CategoriaIngreso> {
     return this.http.put<CategoriaIngreso>(`${this.baseUrl}/ingresos/${id}`, data);
   }

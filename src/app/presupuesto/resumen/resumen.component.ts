@@ -113,6 +113,10 @@ export class ResumenComponent implements OnInit {
   readonly tipoCategoriaNueva = signal<'gasto' | 'ingreso'>('gasto');
   readonly nombreCategoriaNueva = signal('');
   readonly guardandoCategoriaNueva = signal(false);
+  readonly categoriaEditando = signal<string | null>(null);
+  readonly nombreCategoriaEditando = signal('');
+  readonly categoriaEliminando = signal<string | null>(null);
+  readonly errorCategoria = signal<string | null>(null);
 
   toggleSettings(): void {
     this.mostrarSettings.update(v => !v);
@@ -362,6 +366,92 @@ export class ResumenComponent implements OnInit {
       .subscribe({ next: () => this.presupuestoService.recargar(), error: () => {} });
   }
 
+  claveCategoria(linea: LineaResumen): string {
+    return `${linea.tipo}:${this.claveDe(linea)}`;
+  }
+
+  editarCategoria(linea: LineaResumen): void {
+    if (!linea.categoriaId) return;
+    this.errorCategoria.set(null);
+    this.categoriaEditando.set(this.claveCategoria(linea));
+    this.nombreCategoriaEditando.set(linea.nombre);
+  }
+
+  cancelarEdicionCategoria(): void {
+    this.categoriaEditando.set(null);
+    this.errorCategoria.set(null);
+  }
+
+  guardarNombreCategoria(linea: LineaResumen): void {
+    const nombre = this.nombreCategoriaEditando().trim();
+    if (!linea.categoriaId || !nombre) return;
+
+    const guardar$ = linea.tipo === 'gasto'
+      ? this.categoriaService.updateCategoria(linea.categoriaId, { nombre })
+      : this.categoriaIngresoService.updateCategoria(linea.categoriaId, { nombre });
+
+    guardar$.subscribe({
+      next: () => {
+        if (linea.tipo === 'gasto') {
+          this._categorias.update(categorias => categorias.map(c => c.id === linea.categoriaId ? { ...c, nombre } : c));
+        } else {
+          this._categoriasIngreso.update(categorias => categorias.map(c => c.id === linea.categoriaId ? { ...c, nombre } : c));
+        }
+        this.categoriaEditando.set(null);
+        this.presupuestoService.recargar();
+      },
+      error: (error) => this.errorCategoria.set(this.mensajeErrorCategoria(error, 'No se pudo cambiar el nombre de la categoría.'))
+    });
+  }
+
+  eliminarCategoria(linea: LineaResumen): void {
+    if (!linea.categoriaId || !window.confirm(`¿Eliminar la categoría "${linea.nombre}"? Esta acción no se puede deshacer.`)) return;
+
+    this.errorCategoria.set(null);
+    const clave = this.claveCategoria(linea);
+    this.categoriaEliminando.set(clave);
+    this.borrarCategoria(linea, clave);
+  }
+
+  private borrarCategoria(linea: LineaResumen, clave: string, forzar = false): void {
+    if (!linea.categoriaId) return;
+
+    const borrar$ = linea.tipo === 'gasto'
+      ? this.categoriaService.eliminarCategoria(linea.categoriaId, forzar)
+      : this.categoriaIngresoService.eliminarCategoria(linea.categoriaId, forzar);
+
+    borrar$.subscribe({
+      next: () => {
+        if (linea.tipo === 'gasto') {
+          this._categorias.update(categorias => categorias.filter(c => c.id !== linea.categoriaId));
+        } else {
+          this._categoriasIngreso.update(categorias => categorias.filter(c => c.id !== linea.categoriaId));
+        }
+        if (this.categoriaSeleccionada() && this.claveCategoria(this.categoriaSeleccionada()!) === clave) {
+          this.categoriaSeleccionada.set(null);
+        }
+        this.categoriaEliminando.set(null);
+        this.presupuestoService.recargar();
+      },
+      error: (error) => {
+        if (error.status === 409) {
+          const mensaje = this.mensajeErrorCategoria(error, 'La categoría tiene movimientos asociados.');
+          if (window.confirm(`${mensaje}\n\n¿Quieres eliminarla junto con sus movimientos?`)) {
+            this.borrarCategoria(linea, clave, true);
+            return;
+          }
+        }
+        this.errorCategoria.set(this.mensajeErrorCategoria(error, 'No se pudo eliminar la categoría.'));
+        this.categoriaEliminando.set(null);
+      }
+    });
+  }
+
+  private mensajeErrorCategoria(error: unknown, porDefecto: string): string {
+    const respuesta = error as { error?: { error?: string; message?: string } };
+    return respuesta.error?.error ?? respuesta.error?.message ?? porDefecto;
+  }
+
   quitarCategoria(lineaId: string): void {
     this.presupuestoService.borrarLinea(lineaId)
       .subscribe({ next: () => this.presupuestoService.recargar(), error: () => {} });
@@ -527,6 +617,7 @@ export class ResumenComponent implements OnInit {
   }
 
   readonly gastoEditandoId  = signal<string | null>(null);
+  readonly gastoEliminandoId = signal<string | null>(null);
   readonly editNombre       = signal('');
   readonly editFecha        = signal('');
   readonly editDescripcion  = signal('');
@@ -545,6 +636,20 @@ export class ResumenComponent implements OnInit {
 
   cancelarEdicionGasto(): void {
     this.gastoEditandoId.set(null);
+  }
+
+  eliminarGasto(tx: Transaccion): void {
+    if (!window.confirm(`¿Eliminar el gasto "${tx.name}"? Esta acción no se puede deshacer.`)) return;
+
+    this.gastoEliminandoId.set(tx.id);
+    this.presupuestoService.borrarTransaccion('gasto', tx.id).subscribe({
+      next: () => {
+        this.transacciones.update(txs => txs.filter(t => t.id !== tx.id));
+        this.gastoEliminandoId.set(null);
+        this.presupuestoService.recargar();
+      },
+      error: () => this.gastoEliminandoId.set(null)
+    });
   }
 
   guardarEdicionGasto(tx: Transaccion): void {

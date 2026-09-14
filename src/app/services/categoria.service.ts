@@ -28,6 +28,12 @@ updateCategoria(id: string, data: Partial<Categoria>): Observable<Categoria> {
   return this.http.put<Categoria>(`${this.baseUrl}/categorias/${id}`, data);
 }
 
+eliminarCategoria(id: string, forzar = false): Observable<unknown> {
+  return this.http.delete(`${this.baseUrl}/categorias/${id}`, {
+    params: forzar ? { forzar: 'true' } : {}
+  });
+}
+
 crearCategoria(data: Partial<Categoria>): Observable<Categoria> {
   return this.http.post<Categoria>(`${this.baseUrl}/categorias`, data);
 }

@@ -85,7 +85,14 @@
       <tbody>
         @for (linea of lineasTodasCategorias(); track claveDe(linea)) {
           <tr>
-            <td>{{ linea.nombre }}</td>
+            <td>
+              @if (categoriaEditando() === claveCategoria(linea)) {
+                <input pInputText [ngModel]="nombreCategoriaEditando()"
+                       (ngModelChange)="nombreCategoriaEditando.set($event)" style="width: 100%" />
+              } @else {
+                {{ linea.nombre }}
+              }
+            </td>
             <td>
               @if (linea.tipo === 'gasto') {
                 <p-dropdown [options]="distribucionOpciones"
@@ -103,21 +110,37 @@
               </span>
             </td>
             <td>
-              <!-- Sin línea no hay nada que quitar del presupuesto: la categoría
-                   aparece igual todos los meses. Borrarla es otra cosa, y vive
-                   en la pantalla de categorías. -->
-              @if (linea.lineaId) {
-                <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                @if (categoriaEditando() === claveCategoria(linea)) {
+                  <p-button icon="pi pi-check" severity="success" [text]="true" size="small"
+                            [disabled]="!nombreCategoriaEditando().trim()"
+                            (onClick)="guardarNombreCategoria(linea)"
+                            pTooltip="Guardar nombre" tooltipPosition="left" />
+                  <p-button icon="pi pi-times" severity="secondary" [text]="true" size="small"
+                            (onClick)="cancelarEdicionCategoria()"
+                            pTooltip="Cancelar" tooltipPosition="left" />
+                } @else {
+                  <p-button icon="pi pi-pencil" severity="info" [text]="true" size="small"
+                            (onClick)="editarCategoria(linea)"
+                            pTooltip="Cambiar nombre" tooltipPosition="left" />
+                  <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                            [loading]="categoriaEliminando() === claveCategoria(linea)"
+                            [disabled]="categoriaEliminando() !== null"
+                            (onClick)="eliminarCategoria(linea)"
+                            pTooltip="Eliminar categoría" tooltipPosition="left" />
+                  @if (linea.lineaId) {
+                    <p-button icon="pi pi-trash" severity="secondary" [text]="true" size="small"
                           (onClick)="quitarCategoria(linea.lineaId!)"
                           pTooltip="Quitar del presupuesto" tooltipPosition="left" />
-              } @else {
-                <span class="sin-linea" pTooltip="Aún no tiene importe previsto" tooltipPosition="left">—</span>
-              }
+                  }
+                }
             </td>
           </tr>
         }
       </tbody>
     </table>
+    @if (errorCategoria()) {
+      <p class="aviso-categoria-error">{{ errorCategoria() }}</p>
+    }
 
     <div class="settings-agregar">
       <p-dropdown [options]="tipoCategoriaOptions"
@@ -536,6 +559,12 @@
                   <td>{{ cat.nombre }} </td>
                   <td style="white-space:nowrap">
                     <p-button icon="pi pi-pencil" severity="info" size="small" [text]="true" (onClick)="editarGasto(tx)" pTooltip="Editar" tooltipPosition="top" />
+                    @if (tx.tipo === 'gasto') {
+                      <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
+                                [loading]="gastoEliminandoId() === tx.id"
+                                [disabled]="gastoEliminandoId() !== null"
+                                (onClick)="eliminarGasto(tx)" pTooltip="Eliminar gasto" tooltipPosition="top" />
+                    }
                   </td>
                 </tr>
               }

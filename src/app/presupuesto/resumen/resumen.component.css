@@ -35,6 +35,11 @@
   padding: 0.4rem 0.5rem;
   vertical-align: middle;
 }
+.aviso-categoria-error {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--pf-rojo-2);
+}
 :host ::ng-deep .dd-dist .p-dropdown {
   width: 100%;
   min-width: 150px;
