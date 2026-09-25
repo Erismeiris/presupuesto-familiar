@@ -202,6 +202,16 @@ export class AuthService {
     );
   }
 
+  /** Pide el correo con el enlace de recuperación. `usuario` es el correo o el nombre de usuario. */
+  forgotPassword(usuario: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/forgot-password`, { usuario });
+  }
+
+  /** Fija la nueva contraseña con el token que llega en el enlace del correo. */
+  resetPassword(token: string, password: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/reset-password`, { token, password });
+  }
+
   getAccessToken(): string | null {
     return this.accessTokenSubject.value;
   }

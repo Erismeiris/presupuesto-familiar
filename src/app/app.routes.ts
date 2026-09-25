@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { UserProfileComponent } from './dashboard/user-profile/user-profile.component';
 import { authGuard } from './guards/auth.guard';
 import { SendInvitationComponent } from './dashboard/send-invitation-component/send-invitation-component';
@@ -17,6 +19,9 @@ export const routes: Routes = [
     {path: 'presupuesto', component: PresupuestoPageComponent, data: {title: 'Presupuesto mensual'}},
     {path: 'login', component: LoginComponent, data: {title: 'Login'}},
     {path:'register', component: RegisterComponent, data: {title: 'Register'}},
+    {path: 'forgot-password', component: ForgotPasswordComponent, data: {title: 'Recuperar contraseña'}},
+    // Destino del enlace del correo: /reset-password?token=...
+    {path: 'reset-password', component: ResetPasswordComponent, data: {title: 'Nueva contraseña'}},
     // Páginas legales públicas: se enlazan desde el registro y el login, así que
     // deben ser accesibles sin sesión.
     {path: 'terminos', component: TerminosComponent, data: {title: 'Términos de Servicio'}},
