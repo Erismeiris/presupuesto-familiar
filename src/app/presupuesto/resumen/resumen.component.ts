@@ -18,7 +18,9 @@ import { BloqueResumen, CategoriaEvolucion, LineaResumen, NuevaTransaccion, Tipo
 import { CategoriaService } from '../../services/categoria.service';
 import { CategoriaIngreso, CategoriaIngresoService } from '../../services/categoria-ingreso.service';
 import { GastosService } from '../../services/gastos.service';
+import { ReglaService } from '../../services/regla.service';
 import { AuthService } from '../../services/auth.service';
+import { ReglasClasificacionComponent } from '../reglas-clasificacion/reglas-clasificacion.component';
 import {
   desplazarMes,
   mesActual,
@@ -29,7 +31,7 @@ import {
 @Component({
   selector: 'app-resumen',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, DropdownModule, InputNumberModule, InputTextModule, ImportarExcelComponent, ImportarCorreoComponent, ConfigCorreoComponent, GraficoEvolucionComponent], // importar-excel, importar-correo y su configuracion
+  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, DropdownModule, InputNumberModule, InputTextModule, ImportarExcelComponent, ImportarCorreoComponent, ConfigCorreoComponent, GraficoEvolucionComponent, ReglasClasificacionComponent],
   templateUrl: './resumen.component.html',
   styleUrl: './resumen.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -38,6 +40,7 @@ export class ResumenComponent implements OnInit {
   private presupuestoService = inject(PresupuestoService);
   private categoriaService = inject(CategoriaService);
   private gastosService = inject(GastosService);
+  private reglaService = inject(ReglaService);
   private categoriaIngresoService = inject(CategoriaIngresoService);
   private authService = inject(AuthService);
 
@@ -434,7 +437,7 @@ export class ResumenComponent implements OnInit {
         this.presupuestoService.recargar();
       },
       error: (error) => {
-        if (error.status === 409) {
+        if (error.status === 409 || String(error.message || '').startsWith('La categoría tiene movimientos')) {
           const mensaje = this.mensajeErrorCategoria(error, 'La categoría tiene movimientos asociados.');
           if (window.confirm(`${mensaje}\n\n¿Quieres eliminarla junto con sus movimientos?`)) {
             this.borrarCategoria(linea, clave, true);
@@ -448,8 +451,8 @@ export class ResumenComponent implements OnInit {
   }
 
   private mensajeErrorCategoria(error: unknown, porDefecto: string): string {
-    const respuesta = error as { error?: { error?: string; message?: string } };
-    return respuesta.error?.error ?? respuesta.error?.message ?? porDefecto;
+    const respuesta = error as { error?: { error?: string; message?: string }; message?: string };
+    return respuesta.error?.error ?? respuesta.error?.message ?? respuesta.message ?? porDefecto;
   }
 
   agregarCategoriaExistente(): void {
@@ -619,18 +622,25 @@ export class ResumenComponent implements OnInit {
   readonly editMonto        = signal(0);
   readonly editCategoriaId  = signal('');
   readonly guardandoEdicion = signal(false);
+  readonly guardarComoRegla = signal(false);
+  readonly patronRegla = signal('');
+  readonly errorEdicion = signal<string | null>(null);
 
   editarGasto(tx: Transaccion): void {
+    this.errorEdicion.set(null);
     this.gastoEditandoId.set(tx.id);
     this.editFecha.set(tx.date);
     this.editNombre.set(tx.name);
     this.editDescripcion.set(tx.descripcion);
     this.editMonto.set(tx.monto);
     this.editCategoriaId.set(tx.categoriaId ?? '');
+    this.guardarComoRegla.set(false);
+    this.patronRegla.set(tx.descripcion || tx.name);
   }
 
   cancelarEdicionGasto(): void {
     this.gastoEditandoId.set(null);
+    this.errorEdicion.set(null);
   }
 
   /**
@@ -656,6 +666,7 @@ export class ResumenComponent implements OnInit {
 
   guardarEdicionGasto(tx: Transaccion): void {
     this.guardandoEdicion.set(true);
+    this.errorEdicion.set(null);
     const esIngreso = tx.tipo === 'ingreso';
     const cats = esIngreso ? this._categoriasIngreso() : this._categorias();
     const cat = cats.find(c => c.id === this.editCategoriaId());
@@ -678,11 +689,12 @@ export class ResumenComponent implements OnInit {
                 categoriaId: updated.categoriaId ?? null, categoria: cat?.nombre ?? t.categoria }
             : t
           ));
-          this.gastoEditandoId.set(null);
-          this.guardandoEdicion.set(false);
-          this.presupuestoService.recargar();
+          this.terminarEdicion(tx, cat?.nombre ?? tx.categoria);
         },
-        error: () => this.guardandoEdicion.set(false)
+        error: (error) => {
+          this.errorEdicion.set(error?.error?.error ?? 'No se pudo guardar el movimiento.');
+          this.guardandoEdicion.set(false);
+        }
       });
       return;
     }
@@ -695,12 +707,40 @@ export class ResumenComponent implements OnInit {
               categoriaId: updated.categoriaId ?? null, categoria: cat?.nombre ?? t.categoria }
           : t
         ));
-        this.gastoEditandoId.set(null);
-        this.guardandoEdicion.set(false);
-        this.presupuestoService.recargar();
+        this.terminarEdicion(tx, cat?.nombre ?? tx.categoria);
       },
-      error: () => this.guardandoEdicion.set(false)
-    });
+      error: (error) => {
+        this.errorEdicion.set(error?.error?.error ?? 'No se pudo guardar el movimiento.');
+        this.guardandoEdicion.set(false);
+      }
+      });
+  }
+
+  private terminarEdicion(tx: Transaccion, categoria: string): void {
+      if (tx.tipo === 'gasto' && this.guardarComoRegla()) {
+        const patron = this.patronRegla().trim();
+        if (!patron || !categoria) {
+          this.errorEdicion.set('El texto de la regla y una categoría son necesarios.');
+          this.guardandoEdicion.set(false);
+          return;
+        }
+        this.reglaService.createRegla({ patron, categoria, tipo: 'gasto' }).subscribe({
+          next: () => this.cerrarEdicion(),
+          error: (error) => {
+            this.errorEdicion.set(error?.error?.error ?? 'El movimiento se guardó, pero no se pudo guardar la regla.');
+            this.guardandoEdicion.set(false);
+          }
+        });
+        return;
+      }
+      this.cerrarEdicion();
+  }
+
+  private cerrarEdicion(): void {
+      this.gastoEditandoId.set(null);
+      this.guardarComoRegla.set(false);
+      this.guardandoEdicion.set(false);
+      this.presupuestoService.recargar();
   }
 
   /**

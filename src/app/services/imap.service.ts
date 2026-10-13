@@ -7,8 +7,8 @@ import { environment } from '../../environments/environment';
 /** Un movimiento encontrado en un correo, tal como lo devuelve el backend. */
 export interface MovimientoCorreo {
   uid: number;
-  /** 'simulado' en la revisión, 'insertado' al importar, 'sin_datos' si no se pudo leer. */
-  estado: 'simulado' | 'insertado' | 'sin_datos';
+  estado: 'simulado' | 'insertado' | 'sin_datos' | 'datos_invalidos' | 'sin_categoria'
+    | 'duplicado' | 'error' | 'de_otro_usuario';
   subject?: string;
   tipo?: 'gasto' | 'ingreso';
   monto?: number;
@@ -17,6 +17,7 @@ export interface MovimientoCorreo {
   tarjeta?: string | null;
   /** Categoría propuesta por el clasificador del backend. */
   categoria?: string;
+  motivo?: string;
 }
 
 export interface RespuestaCorreos {

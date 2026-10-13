@@ -59,6 +59,7 @@ export interface Transaccion {
   categoriaId: string | null;
   categoria: string;
   userId: string;
+  origen?: string | null;
 }
 
 /** Alta de un movimiento, tal como lo esperan /api/gastos y /api/ingresos. */

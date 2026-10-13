@@ -1,0 +1,70 @@
+<p-button label="Reglas de clasificación" icon="pi pi-tags" [text]="true" severity="secondary"
+          [class.activo]="abierto()" (onClick)="alternar()"
+          ariaLabel="Gestionar reglas de clasificación" />
+
+@if (abierto()) {
+  <section class="panel-reglas">
+    <h4>Clasificación de movimientos</h4>
+    <p class="ayuda">
+      Estas reglas se aplican a tus gastos e ingresos, incluidos los que llegan automáticamente por
+      correo. Confirma o corrige las sugerencias de IA para fijar tu criterio.
+    </p>
+
+    @if (cargando()) {
+      <p class="ayuda">Cargando reglas y categorías…</p>
+    } @else {
+      <div class="alta-regla">
+        <input pInputText type="text" [ngModel]="patronNuevo()"
+               (ngModelChange)="patronNuevo.set($event)"
+               placeholder="Comercio o texto, ej.: SUPERMERCADO"
+               aria-label="Texto que activa la regla" />
+        <p-dropdown [options]="opcionesTipo" optionLabel="label" optionValue="value"
+                    [ngModel]="tipoNuevo()" (ngModelChange)="cambiarTipoNuevo($event)"
+                    appendTo="body" styleClass="campo-tipo" ariaLabel="Tipo de movimiento" />
+        <p-dropdown [options]="categoriasNuevas()" optionLabel="nombre" optionValue="nombre"
+                    [ngModel]="categoriaNueva()" (ngModelChange)="categoriaNueva.set($event)"
+                    placeholder="Categoría" appendTo="body" styleClass="campo-categoria" />
+        <p-button label="Añadir regla" icon="pi pi-plus" size="small"
+                  [loading]="guardando()" [disabled]="!patronNuevo().trim() || !categoriaNueva()"
+                  (onClick)="crear()" />
+      </div>
+
+      @if (!reglas().length) {
+        <p class="vacio">Todavía no hay reglas ni sugerencias para revisar.</p>
+      } @else {
+        <ul class="lista-reglas">
+          @for (regla of reglas(); track regla.id) {
+            <li [class.sugerida]="!regla.confirmada">
+              <span class="estado">{{ regla.confirmada ? 'Regla' : 'Sugerencia IA' }}</span>
+              <input pInputText type="text" [ngModel]="regla.patron"
+                     (ngModelChange)="cambiarLocal(regla, { patron: $event })"
+                     [attr.aria-label]="'Texto de la regla ' + regla.patron" />
+              <p-dropdown [options]="opcionesTipo" optionLabel="label" optionValue="value"
+                          [ngModel]="regla.tipo" (ngModelChange)="cambiarTipo(regla, $event)"
+                          appendTo="body" styleClass="campo-tipo" ariaLabel="Tipo de la regla" />
+              <p-dropdown [options]="opcionesCategoria(regla.tipo)" optionLabel="label" optionValue="value"
+                          [ngModel]="regla.categoria" (ngModelChange)="cambiarLocal(regla, { categoria: $event })"
+                          appendTo="body" styleClass="campo-categoria" ariaLabel="Categoría de la regla" />
+              <p-button [label]="regla.confirmada ? 'Guardar' : 'Confirmar'"
+                        [icon]="regla.confirmada ? 'pi pi-save' : 'pi pi-check'"
+                        size="small" [loading]="guardandoId() === regla.id"
+                        [disabled]="guardando() || guardandoId() !== null"
+                        (onClick)="guardar(regla)" />
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                        [loading]="guardandoId() === regla.id"
+                        [disabled]="guardando() || guardandoId() !== null"
+                        (onClick)="borrar(regla)" [ariaLabel]="'Eliminar regla ' + regla.patron" />
+            </li>
+          }
+        </ul>
+      }
+    }
+
+    @if (error()) {
+      <p class="aviso-error">{{ error() }}</p>
+    }
+    <div class="cierre">
+      <p-button label="Cerrar" severity="secondary" [text]="true" size="small" (onClick)="alternar()" />
+    </div>
+  </section>
+}

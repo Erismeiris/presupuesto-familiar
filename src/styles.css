@@ -107,3 +107,21 @@ select,
 textarea {
   font-family: inherit;
 }
+
+.origen-correo {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 1rem;
+  background: var(--pf-verde-suave);
+  color: var(--pf-verde);
+  font-size: 0.7rem;
+}
+
+.regla-al-guardar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+}

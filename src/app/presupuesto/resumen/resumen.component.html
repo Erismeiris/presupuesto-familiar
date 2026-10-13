@@ -323,6 +323,7 @@
           <app-importar-excel />
           <app-importar-correo />
           <app-config-correo />
+          <app-reglas-clasificacion />
         </div>
       } @else if (mostrarFormGasto()) {
         <div class="form-gasto">
@@ -511,6 +512,9 @@
       } @else if (cargandoTx()) {
         <p class="aviso">Cargando gastos…</p>
       } @else {
+        @if (errorEdicion()) {
+          <p class="aviso-error">{{ errorEdicion() }}</p>
+        }
         <table>
           <thead>
             <tr>
@@ -537,6 +541,19 @@
                         <option [value]="c.id">{{ c.nombre }}</option>
                       }
                     </select>
+                    @if (tx.tipo === 'gasto') {
+                      <label class="regla-al-guardar">
+                        <input type="checkbox" [ngModel]="guardarComoRegla()"
+                               (ngModelChange)="guardarComoRegla.set($event)" />
+                        Usar también como regla futura
+                      </label>
+                      @if (guardarComoRegla()) {
+                        <input pInputText type="text" [ngModel]="patronRegla()"
+                               (ngModelChange)="patronRegla.set($event)"
+                               placeholder="Texto que reconocerá la regla"
+                               aria-label="Texto que reconocerá la regla" />
+                      }
+                    }
                   </td>
                   <td style="white-space:nowrap">
                     <p-button icon="pi pi-save" severity="success" size="small" [loading]="guardandoEdicion()" (onClick)="guardarEdicionGasto(tx)" pTooltip="Guardar" tooltipPosition="top" />
@@ -547,7 +564,12 @@
                 <tr>
                   <td>{{ tx.date | date:'dd/MM/yyyy' }}</td>
                   <td>{{ tx.name }}</td>
-                  <td>{{ tx.descripcion }}</td>
+                  <td>
+                    {{ tx.descripcion }}
+                    @if (tx.origen === 'email') {
+                      <span class="origen-correo">Importado del correo</span>
+                    }
+                  </td>
                   <td class="num">{{ tx.monto | currency:datos.moneda:'symbol':'1.2-2' }}</td>
                   <!-- Transacciones sin categoriaId fueron agrupadas por nombre; cat.nombre es correcto -->
                   <!--<td>{{ tx.categoriaId ? tx.categoria : cat.nombre }}</td>-->

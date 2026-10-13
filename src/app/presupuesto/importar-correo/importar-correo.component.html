@@ -108,6 +108,20 @@
     <p class="resultado-ok">
       Se han creado {{ importados() }} movimiento(s) a partir del correo.
     </p>
+    @if (duplicados()) {
+      <p class="muted">{{ duplicados() }} correo(s) ya estaban importados y no se han duplicado.</p>
+    }
+    @if (incidencias().length) {
+      <p class="aviso-error">{{ incidencias().length }} correo(s) necesitan atención:</p>
+      <ul class="incidencias-correo">
+        @for (incidencia of incidencias(); track incidencia.uid) {
+          <li>
+            {{ incidencia.subject || 'Correo sin asunto' }} —
+            {{ incidencia.motivo || incidencia.estado }}
+          </li>
+        }
+      </ul>
+    }
     <div class="acciones">
       <p-button label="Cerrar" severity="secondary" [text]="true" (onClick)="cancelar()" />
     </div>

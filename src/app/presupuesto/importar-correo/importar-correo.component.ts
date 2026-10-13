@@ -33,6 +33,8 @@ export class ImportarCorreoComponent {
   readonly encontrados = signal<MovimientoCorreo[]>([]);
   readonly asuntosUsados = signal<string[]>([]);
   readonly importados = signal(0);
+  readonly duplicados = signal(0);
+  readonly incidencias = signal<MovimientoCorreo[]>([]);
 
   /** Los que traen datos aprovechables; el resto se cuenta pero no se importa. */
   readonly aprovechables = computed(() =>
@@ -85,7 +87,12 @@ export class ImportarCorreoComponent {
     this.imapService.procesarCorreos(userId, false).subscribe({
       next: (respuesta) => {
         const insertados = (respuesta.resultados ?? []).filter((m) => m.estado === 'insertado');
+        const resultados = respuesta.resultados ?? [];
         this.importados.set(insertados.length);
+        this.duplicados.set(resultados.filter((m) => m.estado === 'duplicado').length);
+        this.incidencias.set(resultados.filter((m) =>
+          !['insertado', 'duplicado'].includes(m.estado)
+        ));
         this.paso.set('resultado');
         this.presupuestoService.recargar();
       },

@@ -1,0 +1,94 @@
+:host {
+  display: contents;
+}
+
+.panel-reglas {
+  flex-basis: 100%;
+  margin: 0.5rem 0 1rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--pf-verde-suave);
+  border-radius: var(--pf-radio);
+  border-left: 3px solid var(--pf-verde);
+}
+
+.panel-reglas h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--pf-verde);
+}
+
+.ayuda,
+.vacio {
+  font-size: 0.8rem;
+  color: var(--pf-texto-suave);
+  margin: 0 0 0.75rem;
+}
+
+.alta-regla,
+.lista-reglas li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alta-regla input,
+.lista-reglas input {
+  flex: 1 1 15rem;
+  min-width: 8rem;
+  font-size: 0.82rem;
+}
+
+.lista-reglas {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.lista-reglas li {
+  padding: 0.55rem;
+  background: var(--pf-papel);
+  border: 1px solid var(--pf-borde);
+  border-radius: var(--pf-radio);
+}
+
+.lista-reglas li.sugerida {
+  border-left: 3px solid var(--pf-amarillo, #d49b19);
+}
+
+.estado {
+  flex: 0 0 6.5rem;
+  color: var(--pf-texto-suave);
+  font-size: 0.72rem;
+}
+
+:host ::ng-deep .campo-tipo {
+  min-width: 8rem;
+  font-size: 0.8rem;
+}
+
+:host ::ng-deep .campo-categoria {
+  flex: 1 1 10rem;
+  min-width: 9rem;
+  font-size: 0.8rem;
+}
+
+.aviso-error {
+  color: var(--pf-rojo);
+  font-size: 0.8rem;
+}
+
+.cierre {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 560px) {
+  .alta-regla > *,
+  .lista-reglas li > * {
+    flex: 1 1 100%;
+  }
+}
