@@ -11,6 +11,12 @@
   RewriteEngine On
   RewriteBase /
 
+  # HTTPS obligatorio. Tiene que ir la primera: las reglas de abajo terminan
+  # con [L], y al final del fichero no se llegaba a evaluar nunca (http://
+  # respondía 200). El certificado del subdominio está emitido desde 2026-09.
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
   # Lo que existe de verdad en disco se sirve tal cual.
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
@@ -49,10 +55,3 @@
 <FilesMatch "\.(xls|xlsx|csv|txt|log|bak|env)$">
   Require all denied
 </FilesMatch>
-
-# HTTPS obligatorio. Descomentar SÓLO cuando el certificado del subdominio esté
-# emitido; antes de eso, deja el sitio inaccesible.
-# <IfModule mod_rewrite.c>
-#   RewriteCond %{HTTPS} off
-#   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# </IfModule>
