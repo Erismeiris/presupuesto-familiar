@@ -18,6 +18,9 @@ import { docData } from '@angular/fire/firestore';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
+/** Clave de `localStorage` donde se guarda el refresh token del login. */
+const REFRESH_TOKEN_KEY = 'refreshToken';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -47,8 +50,8 @@ export class AuthService {
    * El access token vive únicamente en memoria, así que al arrancar la página
    * nunca hay ninguno. Antes esa ausencia se interpretaba como sesión perdida y
    * se borraba el usuario guardado, de modo que cada recarga te dejaba fuera.
-   * Ahora no se borra nada: el guard y el interceptor renuevan con la cookie de
-   * refresh en la primera petición, y si esa cookie ya no vale, el interceptor
+   * Ahora no se borra nada: el guard y el interceptor renuevan con el refresh token
+   * en la primera petición, y si ya no vale, el interceptor
    * propaga el 401 y la sesión se limpia entonces.
    */
   private initializeUserFromStorage() {
@@ -67,6 +70,19 @@ export class AuthService {
     this.user.set(null);
     this.accessTokenSubject.next(null);
     localStorage.removeItem('user');
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+
+  /**
+   * Cuerpo de /auth/refresh y /auth/logout. La API está en supabase.co, otro
+   * sitio distinto del frontend, así que la cookie httpOnly del refresh es de
+   * terceros y el navegador no la manda: el refresh token viaja en el cuerpo.
+   * Sin token guardado se envía vacío y el backend prueba con la cookie, que
+   * sigue valiendo donde sí llega (la APK con CapacitorCookies).
+   */
+  private refreshBody(): { refreshToken?: string } {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    return refreshToken ? { refreshToken } : {};
   }
 
   loginUser(name: string, password: string): Observable<any> {
@@ -91,6 +107,11 @@ export class AuthService {
             this.accessTokenSubject.next(response.accessToken);
           } else {
             console.warn('No access token received from backend');
+          }
+
+          // Para renovar la sesión sin depender de la cookie (ver refreshBody)
+          if (response.refreshToken) {
+            localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
           }
         } else {
           console.error('Login response missing required fields:', response);
@@ -124,7 +145,7 @@ export class AuthService {
 
   refreshToken(): Observable<any> {
     console.log('Attempting to refresh token...');
-    return this.http.post<any>(`${environment.apiUrl}/auth/refresh`, {}, 
+    return this.http.post<any>(`${environment.apiUrl}/auth/refresh`, this.refreshBody(),
       { withCredentials: true }
     ).pipe(
       tap(response => {
@@ -161,7 +182,7 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/auth/logout`, {}, 
+    return this.http.post(`${environment.apiUrl}/auth/logout`, this.refreshBody(),
       { withCredentials: true }
     ).pipe(
       tap(() => this.clearUserSession()),
@@ -233,7 +254,7 @@ export class AuthService {
    * a la caducidad del token: el guard daba paso con sesiones ya muertas y el
    * fallo aparecía después, en la primera petición al servidor.
    *
-   * Al recargar la página no hay token en memoria (solo la cookie de refresh),
+   * Al recargar la página no hay token en memoria (solo el refresh token),
    * así que aquí se responde `false` a propósito: el guard y el interceptor
    * renuevan contra /api/auth/refresh y vuelven a preguntar.
    */

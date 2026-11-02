@@ -1,19 +1,17 @@
 // Producción web: el frontend se sirve desde presupuesto.aresolutions.es y la
-// API vive en su propio subdominio, en el VPS, así que la URL tiene que ser
-// absoluta. Antes era relativa porque se daba por hecho un reverse proxy que
-// sirviera ambos bajo el mismo dominio.
+// API es una Edge Function de Supabase (proyecto `presupuesto`), así que la URL
+// tiene que ser absoluta.
 //
-// El prefijo /api es obligatorio: la raíz del VPS responde, pero
-// `/presupuestos/resumen` sin /api devuelve 404.
+// Termina en /api porque la función se llama `api` y declara sus rutas con el
+// mismo prefijo que tenía el backend antiguo: .../functions/v1/api/auth/login.
 //
-// Sobre la cookie httpOnly del refresh, que es lo delicado de este cambio: la
-// llamada pasa a ser cross-origin, pero sigue siendo **same-site**, porque
-// SameSite se calcula sobre el dominio registrable (aresolutions.es) y es el
-// mismo para el frontend y la API. La cookie se sigue enviando con SameSite=Lax
-// sin tocar nada. Lo que sí hace falta es CORS con
-// `Access-Control-Allow-Credentials: true` y el origen en lista blanca; el VPS ya
-// responde así (comprobado el 2026-09-07).
+// Sobre el refresh de la sesión: la API vive en supabase.co, un sitio distinto
+// de aresolutions.es, así que la cookie httpOnly del refresh es de terceros y
+// los navegadores no la envían (Safari nunca). Por eso el AuthService guarda el
+// refreshToken que devuelve el login y lo manda en el cuerpo de /auth/refresh y
+// /auth/logout, que el backend ya admitía. Si algún día la API pasa a un
+// subdominio propio (Custom Domain de Supabase, plan Pro), basta cambiar esta URL.
 export const environment = {
   production: true,
-  apiUrl: 'https://api.presupuesto.aresolutions.es/api'
+  apiUrl: 'https://fesugweeqybrjtsbvuyl.supabase.co/functions/v1/api'
 };

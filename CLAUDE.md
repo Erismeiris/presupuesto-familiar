@@ -47,11 +47,11 @@ la configuración de build, y lo único que cambia es `apiUrl`:
 | Configuración | Fichero | `apiUrl` | Por qué |
 |---|---|---|---|
 | `development` (`ng serve`) | `environment.ts` | `/api` | Relativa; `proxy.conf.json` la reenvía a `localhost:3000`. Mismo origen → sin CORS y las cookies funcionan |
-| `production` | `environment.prod.ts` | `https://api.presupuesto.aresolutions.es/api` | La API vive en su propio subdominio, en el VPS |
-| `mobile` | `environment.mobile.ts` | `https://api.presupuesto.aresolutions.es/api` | **Debe ser absoluta**: en el WebView de Capacitor el origen es `https://localhost`, que es el propio teléfono |
+| `production` | `environment.prod.ts` | `https://fesugweeqybrjtsbvuyl.supabase.co/functions/v1/api` | La API es la Edge Function `api` de Supabase. Otro sitio: el refresh token va en el cuerpo, no en la cookie |
+| `mobile` | `environment.mobile.ts` | `https://fesugweeqybrjtsbvuyl.supabase.co/functions/v1/api` | **Debe ser absoluta**: en el WebView de Capacitor el origen es `https://localhost`, que es el propio teléfono |
 
-**El prefijo `/api` es obligatorio** en la URL del VPS: la raíz responde, pero
-`/presupuestos/resumen` sin `/api` devuelve 404.
+**El `/api` final es obligatorio**: es el nombre de la función y el prefijo de
+todas sus rutas (`.../functions/v1/api/presupuestos/resumen`).
 
 Desarrollo sigue apuntando al backend local a propósito: contra el VPS se
 escribiría en los datos de verdad. Para apuntar ahí puntualmente se cambia el
