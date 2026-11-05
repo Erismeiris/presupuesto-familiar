@@ -343,7 +343,7 @@
                         (onChange)="formCategoriaId.set($event.value)"
                         placeholder="Categoría" appendTo="body" />
             <p-inputNumber [ngModel]="formMonto()"
-                           (onChange)="formMonto.set($any($event).value ?? 0)"
+                           (ngModelChange)="formMonto.set($event ?? 0)"
                            mode="currency" [currency]="datos.moneda" locale="es-ES"
                            placeholder="Importe" />
             <input type="date" class="entrada-fecha"
